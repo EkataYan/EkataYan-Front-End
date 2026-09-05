@@ -33,7 +33,7 @@ Dependency versions are centralized in `gradle/libs.versions.toml`. Do not dupli
 - Features follow the established `FeatureNavigation.kt` -> `FeatureRoute.kt` -> `FeatureScreen.kt` -> `FeatureViewModel.kt` pattern.
 - Route composables obtain Hilt ViewModels and pass state plus event callbacks to screen composables. Keep screen composables independent of `NavController`; navigation is expressed through callbacks.
 - Keep UI state and user-event handling in the feature ViewModel when state must survive recomposition. Keep reusable, presentation-only composables stateless where practical.
-- The Login screen is the current start destination. Login and Sign Up are implemented authentication UI features. Wishlist is a dynamic local-state prototype with reusable overview/details screens. Trips has a dynamic calendar/timeline and a shared-state create-trip flow; Home, Planner, Expenses, and Profile contain the app's existing UI or placeholder-backed flows.
+- The Login screen is the current start destination. Login and Sign Up are implemented authentication UI features; Home, Planner, Trips, Expenses, and Profile are presently placeholder-backed features.
 
 ## Project Structure
 
@@ -97,9 +97,6 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 - Figma-based UI work should preserve supplied assets and responsive/keyboard-aware behavior.
 - Login and Sign Up share authentication presentation primitives and local assets; keep matching visuals centralized instead of duplicating them per feature.
 - Until backend authentication is introduced, the primary Login and Sign Up actions navigate to Home and clear authentication destinations from the back stack; the Login/Sign Up text links continue to navigate between those screens.
-- Wishlist groups and their independent destination lists share one Hilt ViewModel state source. Details use the parameterized `wishlist/{groupId}` route, and Wishlist remains outside the five-item bottom navigation.
-- Wishlist covers support references to saved group places, user-selected Photo Picker URIs, or no image. Removing a referenced cover place resets that group's cover. Prototype destination search is backed by a reusable local catalog and filters saved places per group.
-- Trips and `create_trip` share one Hilt `TripsViewModel`; calendar highlights and timeline cards derive from the same trip list. Java time APIs are core-library-desugared for minimum SDK 24 compatibility.
 
 ## Codex Working Rules
 
