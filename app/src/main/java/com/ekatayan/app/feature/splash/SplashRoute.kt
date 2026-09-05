@@ -1,5 +1,4 @@
 package com.ekatayan.app.feature.splash
- 
 import androidx.compose.runtime.Composable
  
 @Composable

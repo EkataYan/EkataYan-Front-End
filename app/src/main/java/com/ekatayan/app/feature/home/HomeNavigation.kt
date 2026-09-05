@@ -14,11 +14,23 @@ fun NavGraphBuilder.homeScreen(
     onTripsClick: () -> Unit,
     onExpensesClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onBookingClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onNotificationClick: () -> Unit,
     notificationsUiState: StateFlow<NotificationsUiState>,
 ) {
     composable(HOME_ROUTE) {
-        HomeRoute(onWishlistClick, onGroupHubClick, onPlannerClick, onTripsClick, onExpensesClick, onProfileClick, onSettingsClick, onNotificationClick, notificationsUiState)
+        HomeRoute(
+            onWishlistClick = onWishlistClick,
+            onGroupHubClick = onGroupHubClick,
+            onPlannerClick = onPlannerClick,
+            onTripsClick = onTripsClick,
+            onExpensesClick = onExpensesClick,
+            onProfileClick = onProfileClick,
+            onBookingClick = onBookingClick,
+            onSettingsClick = onSettingsClick,
+            onNotificationClick = onNotificationClick,
+            notificationsUiState = notificationsUiState,
+        )
     }
 }

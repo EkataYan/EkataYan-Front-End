@@ -7,6 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ekatayan.app.feature.expenses.EXPENSES_ROUTE
 import com.ekatayan.app.feature.expenses.expensesScreen
+import com.ekatayan.app.feature.booking.BOOKING_ROUTE
+import com.ekatayan.app.feature.booking.bookingScreen
 import com.ekatayan.app.feature.home.HOME_ROUTE
 import com.ekatayan.app.feature.home.homeScreen
 import com.ekatayan.app.feature.grouphub.GROUP_HUB_ROUTE
@@ -33,7 +35,6 @@ import com.ekatayan.app.feature.settings.settingsScreen
 import com.ekatayan.app.feature.splash.SPLASH_ROUTE
 import com.ekatayan.app.feature.splash.splashScreen
 import com.ekatayan.app.feature.trips.TRIPS_ROUTE
-
 import com.ekatayan.app.feature.trips.tripsScreen
 import com.ekatayan.app.feature.wishlist.WISHLIST_ROUTE
 import com.ekatayan.app.feature.wishlist.WishlistViewModel
@@ -54,13 +55,7 @@ fun EkataYanNavHost(
         startDestination = SPLASH_ROUTE,
         modifier = modifier,
     ) {
-        splashScreen(
-            onSplashFinished = {
-                navController.navigate(LOGIN_ROUTE) {
-                    popUpTo(SPLASH_ROUTE) { inclusive = true }
-                }
-            }
-        )
+        splashScreen(onSplashFinished = navController::navigateToLoginFromSplash)
         loginScreen(
             onLogInClick = navController::navigateHomeFromAuth,
             onSignUpClick = navController::navigateToSignUp,
@@ -72,6 +67,7 @@ fun EkataYanNavHost(
         homeScreen(
             onGroupHubClick = { navController.navigate(GROUP_HUB_ROUTE) },
             onWishlistClick = { navController.navigate(WISHLIST_ROUTE) },
+            onBookingClick = { navController.navigate(BOOKING_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -79,6 +75,13 @@ fun EkataYanNavHost(
             onSettingsClick = navController::navigateToSettings,
             onNotificationClick = navController::navigateToNotifications,
             notificationsUiState = notificationsViewModel.uiState,
+        )
+        bookingScreen(
+            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onTripsClick = { navController.navigate(TRIPS_ROUTE) },
+            onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
+            onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
+            onProfileClick = { navController.navigate(PROFILE_ROUTE) },
         )
         plannerScreen(onBackClick = navController::navigateUp)
         tripsScreen(onBackClick = navController::navigateUp)
@@ -156,6 +159,13 @@ fun EkataYanNavHost(
 
 private fun NavHostController.navigateToSignUp() {
     navigate(SIGN_UP_ROUTE) { launchSingleTop = true }
+}
+
+private fun NavHostController.navigateToLoginFromSplash() {
+    navigate(LOGIN_ROUTE) {
+        popUpTo(SPLASH_ROUTE) { inclusive = true }
+        launchSingleTop = true
+    }
 }
 
 private fun NavHostController.navigateToLogin() {
