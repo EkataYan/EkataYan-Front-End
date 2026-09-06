@@ -1,5 +1,6 @@
 package com.ekatayan.app.app.navigation
 
+import com.ekatayan.app.feature.businesspartner.*
 import androidx.compose.runtime.Composable
 import android.net.Uri
 import androidx.compose.ui.Modifier
@@ -53,6 +54,7 @@ fun EkataYanNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
+    val businessPartnerViewModel: BusinessPartnerViewModel = hiltViewModel()
     val wishlistViewModel: WishlistViewModel = hiltViewModel()
     val groupHubViewModel: GroupHubViewModel = hiltViewModel()
     val notificationsViewModel: NotificationsViewModel = hiltViewModel()
@@ -71,7 +73,17 @@ fun EkataYanNavHost(
             onSignUpClick = navController::navigateHomeFromAuth,
             onLoginClick = navController::navigateToLogin,
         )
+        businessPartnerScreens(
+            viewModel = businessPartnerViewModel,
+            onNavigate = { navController.navigate(it) { launchSingleTop = true } },
+            onBack = { navController.navigateUp() },
+            onHome = { navController.navigate(HOME_ROUTE) { popUpTo(HOME_ROUTE); launchSingleTop = true } },
+            onTab = { target -> navController.navigate(target) { popUpTo(PARTNER_HOME_ROUTE); launchSingleTop = true } },
+            onLoggedIn = { navController.navigate(PARTNER_HOME_ROUTE) { popUpTo(PARTNER_ENTRY_ROUTE) { inclusive = true }; launchSingleTop = true } },
+            onRestartFlow = { navController.navigate(PARTNER_ENTRY_ROUTE) { popUpTo(HOME_ROUTE); launchSingleTop = true } },
+        )
         homeScreen(
+            onPartnershipClick = { navController.navigate(PARTNER_ENTRY_ROUTE) { launchSingleTop = true } },
             onGroupHubClick = { navController.navigate(GROUP_HUB_ROUTE) },
             onWishlistClick = { navController.navigate(WISHLIST_ROUTE) },
             onBookingClick = { navController.navigate(BOOKING_ROUTE) },

@@ -1,5 +1,9 @@
 package com.ekatayan.app.feature.home
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -148,22 +152,23 @@ fun HomeSearchBar(query: String, onQueryChange: (String) -> Unit, onSearchSubmit
 }
 
 @Composable
-fun QuickActions(onMapsClick: () -> Unit, onWishlistClick: () -> Unit, onBookingClick: () -> Unit, onGroupHubClick: () -> Unit) {
+fun QuickActions(onMapsClick: () -> Unit, onWishlistClick: () -> Unit, onBookingClick: () -> Unit, onGroupHubClick: () -> Unit, onPartnershipClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 17.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 17.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         QuickActionItem("Maps", Icons.Default.Map, onMapsClick)
         QuickActionItem("Wishlist", Icons.Outlined.FavoriteBorder, onWishlistClick)
         QuickActionItem("Booking", Icons.Default.WorkOutline, onBookingClick)
         QuickActionItem("Group Hub", Icons.Default.Groups, onGroupHubClick)
+        QuickActionItem(stringResource(R.string.bp_partnership), Icons.Default.Storefront, onPartnershipClick)
     }
 }
 
 @Composable
 fun QuickActionItem(label: String, icon: ImageVector, onClick: () -> Unit) {
     Column(
-        modifier = Modifier.width(70.dp).clickable(onClick = onClick),
+        modifier = Modifier.widthIn(min = 70.dp).clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(Modifier.size(49.dp).background(EkataLightBlue, RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
