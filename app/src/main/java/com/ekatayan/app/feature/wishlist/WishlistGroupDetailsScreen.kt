@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
 import com.ekatayan.app.core.designsystem.theme.EkataLightBlue
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
@@ -144,7 +146,7 @@ private fun GroupDetailsHeader(title: String, onBackClick: () -> Unit, onNotific
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBackClick, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.KeyboardArrowLeft, "Back", modifier = Modifier.size(28.dp)) }
         Text(title, fontSize = 28.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications)
+        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications, Modifier.offset(y = HeaderActionsTopPadding - 45.dp))
     }
 }
 

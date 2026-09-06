@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
 
 private val Blue = Color(0xFF3478F6)
@@ -91,7 +92,7 @@ fun ProfileScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 21.dp, top = 47.dp, end = 14.dp),
+                            .padding(start = 21.dp, top = HeaderActionsTopPadding, end = 14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(

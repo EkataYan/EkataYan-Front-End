@@ -2,6 +2,8 @@ package com.ekatayan.app.feature.trips
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.ekatayan.app.feature.notifications.NotificationsUiState
+import kotlinx.coroutines.flow.StateFlow
 
 const val TRIPS_ROUTE = "trips"
 const val CREATE_TRIP_ROUTE = "trips/create"
@@ -17,6 +19,7 @@ fun NavGraphBuilder.tripsScreen(
     onTripClick: (Trip) -> Unit,
     onNotificationClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    notificationsUiState: StateFlow<NotificationsUiState>,
 ) {
     composable(TRIPS_ROUTE) {
         TripsRoute(
@@ -29,6 +32,7 @@ fun NavGraphBuilder.tripsScreen(
             onTripClick = onTripClick,
             onNotificationClick = onNotificationClick,
             onSettingsClick = onSettingsClick,
+            notificationsUiState = notificationsUiState,
         )
     }
 }

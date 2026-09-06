@@ -23,11 +23,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.R
 import java.text.NumberFormat
 import java.util.Locale
@@ -58,7 +60,14 @@ fun ExpensesScreen(
             contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item { Header(onNotificationClick, onSettingsClick, hasUnreadNotifications) }
+            item {
+                Header(
+                    onNotificationClick = onNotificationClick,
+                    onSettingsClick = onSettingsClick,
+                    hasUnreadNotifications = hasUnreadNotifications,
+                    actionOffset = HeaderActionsTopPadding - padding.calculateTopPadding() - 12.dp,
+                )
+            }
             item { BudgetCard(uiState.budget) }
             item { SpendingCard(uiState.categories, uiState.budget.totalSpent) }
             item { QuickActions(uiState.quickActions) }
@@ -68,10 +77,10 @@ fun ExpensesScreen(
     }
 }
 
-@Composable private fun Header(onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean) = Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+@Composable private fun Header(onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean, actionOffset: Dp) = Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
     Icon(Icons.Default.AccountBalanceWallet, null, tint = Color.Black, modifier = Modifier.size(27.dp))
     Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.expenses_title), fontSize = 29.sp, fontWeight = FontWeight.Medium)
-    Spacer(Modifier.weight(1f)); HeaderActions(onNotificationClick = onNotificationClick, onSettingsClick = onSettingsClick, hasUnreadNotifications = hasUnreadNotifications)
+    Spacer(Modifier.weight(1f)); HeaderActions(onNotificationClick = onNotificationClick, onSettingsClick = onSettingsClick, hasUnreadNotifications = hasUnreadNotifications, modifier = Modifier.offset(y = actionOffset))
 }
 
 @Composable private fun BudgetCard(data: BudgetSummary) = CardSection {

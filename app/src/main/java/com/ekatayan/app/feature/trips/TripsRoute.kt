@@ -4,6 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ekatayan.app.feature.notifications.NotificationsUiState
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun TripsRoute(
@@ -16,9 +19,11 @@ fun TripsRoute(
     onTripClick: (Trip) -> Unit = {},
     onNotificationClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    notificationsUiState: StateFlow<NotificationsUiState>,
     viewModel: TripsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val notificationState by notificationsUiState.collectAsStateWithLifecycle()
     TripsScreen(
         uiState = uiState,
         onPreviousMonthClick = viewModel::showPreviousMonth,
@@ -32,6 +37,7 @@ fun TripsRoute(
         onAddTripClick = onAddTripClick,
         onNotificationClick = onNotificationClick,
         onSettingsClick = onSettingsClick,
+        hasUnreadNotifications = notificationState.hasUnreadNotifications,
         onDeleteTrip = viewModel::deleteTrip,
         onTripClick = { trip ->
             viewModel.selectDate(trip.startDate)

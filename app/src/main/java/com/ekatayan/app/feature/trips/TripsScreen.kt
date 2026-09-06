@@ -57,6 +57,7 @@ import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
 import com.ekatayan.app.core.designsystem.theme.EkataBlue
 import com.ekatayan.app.core.designsystem.theme.EkataCardBackground
@@ -86,12 +87,13 @@ fun TripsScreen(
     onSettingsClick: () -> Unit = {},
     onDeleteTrip: (Int) -> Unit = {},
     onTripClick: (Trip) -> Unit = {},
+    hasUnreadNotifications: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     var pendingDeleteTrip by remember { mutableStateOf<Trip?>(null) }
     Box(modifier = modifier.fillMaxSize().background(EkataBackground)) {
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp)) {
-            item { TripsHeader(onAddTripClick, onNotificationClick, onSettingsClick) }
+            item { TripsHeader(onAddTripClick, onNotificationClick, onSettingsClick, hasUnreadNotifications) }
             item {
                 MonthCalendar(
                     month = uiState.displayedMonth,
@@ -142,9 +144,9 @@ private fun TimelineStatusHeader(@StringRes status: Int) {
 }
 
 @Composable
-private fun TripsHeader(onAddTripClick: () -> Unit, onNotificationClick: () -> Unit, onSettingsClick: () -> Unit) {
+private fun TripsHeader(onAddTripClick: () -> Unit, onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(start = 21.dp, top = 47.dp, end = 14.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = 21.dp, top = HeaderActionsTopPadding, end = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(stringResource(R.string.trips_title), fontFamily = FontFamily.Serif, fontWeight = FontWeight.SemiBold, fontSize = 27.sp, color = EkataTextPrimary)
@@ -152,7 +154,7 @@ private fun TripsHeader(onAddTripClick: () -> Unit, onNotificationClick: () -> U
             Icon(Icons.Default.Add, stringResource(R.string.trips_add), tint = EkataBlue, modifier = Modifier.size(24.dp))
         }
         Spacer(Modifier.weight(1f))
-        HeaderActions(onNotificationClick, onSettingsClick)
+        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications)
     }
 }
 

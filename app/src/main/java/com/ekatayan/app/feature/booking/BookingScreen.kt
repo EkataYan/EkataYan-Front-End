@@ -49,6 +49,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -57,9 +60,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
 import com.ekatayan.app.core.designsystem.theme.EkataBlue
 import com.ekatayan.app.core.designsystem.theme.EkataCardBackground
@@ -84,16 +89,20 @@ fun BookingScreen(
     onPlannerClick: () -> Unit,
     onExpensesClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onNotificationClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    hasUnreadNotifications: Boolean,
     modifier: Modifier = Modifier,
 ) {
     var destinationPickerVisible by remember { mutableStateOf(false) }
     var destinationQuery by remember { mutableStateOf("") }
     var filterPopupVisible by remember { mutableStateOf(false) }
+    var selectedPlace by remember { mutableStateOf<BookingPlace?>(null) }
 
     Box(modifier.fillMaxSize().background(EkataBackground)) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 18.dp, bottom = 122.dp),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = HeaderActionsTopPadding, bottom = 122.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
@@ -109,8 +118,9 @@ fun BookingScreen(
                         modifier = Modifier.weight(1f),
                     )
                     HeaderActions(
-                        onNotificationClick = {},
-                        onSettingsClick = {},
+                        onNotificationClick = onNotificationClick,
+                        onSettingsClick = onSettingsClick,
+                        hasUnreadNotifications = hasUnreadNotifications,
                     )
                 }
             }
@@ -156,7 +166,7 @@ fun BookingScreen(
                             contentPadding = PaddingValues(end = 6.dp),
                         ) {
                             items(uiState.popularPlaces, key = BookingPlace::id) { place ->
-                                PopularPlaceCard(place = place)
+                                PopularPlaceCard(place = place, onClick = { selectedPlace = place })
                             }
                         }
                     }
@@ -180,6 +190,7 @@ fun BookingScreen(
                             row.forEach { place ->
                                 RecommendedPlaceCard(
                                     place = place,
+                                    onClick = { selectedPlace = place },
                                     modifier = Modifier.weight(1f),
                                 )
                             }
@@ -242,6 +253,10 @@ fun BookingScreen(
             },
         )
     }
+
+    selectedPlace?.let { place ->
+        BookingPlaceDialog(place = place, onDismiss = { selectedPlace = null })
+    }
 }
 
 @Composable
@@ -303,6 +318,8 @@ private fun SearchRow(
     onFilterClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -331,7 +348,10 @@ private fun SearchRow(
                 singleLine = true,
                 textStyle = TextStyle(color = EkataTextPrimary, fontSize = 14.sp),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = {}),
+                keyboardActions = KeyboardActions(onSearch = {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                }),
                 decorationBox = { inner ->
                     Box {
                         if (query.isBlank()) {
@@ -396,20 +416,22 @@ private fun CategoryChips(
 }
 
 @Composable
-private fun PopularPlaceCard(place: BookingPlace, modifier: Modifier = Modifier) {
+private fun PopularPlaceCard(place: BookingPlace, onClick: () -> Unit, modifier: Modifier = Modifier) {
     BookingImageCard(
         place = place,
         modifier = modifier.width(244.dp).height(120.dp),
         showLocation = true,
+        onClick = onClick,
     )
 }
 
 @Composable
-private fun RecommendedPlaceCard(place: BookingPlace, modifier: Modifier = Modifier) {
+private fun RecommendedPlaceCard(place: BookingPlace, onClick: () -> Unit, modifier: Modifier = Modifier) {
     BookingImageCard(
         place = place,
         modifier = modifier.height(108.dp),
         showLocation = false,
+        onClick = onClick,
     )
 }
 
@@ -418,11 +440,12 @@ private fun BookingImageCard(
     place: BookingPlace,
     modifier: Modifier = Modifier,
     showLocation: Boolean,
+    onClick: () -> Unit,
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(20.dp))
-            .clickable(onClick = {})
+            .clickable(onClick = onClick)
     ) {
         androidx.compose.foundation.Image(
             painter = painterResource(place.imageRes),
@@ -681,6 +704,42 @@ private fun BookingFilterDialog(
                 SmallActionButton(text = "Reset all", onClick = onResetFilters)
                 TextButtonLike(text = "Close", onClick = onDismiss)
             }
+        }
+    }
+}
+
+@Composable
+private fun BookingPlaceDialog(place: BookingPlace, onDismiss: () -> Unit) {
+    BookingPopupSurface(onDismiss = onDismiss) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = place.name,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                color = EkataTextPrimary,
+            )
+            Text(
+                text = stringResource(R.string.booking_place_location, place.location),
+                color = EkataTextSecondary,
+                fontSize = 13.sp,
+            )
+            Text(
+                text = stringResource(R.string.booking_place_category, place.category.badgeLabel),
+                color = EkataTextSecondary,
+                fontSize = 13.sp,
+            )
+            Text(
+                text = stringResource(R.string.booking_unavailable_message),
+                color = EkataTextPrimary,
+                fontSize = 13.sp,
+            )
+            TextButtonLike(
+                text = stringResource(R.string.booking_close),
+                onClick = onDismiss,
+            )
         }
     }
 }

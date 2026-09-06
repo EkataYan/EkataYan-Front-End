@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +38,7 @@ import androidx.compose.ui.window.Dialog
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.*
 import java.time.format.DateTimeFormatter
 
@@ -47,12 +49,13 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableStateOf(GroupFilter.All) }
     var creating by remember { mutableStateOf(false) }
+    val statusBarHeight = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
     val groups = state.groups.filter { it.name.contains(query.trim(), true) }.filter { filter == GroupFilter.All || filter == GroupFilter.Unread && it.unreadCount > 0 || filter == GroupFilter.Favourites && it.isFavourite }
     Box(modifier.fillMaxSize().background(EkataBackground)) {
         Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 20.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text("Group Hub", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                HeaderActions(onNotificationClick = onNotificationClick, onSettingsClick = onSettingsClick, hasUnreadNotifications = hasUnreadNotifications)
+                HeaderActions(onNotificationClick = onNotificationClick, onSettingsClick = onSettingsClick, hasUnreadNotifications = hasUnreadNotifications, modifier = Modifier.offset(y = HeaderActionsTopPadding - statusBarHeight))
             }
             Spacer(Modifier.height(18.dp))
             SearchField(query, { query = it }, "Search Your Groups")

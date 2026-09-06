@@ -35,6 +35,7 @@ import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
 import com.ekatayan.app.core.designsystem.theme.EkataBlue
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
@@ -164,7 +165,7 @@ fun PlannerScreen(
                     hasUnreadNotifications = hasUnreadNotifications,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 14.dp, end = 14.dp)
+                        .padding(top = HeaderActionsTopPadding, end = 14.dp)
                 )
             }
 

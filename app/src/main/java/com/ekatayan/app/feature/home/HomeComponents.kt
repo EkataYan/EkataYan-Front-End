@@ -78,6 +78,7 @@ import com.ekatayan.app.core.designsystem.theme.EkataNavigationBackground
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
 import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 
 @Composable
 fun HeroSection(
@@ -110,7 +111,7 @@ fun HeroSection(
             onNotificationClick = onNotificationClick,
             hasUnreadNotifications = hasUnreadNotifications,
             onSettingsClick = onSettingsClick,
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = 47.dp, end = 14.dp),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = HeaderActionsTopPadding, end = 14.dp),
         )
         HomeSearchBar(
             query = searchQuery,

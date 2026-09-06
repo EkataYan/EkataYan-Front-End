@@ -198,4 +198,10 @@
 
     <!-- Trip Status -->
     <string name="trip_status_planned">Planned</string>
+
+    <!-- Booking -->
+    <string name="booking_place_location">Location: %1$s</string>
+    <string name="booking_place_category">Category: %1$s</string>
+    <string name="booking_unavailable_message">Online booking is not available yet.</string>
+    <string name="booking_close">Close</string>
 </resources>

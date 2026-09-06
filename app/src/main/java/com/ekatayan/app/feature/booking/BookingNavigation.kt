@@ -2,6 +2,8 @@ package com.ekatayan.app.feature.booking
 
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import com.ekatayan.app.feature.notifications.NotificationsUiState
+import kotlinx.coroutines.flow.StateFlow
 
 const val BOOKING_ROUTE = "booking"
 
@@ -11,6 +13,9 @@ fun NavGraphBuilder.bookingScreen(
     onPlannerClick: () -> Unit,
     onExpensesClick: () -> Unit,
     onProfileClick: () -> Unit,
+    onNotificationClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    notificationsUiState: StateFlow<NotificationsUiState>,
 ) {
     composable(BOOKING_ROUTE) {
         BookingRoute(
@@ -19,6 +24,9 @@ fun NavGraphBuilder.bookingScreen(
             onPlannerClick = onPlannerClick,
             onExpensesClick = onExpensesClick,
             onProfileClick = onProfileClick,
+            onNotificationClick = onNotificationClick,
+            onSettingsClick = onSettingsClick,
+            notificationsUiState = notificationsUiState,
         )
     }
 }

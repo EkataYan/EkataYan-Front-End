@@ -89,6 +89,9 @@ fun EkataYanNavHost(
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
             onProfileClick = { navController.navigate(PROFILE_ROUTE) },
+            onNotificationClick = navController::navigateToNotifications,
+            onSettingsClick = navController::navigateToSettings,
+            notificationsUiState = notificationsViewModel.uiState,
         )
         plannerScreen(
             onCreateTrip = { planner -> navController.navigate(createTripRoute(planner)) },
@@ -114,6 +117,7 @@ fun EkataYanNavHost(
             },
             onNotificationClick = navController::navigateToNotifications,
             onSettingsClick = navController::navigateToSettings,
+            notificationsUiState = notificationsViewModel.uiState,
         )
         createTripScreen(onBackClick = navController::navigateUp)
 

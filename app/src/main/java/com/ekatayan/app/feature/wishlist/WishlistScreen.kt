@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
+import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
 
 @Composable
@@ -168,6 +170,6 @@ fun WishlistScreen(
 private fun WishlistHeader(onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text("Wish List", fontSize = 28.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications)
+        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications, Modifier.offset(y = HeaderActionsTopPadding - 45.dp))
     }
 }

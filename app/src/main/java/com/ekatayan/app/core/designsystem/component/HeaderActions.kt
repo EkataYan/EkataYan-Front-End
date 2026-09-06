@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.unit.dp
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
 
+val HeaderActionsTopPadding = 47.dp
+
 @Composable
 fun HeaderActions(
     onNotificationClick: () -> Unit,
