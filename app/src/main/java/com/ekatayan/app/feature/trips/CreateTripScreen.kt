@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -16,10 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
 import com.ekatayan.app.core.designsystem.theme.EkataBlue
+import com.ekatayan.app.core.designsystem.theme.EkataLightBlue
 import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
 import java.time.*
@@ -30,10 +34,10 @@ private val tripDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateTripScreen(onBackClick: () -> Unit, onSave: (String, String, LocalDate, LocalDate, String, String) -> Unit, modifier: Modifier = Modifier) {
-    var name by rememberSaveable { mutableStateOf("") }; var destination by rememberSaveable { mutableStateOf("") }
-    var startText by rememberSaveable { mutableStateOf("") }; var endText by rememberSaveable { mutableStateOf("") }
-    var budget by rememberSaveable { mutableStateOf("") }; var notes by rememberSaveable { mutableStateOf("") }
+fun CreateTripScreen(onBackClick: () -> Unit, initialDestination: String = "", initialStart: String = "", initialEnd: String = "", initialBudget: String = "", initialNotes: String = "", onSave: (String, String, LocalDate, LocalDate, String, String) -> Unit, modifier: Modifier = Modifier) {
+    var name by rememberSaveable { mutableStateOf("") }; var destination by rememberSaveable { mutableStateOf(initialDestination) }
+    var startText by rememberSaveable { mutableStateOf(initialStart) }; var endText by rememberSaveable { mutableStateOf(initialEnd) }
+    var budget by rememberSaveable { mutableStateOf(initialBudget) }; var notes by rememberSaveable { mutableStateOf(initialNotes) }
     var pickerForStart by rememberSaveable { mutableStateOf(true) }; var showPicker by rememberSaveable { mutableStateOf(false) }
     var error by rememberSaveable { mutableStateOf<String?>(null) }
     val startDate = parseTripDate(startText); val endDate = parseTripDate(endText)
@@ -58,6 +62,15 @@ fun CreateTripScreen(onBackClick: () -> Unit, onSave: (String, String, LocalDate
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
             DateInput(startText, { startText = it; error = null }, R.string.create_trip_start_date, { pickerForStart = true; showPicker = true }, Modifier.weight(1f))
             DateInput(endText, { endText = it; error = null }, R.string.create_trip_end_date, { pickerForStart = false; showPicker = true }, Modifier.weight(1f))
+        }
+        if (startDate != null && endDate != null && !startDate.isAfter(endDate)) {
+            val duration = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1
+            Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp), colors = CardDefaults.cardColors(containerColor = EkataLightBlue), shape = RoundedCornerShape(14.dp)) {
+                Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.CalendarMonth, null, tint = EkataBlue, modifier = Modifier.size(22.dp))
+                    Spacer(Modifier.width(10.dp)); Column { Text("Trip dates", fontSize = 11.sp, color = EkataTextSecondary); Text("$duration ${if (duration == 1L) "day" else "days"} · ${startDate.format(tripDateFormatter)} – ${endDate.format(tripDateFormatter)}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = EkataTextPrimary) }
+                }
+            }
         }
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(budget, { budget = it; error = null }, label = { Text(stringResource(R.string.create_trip_budget)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.fillMaxWidth(), colors = colors)

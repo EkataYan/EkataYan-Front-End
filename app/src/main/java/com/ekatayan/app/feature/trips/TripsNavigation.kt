@@ -15,6 +15,8 @@ fun NavGraphBuilder.tripsScreen(
     onProfileClick: () -> Unit,
     onAddTripClick: () -> Unit,
     onTripClick: (Trip) -> Unit,
+    onNotificationClick: () -> Unit,
+    onSettingsClick: () -> Unit,
 ) {
     composable(TRIPS_ROUTE) {
         TripsRoute(
@@ -25,12 +27,16 @@ fun NavGraphBuilder.tripsScreen(
             onProfileClick = onProfileClick,
             onAddTripClick = onAddTripClick,
             onTripClick = onTripClick,
+            onNotificationClick = onNotificationClick,
+            onSettingsClick = onSettingsClick,
         )
     }
 }
 
 fun NavGraphBuilder.createTripScreen(onBackClick: () -> Unit) {
-    composable(CREATE_TRIP_ROUTE) { CreateTripRoute(onBackClick) }
+    composable("$CREATE_TRIP_ROUTE?destination={destination}&start={start}&end={end}&budget={budget}&preferences={preferences}") { entry ->
+        CreateTripRoute(onBackClick, entry.arguments?.getString("destination"), entry.arguments?.getString("start"), entry.arguments?.getString("end"), entry.arguments?.getString("budget"), entry.arguments?.getString("preferences"))
+    }
 }
 
 fun NavGraphBuilder.tripDetailsScreen(onBackClick: () -> Unit) {

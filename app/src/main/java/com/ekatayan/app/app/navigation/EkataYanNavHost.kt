@@ -2,6 +2,7 @@ package com.ekatayan.app.app.navigation
 
 import com.ekatayan.app.feature.businesspartner.*
 import androidx.compose.runtime.Composable
+import android.net.Uri
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,6 +28,7 @@ import com.ekatayan.app.feature.notifications.notificationDetailScreen
 import com.ekatayan.app.feature.notifications.notificationsScreen
 import com.ekatayan.app.feature.planner.PLANNER_ROUTE
 import com.ekatayan.app.feature.planner.plannerScreen
+import com.ekatayan.app.feature.planner.PlannerUiState
 import com.ekatayan.app.feature.profile.PROFILE_ROUTE
 import com.ekatayan.app.feature.profile.profileScreen
 import com.ekatayan.app.feature.signup.SIGN_UP_ROUTE
@@ -44,6 +46,8 @@ import com.ekatayan.app.feature.wishlist.WISHLIST_ROUTE
 import com.ekatayan.app.feature.wishlist.WishlistViewModel
 import com.ekatayan.app.feature.wishlist.wishlistGroupRoute
 import com.ekatayan.app.feature.wishlist.wishlistScreens
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @Composable
 fun EkataYanNavHost(
@@ -98,7 +102,16 @@ fun EkataYanNavHost(
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
             onProfileClick = { navController.navigate(PROFILE_ROUTE) },
         )
-        plannerScreen(onBackClick = navController::navigateUp)
+        plannerScreen(
+            onCreateTrip = { planner -> navController.navigate(createTripRoute(planner)) },
+            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onTripsClick = { navController.navigate(TRIPS_ROUTE) },
+            onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
+            onProfileClick = { navController.navigate(PROFILE_ROUTE) },
+            onNotificationClick = navController::navigateToNotifications,
+            onSettingsClick = navController::navigateToSettings,
+            notificationsUiState = notificationsViewModel.uiState,
+        )
         tripsScreen(
             onHomeClick = { navController.navigate(HOME_ROUTE) },
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
@@ -111,10 +124,10 @@ fun EkataYanNavHost(
             onTripClick = { trip ->
                 navController.navigate("trips/details/${trip.id}")
             },
+            onNotificationClick = navController::navigateToNotifications,
+            onSettingsClick = navController::navigateToSettings,
         )
-        createTripScreen(
-            onBackClick = navController::navigateUp
-        )
+        createTripScreen(onBackClick = navController::navigateUp)
 
         tripDetailsScreen(
             onBackClick = navController::navigateUp
@@ -190,6 +203,10 @@ fun EkataYanNavHost(
         )
     }
 }
+
+private val plannerRouteDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
+
+private fun createTripRoute(planner: PlannerUiState): String = "${CREATE_TRIP_ROUTE}?destination=${Uri.encode(planner.destination)}&start=${planner.startDate?.format(plannerRouteDateFormatter).orEmpty()}&end=${planner.endDate?.format(plannerRouteDateFormatter).orEmpty()}&budget=${Uri.encode(planner.budget)}&preferences=${Uri.encode("${planner.travelers}; ${planner.accommodation}; ${planner.transport}; ${planner.tripType}; ${planner.interests}")}"
 
 private fun NavHostController.navigateToSignUp() {
     navigate(SIGN_UP_ROUTE) { launchSingleTop = true }

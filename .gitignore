@@ -17,3 +17,4 @@ local.properties
 .gradle-user-home/
 .gradle-final-home/
 .android-user-home/
+.gradle-user/
