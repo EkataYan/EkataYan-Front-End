@@ -9,6 +9,7 @@ const val HOME_ROUTE = "home"
 
 fun NavGraphBuilder.homeScreen(
     onGroupHubClick: () -> Unit,
+    onPartnershipClick: () -> Unit,
     onWishlistClick: () -> Unit,
     onPlannerClick: () -> Unit,
     onTripsClick: () -> Unit,
@@ -23,6 +24,7 @@ fun NavGraphBuilder.homeScreen(
         HomeRoute(
             onWishlistClick = onWishlistClick,
             onGroupHubClick = onGroupHubClick,
+            onPartnershipClick = onPartnershipClick,
             onPlannerClick = onPlannerClick,
             onTripsClick = onTripsClick,
             onExpensesClick = onExpensesClick,

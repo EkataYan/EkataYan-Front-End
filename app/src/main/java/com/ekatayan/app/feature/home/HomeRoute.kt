@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 fun HomeRoute(
     onWishlistClick: () -> Unit,
     onGroupHubClick: () -> Unit,
+    onPartnershipClick: () -> Unit,
     onPlannerClick: () -> Unit,
     onTripsClick: () -> Unit,
     onExpensesClick: () -> Unit,
@@ -30,6 +31,7 @@ fun HomeRoute(
         onSearchSubmit = viewModel::onSearchSubmit,
         onWishlistClick = onWishlistClick,
         onGroupHubClick = onGroupHubClick,
+        onPartnershipClick = onPartnershipClick,
         onBookingClick = onBookingClick,
         onPlannerClick = onPlannerClick,
         onTripsClick = onTripsClick,

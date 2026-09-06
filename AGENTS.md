@@ -33,7 +33,7 @@ Dependency versions are centralized in `gradle/libs.versions.toml`. Do not dupli
 - Features follow the established `FeatureNavigation.kt` -> `FeatureRoute.kt` -> `FeatureScreen.kt` -> `FeatureViewModel.kt` pattern.
 - Route composables obtain Hilt ViewModels and pass state plus event callbacks to screen composables. Keep screen composables independent of `NavController`; navigation is expressed through callbacks.
 - Keep UI state and user-event handling in the feature ViewModel when state must survive recomposition. Keep reusable, presentation-only composables stateless where practical.
-- The Login screen is the current start destination. Login and Sign Up are implemented authentication UI features; Home, Planner, Trips, Expenses, and Profile are presently placeholder-backed features.
+- Splash is the current start destination and leads to Login. The repository includes Home, Trips, Wishlist, Group Hub, booking, expenses, profile, notifications, and Business Partner feature packages; inspect each feature before assuming it is a placeholder.
 
 ## Project Structure
 
@@ -86,7 +86,7 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 - Use the Gradle wrapper (`./gradlew` on Unix-like systems or `.\gradlew.bat` on Windows).
 - Run `assembleDebug` after implementation changes unless the user requests a different or more targeted verification. Fix compilation errors introduced by the change.
 - Add or update local tests for testable logic and instrumentation/Compose UI tests for Android behavior when the change warrants them.
-- Existing checked-in tests are starter smoke tests only; do not treat them as meaningful feature coverage.
+- Local tests cover selected Business Partner, Login, Notifications, and Trips logic; they are not comprehensive app coverage. Business Partner also has a Compose flow test whose runtime compatibility depends on the device and existing Espresso version.
 - No repository CI or lint workflow is currently configured. Do not claim checks ran unless they were actually executed.
 
 ## Important Project Decisions
@@ -108,3 +108,15 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 - If repository state proves an entry outdated, update it from verified code/configuration rather than preserving the assumption.
 - Inspect existing code and reusable components before adding new structures or dependencies. Do not change architecture, navigation, Hilt patterns, assets, or backend behavior outside the requested scope.
 - Use focused edits, verify proportionally to risk, and report verification results. Do not commit or push without explicit authorization.
+
+## Business Partner Frontend
+
+- Business Partner is entered through `onPartnershipClick` in the Home quick-action row, immediately after Group Hub. Do not add it to the traveller bottom navigation.
+- Register all partner destinations in the existing `EkataYanNavHost`. `PARTNER_HOME_ROUTE` is the partner dashboard; `HOME_ROUTE` remains traveller Home.
+- The traveller access-denied dialog has exactly two actions: Go Back dismisses it on Partner Entry; Cancel exits the partner flow to traveller Home. Application Submitted's Back to Home also exits to traveller Home.
+- One host-scoped `BusinessPartnerViewModel` and `LocalBusinessPartnerRepository` own the session's profile, onboarding, documents, listing drafts/listings, bookings, hours, and links. The repository is in-memory: navigation and configuration changes retain state, process death/restart does not.
+- Business Partner remains a frontend demo. Registration, login, verification, files, listings, bookings, and analytics do not contact a backend or upload data.
+- Partner image selection uses Android Photo Picker contracts; document selection uses OpenDocument. Store URI references, use bounded preview decoding, and never request broad storage permission. Add Photos has a plus/text action with no adjacent photo icon.
+- Partner dialogs and menus reuse the Wishlist popup surface/border convention: white background, dark text, light-blue border, and rounded corners. All partner input text is explicitly dark, including in dark device mode.
+- Business Partner listings retain structured category-specific values and simple availability in the existing draft/listing models. Availability is an optional inclusive date range with optional daily activity time slots; it is not a booking or inventory engine. Do not collapse transport, vacation rentals, and gear/equipment into one generic form.
+- Registration and profile editing share required city, district, country, and owner/manager contact fields. Verification remains local-only; do not promise review turnaround times without a real verification workflow.

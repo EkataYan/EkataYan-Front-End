@@ -33,6 +33,7 @@ fun HomeScreen(
     onWishlistClick: () -> Unit = {},
     onBookingClick: () -> Unit = {},
     onGroupHubClick: () -> Unit = {},
+    onPartnershipClick: () -> Unit = {},
     onRecommendedDestinationClick: (Int) -> Unit = {},
     onUpcomingTripClick: () -> Unit = {},
     onPopularDestinationClick: (Int) -> Unit = {},
@@ -62,7 +63,7 @@ fun HomeScreen(
                         onSearchSubmit = onSearchSubmit,
                     )
                 }
-                item { QuickActions(onMapsClick, onWishlistClick, onBookingClick, onGroupHubClick) }
+                item { QuickActions(onMapsClick, onWishlistClick, onBookingClick, onGroupHubClick, onPartnershipClick) }
                 uiState.errorMessage?.let { message ->
                     item { Text(message, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 20.dp)) }
                 }
