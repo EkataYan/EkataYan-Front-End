@@ -23,7 +23,7 @@ class BusinessPartnerFlowTest {
         compose.waitUntil(10_000) { compose.onAllNodesWithText("Partnership").fetchSemanticsNodes().isNotEmpty() }
         click("Partnership")
         click("I'm a Traveller")
-        compose.onNodeWithText("Sorry, You are not allowed to access this page").assertIsDisplayed()
+        compose.onNodeWithText("Sorry, you are not allowed to access this page.").assertIsDisplayed()
         compose.onNodeWithText("Go Back").performClick()
         compose.onNodeWithText("I'm a Business Partner").assertIsDisplayed()
         click("I'm a Traveller")
@@ -112,5 +112,33 @@ class BusinessPartnerFlowTest {
         compose.onNodeWithText("Home").performClick()
         compose.onNodeWithText("Welcome Back,").assertExists()
         compose.runOnIdle { assertTrue(vm.uiState.value.profile.socialLinks.any { it.url == "https://example.com" }) }
+        compose.onNodeWithText("Profile").performClick()
+        click("Sign Out")
+        compose.onNodeWithText("Sign Out?").assertIsDisplayed()
+        compose.onNodeWithText("Cancel").performClick()
+        compose.runOnIdle { assertTrue(vm.uiState.value.loggedIn) }
+        click("Sign Out")
+        compose.onAllNodesWithText("Sign Out").onLast().performClick()
+        compose.onNodeWithText("How would you like to continue?").assertExists()
+        compose.runOnIdle { assertTrue(!vm.uiState.value.loggedIn) }
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        compose.onNodeWithText("Recommended For You").assertExists()
+        click("Partnership")
+        click("Already registered? Go to Login")
+        input("Email", "owner@example.com")
+        input("Password", "demo")
+        click("Login")
+        compose.onNodeWithText("Profile").performClick()
+        click("Delete Account")
+        compose.onNodeWithText("Delete Account?").assertIsDisplayed()
+        compose.onNodeWithText("Cancel").performClick()
+        compose.runOnIdle { assertTrue(vm.uiState.value.loggedIn) }
+        click("Delete Account")
+        compose.onAllNodesWithText("Delete Account").onLast().performClick()
+        compose.runOnIdle { assertEquals(BusinessPartnerState(), vm.uiState.value) }
+        compose.onNodeWithText("How would you like to continue?").assertExists()
+        compose.activityRule.scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
+        compose.onNodeWithText("Recommended For You").assertExists()
+
     }
 }

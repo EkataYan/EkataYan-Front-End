@@ -120,6 +120,7 @@ data class BusinessPartnerState(
     val loginEmail: String = "",
     val loginPassword: String = "",
     val loggedIn: Boolean = false,
+    val demoLoaded: Boolean = false,
     val pickerDocumentType: DocumentType? = null,
     val pickerError: Boolean = false,
 ) {

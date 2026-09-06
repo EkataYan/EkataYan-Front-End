@@ -7,7 +7,7 @@
     <string name="bp_traveller_subtitle">Explore, plan and experience amazing journeys</string>
     <string name="bp_partner">I\'m a Business Partner</string>
     <string name="bp_partner_subtitle">List your services and connect with travellers</string>
-    <string name="bp_denied">Sorry, You are not allowed to access this page</string>
+    <string name="bp_denied">Sorry, you are not allowed to access this page.</string>
     <string name="bp_go_back">Go Back</string>
     <string name="bp_cancel">Cancel</string>
     <string name="bp_back">Back</string>
@@ -227,4 +227,13 @@
     <string name="bp_booking_date">Booked on: %1$s</string>
     <string name="bp_service_date">Service date: %1$s</string>
     <string name="bp_booking_quantity">Guests / items: %1$d</string>
+    <string name="bp_account">Account</string>
+    <string name="bp_danger_zone">Danger Zone</string>
+    <string name="bp_sign_out">Sign Out</string>
+    <string name="bp_sign_out_title">Sign Out?</string>
+    <string name="bp_sign_out_message">Are you sure you want to sign out of your Business Partner account?</string>
+    <string name="bp_delete_account">Delete Account</string>
+    <string name="bp_delete_account_title">Delete Account?</string>
+    <string name="bp_delete_account_message">This will permanently delete your Business Partner account and related account data. This action cannot be undone.</string>
+    <string name="bp_delete_account_local">In this demo, only local account data is cleared. No online account is deleted.</string>
 </resources>

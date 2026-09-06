@@ -132,7 +132,8 @@ fun BusinessPartnerRoute(route: String, listingId: String?, viewModel: BusinessP
                         { id -> viewModel.deleteListing(id); onTab(PARTNER_LISTINGS_ROUTE) })
                     route == PARTNER_BOOKINGS_ROUTE -> PartnerBookingsScreen(state, viewModel::filterBookings, viewModel::changeBookingStatus, back)
                     route == PARTNER_PROFILE_ROUTE -> PartnerProfileScreen(state.profile, { viewModel.beginProfileEdit(); onNavigate(PARTNER_EDIT_PROFILE_ROUTE) },
-                        actions.pickProfilePhoto, actions.removeProfilePhoto, back)
+                        actions.pickProfilePhoto, actions.removeProfilePhoto, back,
+                        { viewModel.signOut(); onRestartFlow() }, { viewModel.deleteAccount(); onRestartFlow() })
                     editingProfile -> state.profileDraft?.let { PartnerEditProfileScreen(it, actions, { if (viewModel.saveProfile()) onBack() }, back) }
                     route == PARTNER_ANALYTICS_ROUTE -> PartnerAnalyticsScreen(state, back)
                 }

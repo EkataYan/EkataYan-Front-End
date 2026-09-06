@@ -22,6 +22,44 @@ class BusinessPartnerViewModelTest {
         assertTrue(vm.login())
     }
 
+    @Test fun signOutClearsSessionAndDraftsButPreservesAccountChangesOnLogin() {
+        val vm = model()
+        register(vm)
+        vm.deleteListing("room")
+        vm.changeBookingStatus("booking-1", BookingStatus.CONFIRMED)
+        val before = vm.uiState.value
+        vm.beginListing()
+        vm.beginProfileEdit()
+        vm.setLoginPassword("temporary")
+        vm.pickerError(true)
+        vm.signOut()
+        val signedOut = vm.uiState.value
+        assertFalse(signedOut.loggedIn)
+        assertEquals("", signedOut.loginEmail)
+        assertEquals("", signedOut.loginPassword)
+        assertNull(signedOut.listingDraft)
+        assertNull(signedOut.profileDraft)
+        assertFalse(signedOut.pickerError)
+        assertEquals(before.profile, signedOut.profile)
+        vm.setLoginEmail("owner@example.com")
+        vm.setLoginPassword("demo")
+        assertTrue(vm.login())
+        assertEquals(before.listings, vm.uiState.value.listings)
+        assertEquals(before.bookings, vm.uiState.value.bookings)
+    }
+
+    @Test fun deleteAccountClearsAllLocalDataAndCannotRestoreOldAccount() {
+        val vm = model()
+        register(vm)
+        vm.beginListing()
+        vm.beginProfileEdit()
+        vm.selectDocument(DocumentType.OWNER_ID)
+        vm.deleteAccount()
+        assertEquals(BusinessPartnerState(), vm.uiState.value)
+        assertFalse(vm.login())
+        assertFalse(vm.submit())
+    }
+
     @Test fun onboardingRequiresInformationPhotosAndBothDocuments() {
         val vm = model()
         assertFalse(vm.canContinue(1))

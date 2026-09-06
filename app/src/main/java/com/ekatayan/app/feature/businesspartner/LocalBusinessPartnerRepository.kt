@@ -13,9 +13,17 @@ class LocalBusinessPartnerRepository @Inject constructor() {
 
     fun update(transform: (BusinessPartnerState) -> BusinessPartnerState) = mutableState.update(transform)
 
+    fun signOut() = update { state ->
+        BusinessPartnerState(profile = state.profile, documents = state.documents,
+            listings = state.listings, bookings = state.bookings, demoLoaded = state.demoLoaded)
+    }
+
+    fun deleteAccount() = update { BusinessPartnerState() }
+
     fun populateDemo() = update { state ->
-        if (state.loggedIn) state else state.copy(
+        if (state.demoLoaded) state.copy(loggedIn = true) else state.copy(
             loggedIn = true,
+            demoLoaded = true,
             listings = listOf(
                 BusinessListing("room", "Deluxe Sea View Room", ListingCategory.ROOMS,
                     "Wake up to ocean views in a spacious room with a private balcony.", 25000.0, "night",

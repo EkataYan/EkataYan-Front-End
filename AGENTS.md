@@ -120,3 +120,6 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 - Partner dialogs and menus reuse the Wishlist popup surface/border convention: white background, dark text, light-blue border, and rounded corners. All partner input text is explicitly dark, including in dark device mode.
 - Business Partner listings retain structured category-specific values and simple availability in the existing draft/listing models. Availability is an optional inclusive date range with optional daily activity time slots; it is not a booking or inventory engine. Do not collapse transport, vacation rentals, and gear/equipment into one generic form.
 - Registration and profile editing share required city, district, country, and owner/manager contact fields. Verification remains local-only; do not promise review turnaround times without a real verification workflow.
+
+- Internal Business Partner headers use page titles rather than repeated EkataYan branding; public/auth and onboarding branding remains.
+- Partner Sign Out clears login and transient editing state while retaining local account data for the session. Delete Account resets the in-memory repository only; real account deletion requires backend integration. Both exit through the public Partner Entry route and clear protected destinations from the back stack.

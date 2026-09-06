@@ -6,6 +6,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -67,7 +70,9 @@ private fun BookingActions(booking: PartnerBooking, onStatus: (String, BookingSt
 
 @Composable
 fun PartnerProfileScreen(profile: BusinessPartnerProfile, onEdit: () -> Unit, onPhoto: () -> Unit,
-    onRemovePhoto: () -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    onRemovePhoto: () -> Unit, onBack: () -> Unit, onSignOut: () -> Unit, onDeleteAccount: () -> Unit,
+    modifier: Modifier = Modifier) {
+    var accountAction by rememberSaveable { mutableStateOf<String?>(null) }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         PartnerBack(onBack)
         PartnerHeading(stringResource(R.string.bp_profile))
@@ -104,7 +109,32 @@ fun PartnerProfileScreen(profile: BusinessPartnerProfile, onEdit: () -> Unit, on
             Text(stringResource(link.platform.label), fontWeight = FontWeight.SemiBold)
             Text(link.url)
         }
+        Text(stringResource(R.string.bp_account), color = PartnerNavy, fontWeight = FontWeight.Bold)
         PartnerButton(R.string.bp_edit_profile, onEdit)
+        PartnerAction(stringResource(R.string.bp_sign_out), Icons.AutoMirrored.Filled.Logout, { accountAction = "sign_out" })
+        HorizontalDivider()
+        Text(stringResource(R.string.bp_danger_zone), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+        OutlinedButton({ accountAction = "delete" }, Modifier.fillMaxWidth(), shape = PartnerShape,
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+            Icon(Icons.Default.DeleteOutline, null)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.bp_delete_account))
+        }
+    }
+    accountAction?.let { action ->
+        val deleting = action == "delete"
+        PartnerDialog(stringResource(if (deleting) R.string.bp_delete_account_title else R.string.bp_sign_out_title),
+            { accountAction = null }) {
+            Text(stringResource(if (deleting) R.string.bp_delete_account_message else R.string.bp_sign_out_message))
+            if (deleting) Text(stringResource(R.string.bp_delete_account_local), style = MaterialTheme.typography.bodySmall)
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                DialogAction(R.string.bp_cancel, { accountAction = null })
+                TextButton({ accountAction = null; if (deleting) onDeleteAccount() else onSignOut() }) {
+                    Text(stringResource(if (deleting) R.string.bp_delete_account else R.string.bp_sign_out),
+                        color = if (deleting) MaterialTheme.colorScheme.error else PartnerNavy)
+                }
+            }
+        }
     }
 }
 

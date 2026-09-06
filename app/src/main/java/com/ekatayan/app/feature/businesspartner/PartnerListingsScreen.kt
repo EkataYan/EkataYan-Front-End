@@ -29,16 +29,19 @@ import com.ekatayan.app.feature.wishlist.WishlistPopupBorder
 fun BusinessPartnerDashboardScreen(state: BusinessPartnerState, onNavigate: (String) -> Unit, modifier: Modifier = Modifier) {
     var popup by rememberSaveable { mutableStateOf<Int?>(null) }
     Column(modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.FlightTakeoff, null, tint = EkataBlue)
-            Text(stringResource(R.string.bp_brand), Modifier.weight(1f), color = PartnerNavy, fontWeight = FontWeight.Bold, fontSize = 23.sp)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(stringResource(R.string.bp_welcome), color = EkataTextSecondary,
+                    style = MaterialTheme.typography.titleLarge)
+                Text(state.profile.businessName, color = PartnerNavy,
+                    style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+            }
             IconButton({ popup = R.string.bp_notifications }) { Icon(Icons.Default.NotificationsNone, stringResource(R.string.bp_notifications), tint = PartnerNavy) }
             PartnerImage(state.profile.imageUri, modifier = Modifier.size(48.dp).clickable { onNavigate(PARTNER_PROFILE_ROUTE) }, description = stringResource(R.string.bp_profile))
         }
-        Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            Text(stringResource(R.string.bp_welcome), color = EkataTextSecondary)
-            PartnerHeading(state.profile.businessName, stringResource(R.string.bp_dashboard_subtitle))
-        }
+        Text(stringResource(R.string.bp_dashboard_subtitle), color = EkataTextSecondary,
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 17.sp, lineHeight = 25.sp))
+        HorizontalDivider(Modifier.padding(top = 6.dp, bottom = 6.dp), color = EkataLightBlue)
         PartnerCard(Modifier.fillMaxWidth()) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 PartnerStat(state.listings.size, stringResource(R.string.bp_total_listings), Modifier.weight(1f))

@@ -37,6 +37,9 @@ class BusinessPartnerViewModel @Inject constructor(private val repository: Local
         return true
     }
 
+    fun signOut() = repository.signOut()
+    fun deleteAccount() = repository.deleteAccount()
+
     fun selectDocument(type: DocumentType) = repository.update { it.copy(pickerDocumentType = type) }
     fun documentPicked(document: BusinessDocument?) = repository.update { state ->
         val type = state.pickerDocumentType
