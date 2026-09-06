@@ -14,6 +14,8 @@ fun TripsRoute(
     onProfileClick: () -> Unit,
     onAddTripClick: () -> Unit,
     onTripClick: (Trip) -> Unit = {},
+    onNotificationClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     viewModel: TripsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -28,6 +30,8 @@ fun TripsRoute(
         onExpensesClick = onExpensesClick,
         onProfileClick = onProfileClick,
         onAddTripClick = onAddTripClick,
+        onNotificationClick = onNotificationClick,
+        onSettingsClick = onSettingsClick,
         onDeleteTrip = viewModel::deleteTrip,
         onTripClick = { trip ->
             viewModel.selectDate(trip.startDate)
