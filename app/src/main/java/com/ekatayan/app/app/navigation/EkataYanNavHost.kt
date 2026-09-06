@@ -106,7 +106,7 @@ fun EkataYanNavHost(
 
         tripDetailsScreen(
             onBackClick = navController::navigateUp
-        )git
+        )
         expensesScreen(
             onHomeClick = { navController.navigate(HOME_ROUTE) },
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
