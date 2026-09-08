@@ -1,5 +1,6 @@
 package com.ekatayan.app.app.navigation
 
+import com.ekatayan.app.feature.businesspartner.*
 import androidx.compose.runtime.Composable
 import android.net.Uri
 import androidx.compose.ui.Modifier
@@ -36,6 +37,8 @@ import com.ekatayan.app.feature.settings.SETTINGS_ROUTE
 import com.ekatayan.app.feature.settings.settingsScreen
 import com.ekatayan.app.feature.splash.SPLASH_ROUTE
 import com.ekatayan.app.feature.splash.splashScreen
+import com.ekatayan.app.feature.welcome.WELCOME_ROUTE
+import com.ekatayan.app.feature.welcome.welcomeScreen
 import com.ekatayan.app.feature.trips.CREATE_TRIP_ROUTE
 import com.ekatayan.app.feature.trips.TRIPS_ROUTE
 import com.ekatayan.app.feature.trips.createTripScreen
@@ -53,6 +56,7 @@ fun EkataYanNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
+    val businessPartnerViewModel: BusinessPartnerViewModel = hiltViewModel()
     val wishlistViewModel: WishlistViewModel = hiltViewModel()
     val groupHubViewModel: GroupHubViewModel = hiltViewModel()
     val notificationsViewModel: NotificationsViewModel = hiltViewModel()
@@ -62,7 +66,13 @@ fun EkataYanNavHost(
         startDestination = SPLASH_ROUTE,
         modifier = modifier,
     ) {
-        splashScreen(onSplashFinished = navController::navigateToLoginFromSplash)
+        splashScreen(onSplashFinished = navController::navigateToWelcomeFromSplash)
+        welcomeScreen(onGetStarted = {
+            navController.navigate(LOGIN_ROUTE) {
+                popUpTo(WELCOME_ROUTE) { inclusive = true }
+                launchSingleTop = true
+            }
+        })
         loginScreen(
             onLogInClick = navController::navigateHomeFromAuth,
             onSignUpClick = navController::navigateToSignUp,
@@ -71,7 +81,17 @@ fun EkataYanNavHost(
             onSignUpClick = navController::navigateHomeFromAuth,
             onLoginClick = navController::navigateToLogin,
         )
+        businessPartnerScreens(
+            viewModel = businessPartnerViewModel,
+            onNavigate = { navController.navigate(it) { launchSingleTop = true } },
+            onBack = { navController.navigateUp() },
+            onHome = { navController.navigate(HOME_ROUTE) { popUpTo(HOME_ROUTE); launchSingleTop = true } },
+            onTab = { target -> navController.navigate(target) { popUpTo(PARTNER_HOME_ROUTE); launchSingleTop = true } },
+            onLoggedIn = { navController.navigate(PARTNER_HOME_ROUTE) { popUpTo(PARTNER_ENTRY_ROUTE) { inclusive = true }; launchSingleTop = true } },
+            onRestartFlow = { navController.navigate(PARTNER_ENTRY_ROUTE) { popUpTo(HOME_ROUTE); launchSingleTop = true } },
+        )
         homeScreen(
+            onPartnershipClick = { navController.navigate(PARTNER_ENTRY_ROUTE) { launchSingleTop = true } },
             onGroupHubClick = { navController.navigate(GROUP_HUB_ROUTE) },
             onWishlistClick = { navController.navigate(WISHLIST_ROUTE) },
             onBookingClick = { navController.navigate(BOOKING_ROUTE) },
@@ -204,8 +224,8 @@ private fun NavHostController.navigateToSignUp() {
     navigate(SIGN_UP_ROUTE) { launchSingleTop = true }
 }
 
-private fun NavHostController.navigateToLoginFromSplash() {
-    navigate(LOGIN_ROUTE) {
+private fun NavHostController.navigateToWelcomeFromSplash() {
+    navigate(WELCOME_ROUTE) {
         popUpTo(SPLASH_ROUTE) { inclusive = true }
         launchSingleTop = true
     }

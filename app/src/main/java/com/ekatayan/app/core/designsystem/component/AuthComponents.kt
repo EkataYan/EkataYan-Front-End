@@ -291,7 +291,7 @@ private fun AuthLanguageSelector(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun AuthBrandLockup() {
+fun AuthBrandLockup() {
     Text(
         text = buildAnnotatedString {
             append("Ekata")

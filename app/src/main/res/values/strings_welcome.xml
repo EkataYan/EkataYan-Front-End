@@ -1,0 +1,20 @@
+<resources>
+    <string name="welcome_description">Plan your trips, manage expenses, stay connected and discover the best experiences all in one app</string>
+    <string name="welcome_get_started">Get Started</string>
+    <string name="welcome_planner_title">AI Trip Planner</string>
+    <string name="welcome_planner_description">Smart itineraries tailored for you</string>
+    <string name="welcome_group_title">Group Travel</string>
+    <string name="welcome_group_description">Plan, chat and travel together</string>
+    <string name="welcome_expense_title">Expense Manager</string>
+    <string name="welcome_expense_description">Track, split and stay on budget</string>
+    <string name="welcome_all_title">All in One</string>
+    <string name="welcome_all_description">Everything you need for your trip</string>
+    <string name="welcome_explore_title">Explore Places</string>
+    <string name="welcome_explore_description">Discover top spots and hidden gems</string>
+    <string name="welcome_weather_title">Weather Alerts</string>
+    <string name="welcome_weather_description">Stay updated wherever you go</string>
+    <string name="welcome_reminders_title">Smart Reminders</string>
+    <string name="welcome_reminders_description">Never miss what matters</string>
+    <string name="welcome_secure_title">Safe &amp; Secure</string>
+    <string name="welcome_secure_description">Your data and trips are protected</string>
+</resources>
