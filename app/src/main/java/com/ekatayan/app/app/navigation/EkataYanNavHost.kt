@@ -36,10 +36,10 @@ import com.ekatayan.app.ui.signup.SIGN_UP_ROUTE
 import com.ekatayan.app.ui.signup.signUpScreen
 import com.ekatayan.app.ui.settings.SETTINGS_ROUTE
 import com.ekatayan.app.ui.settings.settingsScreen
-import com.ekatayan.app.feature.splash.SPLASH_ROUTE
-import com.ekatayan.app.feature.splash.splashScreen
-import com.ekatayan.app.feature.welcome.WELCOME_ROUTE
-import com.ekatayan.app.feature.welcome.welcomeScreen
+import com.ekatayan.app.ui.splash.SPLASH_ROUTE
+import com.ekatayan.app.ui.splash.splashScreen
+import com.ekatayan.app.ui.welcome.WELCOME_ROUTE
+import com.ekatayan.app.ui.welcome.welcomeScreen
 import com.ekatayan.app.ui.trips.CREATE_TRIP_ROUTE
 import com.ekatayan.app.ui.trips.TRIPS_ROUTE
 import com.ekatayan.app.ui.trips.createTripScreen

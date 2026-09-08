@@ -33,7 +33,7 @@ Dependency versions are centralized in `gradle/libs.versions.toml`. Do not dupli
 - Features retain the `FeatureNavigation.kt` -> `FeatureRoute.kt` -> `FeatureScreen.kt` boundary, with Android ViewModels in `viewmodel/` and local data access in `data/repository/`. The dependency direction is UI -> ViewModel -> Repository -> local data; preserve the existing Hilt injection and navigation scopes.
 - Route composables obtain Hilt ViewModels and pass state plus event callbacks to screen composables. Keep screen composables independent of `NavController`; navigation is expressed through callbacks.
 - Keep UI state and user-event handling in the feature ViewModel when state must survive recomposition. Keep reusable, presentation-only composables stateless where practical.
-- Splash is the current start destination and leads immediately to Welcome without an additional delay. Welcome's Get Started opens the existing Login destination; both startup destinations are removed from the back stack as the user continues. Welcome is static and does not require a ViewModel. The repository includes Home, Trips, Wishlist, Group Hub, booking, expenses, profile, notifications, and Business Partner feature packages; inspect each feature before assuming it is a placeholder.
+- Splash is the current start destination and leads to Welcome after a 1.5-second display delay. Welcome's Get Started opens the existing Login destination; both startup destinations are removed from the back stack as the user continues. Welcome is static and does not require a ViewModel. The repository includes Home, Trips, Wishlist, Group Hub, booking, expenses, profile, notifications, and Business Partner feature packages; inspect each feature before assuming it is a placeholder.
 
 ## Project Structure
 
@@ -42,7 +42,7 @@ Dependency versions are centralized in `gradle/libs.versions.toml`. Do not dupli
 - `app/src/main/java/com/ekatayan/app/viewmodel/`: Android ViewModels and presentation state.
 - `app/src/main/java/com/ekatayan/app/data/`: models, local demo catalogs/data sources, repositories, and Hilt repository bindings.
 - `app/src/main/java/com/ekatayan/app/utils/`: shared date parsing and calendar helpers.
-- `app/src/main/java/com/ekatayan/app/feature/`: Splash and Welcome retain their original packages; both are static startup screens.
+- Splash and Welcome use `ui/splash/` and `ui/welcome/`, respectively, with Navigation -> Route -> Screen separation; these static startup screens do not require ViewModels or repositories.
 - `app/src/main/java/com/ekatayan/app/core/designsystem/`: shared Compose components and theme definitions.
 - `app/src/main/res/`: strings, colors, themes, vector/raster assets, launcher resources, and Android XML configuration.
 - `app/src/test/`: local JVM tests.

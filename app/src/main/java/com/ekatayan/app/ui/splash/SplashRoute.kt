@@ -1,4 +1,4 @@
-package com.ekatayan.app.feature.splash
+package com.ekatayan.app.ui.splash
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect

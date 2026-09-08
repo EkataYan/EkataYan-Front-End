@@ -1,4 +1,4 @@
-package com.ekatayan.app.feature.welcome
+package com.ekatayan.app.ui.welcome
 
 import androidx.compose.runtime.Composable
 
