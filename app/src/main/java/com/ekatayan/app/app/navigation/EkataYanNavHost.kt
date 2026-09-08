@@ -1,51 +1,54 @@
 package com.ekatayan.app.app.navigation
 
-import com.ekatayan.app.feature.businesspartner.*
+import com.ekatayan.app.ui.businesspartner.*
+import com.ekatayan.app.viewmodel.BusinessPartnerViewModel
 import androidx.compose.runtime.Composable
 import android.net.Uri
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.ekatayan.app.feature.expenses.EXPENSES_ROUTE
-import com.ekatayan.app.feature.expenses.expensesScreen
-import com.ekatayan.app.feature.booking.BOOKING_ROUTE
-import com.ekatayan.app.feature.booking.bookingScreen
-import com.ekatayan.app.feature.home.HOME_ROUTE
-import com.ekatayan.app.feature.home.homeScreen
-import com.ekatayan.app.feature.grouphub.GROUP_HUB_ROUTE
-import com.ekatayan.app.feature.grouphub.GroupHubViewModel
-import com.ekatayan.app.feature.grouphub.groupChatRoute
-import com.ekatayan.app.feature.grouphub.groupHubScreens
-import com.ekatayan.app.feature.grouphub.groupInfoRoute
-import com.ekatayan.app.feature.login.LOGIN_ROUTE
-import com.ekatayan.app.feature.login.loginScreen
+import com.ekatayan.app.ui.expenses.EXPENSES_ROUTE
+import com.ekatayan.app.ui.expenses.expensesScreen
+import com.ekatayan.app.ui.booking.BOOKING_ROUTE
+import com.ekatayan.app.ui.booking.bookingScreen
+import com.ekatayan.app.ui.home.HOME_ROUTE
+import com.ekatayan.app.ui.home.homeScreen
+import com.ekatayan.app.ui.grouphub.GROUP_HUB_ROUTE
+import com.ekatayan.app.viewmodel.GroupHubViewModel
+import com.ekatayan.app.ui.grouphub.groupChatRoute
+import com.ekatayan.app.ui.grouphub.groupHubScreens
+import com.ekatayan.app.ui.grouphub.groupInfoRoute
+import com.ekatayan.app.ui.login.LOGIN_ROUTE
+import com.ekatayan.app.ui.login.loginScreen
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
-import com.ekatayan.app.feature.notifications.NOTIFICATIONS_ROUTE
-import com.ekatayan.app.feature.notifications.NotificationsViewModel
-import com.ekatayan.app.feature.notifications.notificationDetailRoute
-import com.ekatayan.app.feature.notifications.notificationDetailScreen
-import com.ekatayan.app.feature.notifications.notificationsScreen
-import com.ekatayan.app.feature.planner.PLANNER_ROUTE
-import com.ekatayan.app.feature.planner.plannerScreen
-import com.ekatayan.app.feature.planner.PlannerUiState
-import com.ekatayan.app.feature.profile.PROFILE_ROUTE
-import com.ekatayan.app.feature.profile.profileScreen
-import com.ekatayan.app.feature.signup.SIGN_UP_ROUTE
-import com.ekatayan.app.feature.signup.signUpScreen
-import com.ekatayan.app.feature.settings.SETTINGS_ROUTE
-import com.ekatayan.app.feature.settings.settingsScreen
-import com.ekatayan.app.feature.splash.SPLASH_ROUTE
-import com.ekatayan.app.feature.splash.splashScreen
-import com.ekatayan.app.feature.trips.CREATE_TRIP_ROUTE
-import com.ekatayan.app.feature.trips.TRIPS_ROUTE
-import com.ekatayan.app.feature.trips.createTripScreen
-import com.ekatayan.app.feature.trips.tripDetailsScreen
-import com.ekatayan.app.feature.trips.tripsScreen
-import com.ekatayan.app.feature.wishlist.WISHLIST_ROUTE
-import com.ekatayan.app.feature.wishlist.WishlistViewModel
-import com.ekatayan.app.feature.wishlist.wishlistGroupRoute
-import com.ekatayan.app.feature.wishlist.wishlistScreens
+import com.ekatayan.app.viewmodel.NotificationsViewModel
+import com.ekatayan.app.ui.notifications.NOTIFICATIONS_ROUTE
+import com.ekatayan.app.ui.notifications.notificationDetailRoute
+import com.ekatayan.app.ui.notifications.notificationDetailScreen
+import com.ekatayan.app.ui.notifications.notificationsScreen
+import com.ekatayan.app.ui.planner.PLANNER_ROUTE
+import com.ekatayan.app.ui.planner.plannerScreen
+import com.ekatayan.app.viewmodel.PlannerUiState
+import com.ekatayan.app.ui.profile.PROFILE_ROUTE
+import com.ekatayan.app.ui.profile.profileScreen
+import com.ekatayan.app.ui.signup.SIGN_UP_ROUTE
+import com.ekatayan.app.ui.signup.signUpScreen
+import com.ekatayan.app.ui.settings.SETTINGS_ROUTE
+import com.ekatayan.app.ui.settings.settingsScreen
+import com.ekatayan.app.ui.splash.SPLASH_ROUTE
+import com.ekatayan.app.ui.splash.splashScreen
+import com.ekatayan.app.ui.welcome.WELCOME_ROUTE
+import com.ekatayan.app.ui.welcome.welcomeScreen
+import com.ekatayan.app.ui.trips.CREATE_TRIP_ROUTE
+import com.ekatayan.app.ui.trips.TRIPS_ROUTE
+import com.ekatayan.app.ui.trips.createTripScreen
+import com.ekatayan.app.ui.trips.tripDetailsScreen
+import com.ekatayan.app.ui.trips.tripsScreen
+import com.ekatayan.app.ui.wishlist.WISHLIST_ROUTE
+import com.ekatayan.app.viewmodel.WishlistViewModel
+import com.ekatayan.app.ui.wishlist.wishlistGroupRoute
+import com.ekatayan.app.ui.wishlist.wishlistScreens
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -64,7 +67,13 @@ fun EkataYanNavHost(
         startDestination = SPLASH_ROUTE,
         modifier = modifier,
     ) {
-        splashScreen(onSplashFinished = navController::navigateToLoginFromSplash)
+        splashScreen(onSplashFinished = navController::navigateToWelcomeFromSplash)
+        welcomeScreen(onGetStarted = {
+            navController.navigate(LOGIN_ROUTE) {
+                popUpTo(WELCOME_ROUTE) { inclusive = true }
+                launchSingleTop = true
+            }
+        })
         loginScreen(
             onLogInClick = navController::navigateHomeFromAuth,
             onSignUpClick = navController::navigateToSignUp,
@@ -101,6 +110,9 @@ fun EkataYanNavHost(
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
             onProfileClick = { navController.navigate(PROFILE_ROUTE) },
+            onNotificationClick = navController::navigateToNotifications,
+            onSettingsClick = navController::navigateToSettings,
+            notificationsUiState = notificationsViewModel.uiState,
         )
         plannerScreen(
             onCreateTrip = { planner -> navController.navigate(createTripRoute(planner)) },
@@ -126,6 +138,7 @@ fun EkataYanNavHost(
             },
             onNotificationClick = navController::navigateToNotifications,
             onSettingsClick = navController::navigateToSettings,
+            notificationsUiState = notificationsViewModel.uiState,
         )
         createTripScreen(onBackClick = navController::navigateUp)
 
@@ -212,8 +225,8 @@ private fun NavHostController.navigateToSignUp() {
     navigate(SIGN_UP_ROUTE) { launchSingleTop = true }
 }
 
-private fun NavHostController.navigateToLoginFromSplash() {
-    navigate(LOGIN_ROUTE) {
+private fun NavHostController.navigateToWelcomeFromSplash() {
+    navigate(WELCOME_ROUTE) {
         popUpTo(SPLASH_ROUTE) { inclusive = true }
         launchSingleTop = true
     }
