@@ -1,5 +1,7 @@
 package com.ekatayan.app.feature.login
 
+import com.ekatayan.app.viewmodel.LoginViewModel
+
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

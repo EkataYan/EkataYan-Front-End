@@ -1,10 +1,27 @@
 package com.ekatayan.app.feature.businesspartner
 
+import com.ekatayan.app.data.model.BookingStatus
+import com.ekatayan.app.data.model.BusinessDocument
+import com.ekatayan.app.data.model.BusinessPartnerState
+import com.ekatayan.app.data.model.BusinessType
+import com.ekatayan.app.data.model.DocumentType
+import com.ekatayan.app.data.model.FieldKind
+import com.ekatayan.app.data.model.ListingAvailability
+import com.ekatayan.app.data.model.ListingCategory
+import com.ekatayan.app.data.model.ListingDraft
+import com.ekatayan.app.data.model.ListingField
+import com.ekatayan.app.data.model.ListingStatus
+import com.ekatayan.app.data.model.PartnerValidation
+import com.ekatayan.app.data.model.fields
+import com.ekatayan.app.data.repository.LocalBusinessPartnerRepository
+import com.ekatayan.app.viewmodel.BusinessPartnerViewModel
+
+import com.ekatayan.app.FakeDocumentRepository
 import org.junit.Assert.*
 import org.junit.Test
 
 class BusinessPartnerViewModelTest {
-    private fun model() = BusinessPartnerViewModel(LocalBusinessPartnerRepository())
+    private fun model() = BusinessPartnerViewModel(LocalBusinessPartnerRepository(), FakeDocumentRepository())
 
     private fun register(vm: BusinessPartnerViewModel) {
         vm.updateProfile { it.copy(businessType = BusinessType.HOTEL, businessName = "Sunrise Hotel",

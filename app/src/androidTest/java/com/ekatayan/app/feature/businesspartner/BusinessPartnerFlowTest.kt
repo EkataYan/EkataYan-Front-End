@@ -1,5 +1,11 @@
 package com.ekatayan.app.feature.businesspartner
 
+import com.ekatayan.app.data.model.BookingStatus
+import com.ekatayan.app.data.model.BusinessDocument
+import com.ekatayan.app.data.model.BusinessPartnerState
+import com.ekatayan.app.data.model.DocumentType
+import com.ekatayan.app.viewmodel.BusinessPartnerViewModel
+
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.lifecycle.ViewModelProvider
