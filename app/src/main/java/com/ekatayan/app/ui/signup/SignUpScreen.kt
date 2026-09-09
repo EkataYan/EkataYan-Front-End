@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -225,7 +226,38 @@ private fun SignUpForm(
             AuthActionButton(
                 text = stringResource(R.string.signup_action),
                 onClick = onSignUpClick,
+                enabled = !uiState.isLoading,
             )
+        }
+        val message = when {
+            uiState.emailConfirmationRequired -> R.string.signup_confirmation_required
+            uiState.validationError != null -> when (uiState.validationError) {
+                com.ekatayan.app.viewmodel.SignUpValidationError.REQUIRED_FIELDS -> R.string.signup_error_required_fields
+                com.ekatayan.app.viewmodel.SignUpValidationError.INVALID_EMAIL -> R.string.signup_error_invalid_email
+                com.ekatayan.app.viewmodel.SignUpValidationError.WEAK_PASSWORD -> R.string.signup_error_weak_password
+                com.ekatayan.app.viewmodel.SignUpValidationError.PASSWORD_MISMATCH -> R.string.signup_error_password_mismatch
+                com.ekatayan.app.viewmodel.SignUpValidationError.TERMS_REQUIRED -> R.string.signup_error_terms_required
+            }
+            uiState.authenticationError != null -> when (uiState.authenticationError) {
+                com.ekatayan.app.data.repository.AuthenticationFailure.NETWORK -> R.string.signup_error_network
+                com.ekatayan.app.data.repository.AuthenticationFailure.CONFIGURATION -> R.string.signup_error_configuration
+                com.ekatayan.app.data.repository.AuthenticationFailure.INVALID_CREDENTIALS -> R.string.signup_error_registration
+                else -> R.string.signup_error_generic
+            }
+            else -> null
+        }
+        message?.let {
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = stringResource(it),
+                color = if (uiState.emailConfirmationRequired) Color(0xFF1565C0) else Color(0xFFB3261E),
+                fontSize = 11.sp,
+            )
+        }
+        if (uiState.isLoading) {
+            Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(Modifier.height(20.dp), strokeWidth = 2.dp)
+            }
         }
     }
 }

@@ -1,9 +1,22 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
+
+val localConfiguration = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+val backendUrl = providers.gradleProperty("BACKEND_BASE_URL")
+    .orElse(provider { localConfiguration.getProperty("BACKEND_BASE_URL", "") })
+val supabaseUrl = providers.gradleProperty("SUPABASE_URL")
+    .orElse(provider { localConfiguration.getProperty("SUPABASE_URL", "") })
+val supabasePublishableKey = providers.gradleProperty("SUPABASE_PUBLISHABLE_KEY")
+    .orElse(provider { localConfiguration.getProperty("SUPABASE_PUBLISHABLE_KEY", "") })
+fun quoted(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 android {
     namespace = "com.ekatayan.app"
@@ -19,10 +32,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "SUPABASE_URL", quoted(supabaseUrl.get()))
+        buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", quoted(supabasePublishableKey.get()))
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "BACKEND_BASE_URL", quoted(backendUrl.get().ifBlank { "http://10.0.2.2:5000/" }))
+        }
         release {
+            buildConfigField("String", "BACKEND_BASE_URL", quoted(backendUrl.get()))
             optimization {
                 enable = false
             }
@@ -35,10 +54,16 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp)
+    implementation(libs.androidx.security.crypto)
+    testImplementation(libs.okhttp.mockwebserver)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

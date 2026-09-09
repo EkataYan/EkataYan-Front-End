@@ -22,10 +22,24 @@
     <string name="signup_apple">Continue with Apple</string>
     <string name="signup_existing">Already have an account? </string>
     <string name="signup_login">Log In</string>
+    <string name="signup_error_required_fields">Enter your email and password to continue.</string>
+    <string name="signup_error_invalid_email">Enter a valid email address.</string>
+    <string name="signup_error_weak_password">Password must contain at least 6 characters.</string>
+    <string name="signup_error_password_mismatch">Passwords do not match.</string>
+    <string name="signup_error_terms_required">Accept the Terms of Service and Privacy Policy to continue.</string>
+    <string name="signup_error_network">Unable to reach Supabase. Check your connection and try again.</string>
+    <string name="signup_error_configuration">Authentication is not configured for this build.</string>
+    <string name="signup_error_registration">Unable to create this account. Check your details or try logging in.</string>
+    <string name="signup_error_generic">Unable to create your account. Please try again.</string>
+    <string name="signup_confirmation_required">Check your email and verify your account before logging in.</string>
     <string name="login_title">Welcome Back!</string>
     <string name="login_subtitle">Login to continue your journey</string>
     <string name="login_forgot_password">Forgot Password?</string>
     <string name="login_action">Log In</string>
+    <string name="login_error_invalid_credentials">Enter a valid email and password, or check your credentials.</string>
+    <string name="login_error_network">Unable to reach Supabase. Check your connection and try again.</string>
+    <string name="login_error_configuration">Authentication is not configured for this build.</string>
+    <string name="login_error_generic">Unable to sign in. Please try again.</string>
     <string name="login_new_account">Don’t have an account? </string>
     <string name="login_signup">Sign Up</string>
 
