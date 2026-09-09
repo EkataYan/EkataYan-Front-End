@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,7 +84,7 @@ fun LoginScreen(
                     onPasswordChange = onPasswordChange,
                     onPasswordVisibilityClick = onPasswordVisibilityClick,
                     onForgotPasswordClick = onForgotPasswordClick,
-                    onLogInClick = onLogInClick,
+                onLogInClick = onLogInClick,
                 )
             }
             item(contentType = "form_divider_space") { Spacer(Modifier.height(4.dp)) }
@@ -169,6 +170,19 @@ private fun LoginForm(
                 modifier = Modifier.clickable(onClick = onForgotPasswordClick),
             )
         }
+        uiState.error?.let { error ->
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = stringResource(when (error) {
+                    com.ekatayan.app.data.repository.AuthenticationFailure.INVALID_CREDENTIALS -> R.string.login_error_invalid_credentials
+                    com.ekatayan.app.data.repository.AuthenticationFailure.NETWORK -> R.string.login_error_network
+                    com.ekatayan.app.data.repository.AuthenticationFailure.CONFIGURATION -> R.string.login_error_configuration
+                    else -> R.string.login_error_generic
+                }),
+                color = Color(0xFFB3261E),
+                fontSize = 11.sp,
+            )
+        }
         Spacer(Modifier.height(16.dp))
         Box(
             modifier = Modifier
@@ -178,7 +192,13 @@ private fun LoginForm(
             AuthActionButton(
                 text = stringResource(R.string.login_action),
                 onClick = onLogInClick,
+                enabled = !uiState.isLoading,
             )
+        }
+        if (uiState.isLoading) {
+            Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(Modifier.height(20.dp), strokeWidth = 2.dp)
+            }
         }
     }
 }

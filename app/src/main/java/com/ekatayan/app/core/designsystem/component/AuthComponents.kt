@@ -187,7 +187,7 @@ fun AuthTextField(
 }
 
 @Composable
-fun AuthActionButton(text: String, onClick: () -> Unit) {
+fun AuthActionButton(text: String, onClick: () -> Unit, enabled: Boolean = true) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -195,7 +195,7 @@ fun AuthActionButton(text: String, onClick: () -> Unit) {
             .shadow(2.dp, RoundedCornerShape(9.dp))
             .clip(RoundedCornerShape(9.dp))
             .background(AuthActionBlue)
-            .clickable(onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Text(

@@ -6,6 +6,10 @@ import com.ekatayan.app.data.repository.HomeRepository
 import com.ekatayan.app.data.repository.NotificationsRepository
 import com.ekatayan.app.data.repository.DocumentRepository
 import com.ekatayan.app.data.repository.LocalDocumentRepository
+import com.ekatayan.app.data.repository.AuthRepository
+import com.ekatayan.app.data.repository.SupabaseAuthRepository
+import com.ekatayan.app.data.remote.EncryptedSessionStore
+import com.ekatayan.app.data.remote.SessionStore
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,6 +19,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
+    @Binds
+    @Singleton
+    abstract fun bindSessionStore(impl: EncryptedSessionStore): SessionStore
+
+    @Binds
+    @Singleton
+    abstract fun bindAuthRepository(impl: SupabaseAuthRepository): AuthRepository
     @Binds
     abstract fun bindDocumentRepository(impl: LocalDocumentRepository): DocumentRepository
 

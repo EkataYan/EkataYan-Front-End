@@ -73,7 +73,10 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 
 ## API & Backend Integration
 
-- The data layer contains local demo repositories. No networking library, API client, backend authentication implementation, or verified backend contract currently exists in this repository. Do not invent a remote layer or backend contract to complete package organization.
+- Profile uses Retrofit/OkHttp through `data/remote/` and `ProfileRepository` for the confirmed `GET /api/users/me` endpoint. Other feature repositories remain local demos. Profile DTOs map into app models; never expose network DTOs to screens.
+- `UserSessionProvider` is the shared session boundary used by the Profile authorization interceptor and is backed by encrypted session storage. Supabase Login/Sign Up and refresh populate its tokens and authenticated user email; Profile obtains email from this boundary rather than the Flask profile row. Never insert test tokens into app configuration.
+- Configure `BACKEND_BASE_URL` using a Gradle property or ignored `local.properties`. Debug defaults to the Android emulator host on port 5000 and permits development HTTP; release requires an explicitly configured HTTPS endpoint. Never configure user tokens or passwords through BuildConfig.
+- The profile response has display name, bio, home city, language, interests and an avatar storage path; it does not provide email or travel statistics. Retain the avatar placeholder until an authorized image-download contract exists.
 - When frontend work needs backend functionality, keep transport/data integration separate from UI and ViewModel presentation code.
 - Do not invent endpoints or contracts. Obtain or clearly document the required endpoint, HTTP method, request fields, response fields, error behavior, authentication requirements, and external backend dependency before implementation.
 - Preserve verified API contracts and existing integration patterns once they are introduced. Record stable cross-repository integration decisions here without including secrets.
@@ -100,7 +103,8 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 - Navigation remains callback-driven below the route/navigation layer.
 - Figma-based UI work should preserve supplied assets and responsive/keyboard-aware behavior.
 - Login and Sign Up share authentication presentation primitives and local assets; keep matching visuals centralized instead of duplicating them per feature.
-- Until backend authentication is introduced, the primary Login and Sign Up actions navigate to Home and clear authentication destinations from the back stack; the Login/Sign Up text links continue to navigate between those screens.
+- Supabase email Sign Up sends the entered name and phone as `full_name` and `phone` user-metadata keys. The backend profile trigger uses those keys to provision `profiles.display_name` and `profiles.phone`, including when email confirmation delays creation of an authenticated app session.
+- Login navigates to Home only after Supabase authentication stores a valid session. Sign Up does the same when Supabase returns a session; when email confirmation is required, it stays unauthenticated and does not navigate to Home. The Login/Sign Up text links continue to navigate between those screens.
 
 ## Codex Working Rules
 

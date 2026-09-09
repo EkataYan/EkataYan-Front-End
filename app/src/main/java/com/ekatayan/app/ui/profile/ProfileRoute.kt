@@ -22,8 +22,10 @@ fun ProfileRoute(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val notificationState by notificationsUiState.collectAsStateWithLifecycle()
+    val profileState by viewModel.uiState.collectAsStateWithLifecycle()
     ProfileScreen(
-        uiState = viewModel.uiState,
+        state = profileState,
+        onRetry = viewModel::loadProfile,
         onBackClick = onBackClick,
         onHomeClick = onHomeClick,
         onTripsClick = onTripsClick,

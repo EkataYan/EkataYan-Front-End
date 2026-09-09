@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_loading">Loading profile…</string>
+    <string name="profile_auth_required">Sign in with your Supabase account to load your profile. Your session may have expired.</string>
+    <string name="profile_network_error">Unable to reach the server. Check your connection and try again.</string>
+    <string name="profile_not_found">Your profile was not found or is not accessible.</string>
+    <string name="profile_forbidden">You do not have permission to access this profile.</string>
+    <string name="profile_configuration_error">The backend connection is not configured.</string>
+    <string name="profile_load_error">Unable to load your profile. Please try again.</string>
+    <string name="profile_retry">Retry</string>
+    <string name="profile_unavailable">—</string>
+    <string name="profile_title">My Profile</string>
+    <string name="profile_avatar_description">Profile picture</string>
+    <string name="profile_email_description">Email address</string>
+</resources>

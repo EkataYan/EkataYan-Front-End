@@ -1,6 +1,12 @@
 package com.ekatayan.app.ui.profile
 
 import com.ekatayan.app.data.model.ProfileDetails
+import com.ekatayan.app.viewmodel.ProfileUiState
+import com.ekatayan.app.data.repository.ProfileFailure
+import com.ekatayan.app.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.TextButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.BusinessCenter
 import androidx.compose.material.icons.outlined.CreditCard
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Language
@@ -42,6 +49,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
@@ -60,7 +68,8 @@ private val GreyText = Color(0xFF7B8191)
 
 @Composable
 fun ProfileScreen(
-    uiState: ProfileDetails,
+    state: ProfileUiState,
+    onRetry: () -> Unit,
     onBackClick: () -> Unit,
     onHomeClick: () -> Unit,
     onTripsClick: () -> Unit,
@@ -72,6 +81,7 @@ fun ProfileScreen(
     onSettingsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val uiState = state.profile ?: ProfileDetails(name = "", location = "")
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -97,10 +107,10 @@ fun ProfileScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "My Profile",
+                            text = stringResource(R.string.profile_title),
                             fontFamily = FontFamily.Serif,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 27.sp,
+                            fontSize = 32.sp,
                             color = EkataTextPrimary,
                             modifier = Modifier.weight(1f),
                         )
@@ -114,69 +124,85 @@ fun ProfileScreen(
 
                     Spacer(Modifier.height(16.dp))
 
+                    if (state.isLoading) {
+                        Row(Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(Modifier.size(24.dp))
+                            Spacer(Modifier.width(12.dp))
+                            Text(stringResource(R.string.profile_loading))
+                        }
+                    }
+                    state.error?.let { error ->
+                        Column(Modifier.padding(horizontal = 20.dp)) {
+                            Text(stringResource(when (error) {
+                                ProfileFailure.AUTHENTICATION -> R.string.profile_auth_required
+                                ProfileFailure.NETWORK -> R.string.profile_network_error
+                                ProfileFailure.NOT_FOUND -> R.string.profile_not_found
+                                ProfileFailure.FORBIDDEN -> R.string.profile_forbidden
+                                ProfileFailure.CONFIGURATION -> R.string.profile_configuration_error
+                                else -> R.string.profile_load_error
+                            }), color = DarkText)
+                            TextButton(onClick = onRetry) { Text(stringResource(R.string.profile_retry)) }
+                        }
+                    }
+
                     Row(
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 20.dp, end = 20.dp, bottom = 24.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
 
                         Surface(
-                            modifier = Modifier.size(82.dp),
+                            modifier = Modifier.size(108.dp),
                             shape = CircleShape,
                             color = Color(0xFFE5E7EB)
                         ) {
                             Icon(
                                 Icons.Outlined.Person,
-                                contentDescription = "Profile",
-                                modifier = Modifier.padding(18.dp),
+                                contentDescription = stringResource(R.string.profile_avatar_description),
+                                modifier = Modifier.padding(26.dp),
                                 tint = Color.Gray
                             )
                         }
 
-                        Spacer(Modifier.width(16.dp))
+                        Spacer(Modifier.width(22.dp))
 
                         Column(
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.Center,
                         ) {
                             Text(
-                                uiState.name,
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.Medium
+                                text = uiState.name.ifBlank { stringResource(R.string.profile_unavailable) },
+                                fontSize = 24.sp,
+                                lineHeight = 29.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DarkText,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
                             )
 
-                            Spacer(Modifier.height(5.dp))
+                            Spacer(Modifier.height(8.dp))
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
-                                    Icons.Outlined.LocationOn,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(15.dp)
+                                    Icons.Outlined.Email,
+                                    contentDescription = stringResource(R.string.profile_email_description),
+                                    modifier = Modifier.size(18.dp),
+                                    tint = GreyText,
                                 )
-                                Spacer(Modifier.width(3.dp))
+                                Spacer(Modifier.width(7.dp))
                                 Text(
-                                    uiState.location,
-                                    fontSize = 10.sp,
-                                    color = GreyText
+                                    text = state.email.ifBlank { stringResource(R.string.profile_unavailable) },
+                                    fontSize = 15.sp,
+                                    lineHeight = 20.sp,
+                                    color = GreyText,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f),
                                 )
                             }
-
-                            Spacer(Modifier.height(3.dp))
-
-                            Text(
-                                uiState.email,
-                                fontSize = 10.sp,
-                                color = GreyText
-                            )
                         }
 
-                        Text(
-                            "✎ Edit Profile",
-                            fontSize = 10.sp,
-                            color = Blue,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { }
-                                .padding(6.dp)
-                        )
                     }
                 }
             }
@@ -269,7 +295,7 @@ fun ProfileScreen(
                             "Language",
                             "Change app language",
                             Blue,
-                            "English"
+                            uiState.language.ifBlank { stringResource(R.string.profile_unavailable) }
                         )
 
                         ProfileItem(
