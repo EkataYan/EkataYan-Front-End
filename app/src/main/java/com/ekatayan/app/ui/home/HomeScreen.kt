@@ -6,19 +6,19 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
-import com.ekatayan.app.core.designsystem.theme.EkataBackground
+import com.ekatayan.app.core.designsystem.component.EkataErrorState
+import com.ekatayan.app.core.designsystem.component.EkataLoadingState
+import com.ekatayan.app.core.designsystem.component.EkataSectionHeading
+import com.ekatayan.app.core.designsystem.theme.EkataSpacing
 import com.ekatayan.app.core.designsystem.theme.EkataYanTheme
 import com.ekatayan.app.data.local.HomeLocalDataSource
 import com.ekatayan.app.viewmodel.HomeUiState
@@ -46,13 +46,16 @@ fun HomeScreen(
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier.fillMaxSize().background(EkataBackground)) {
+    Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         if (uiState.isLoading) {
-            CircularProgressIndicator(Modifier.align(Alignment.Center))
+            EkataLoadingState(
+                message = stringResource(R.string.home_loading),
+                modifier = Modifier.align(Alignment.Center).padding(EkataSpacing.lg),
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 112.dp),
+                contentPadding = PaddingValues(bottom = EkataSpacing.xxl * 2 + EkataSpacing.xl),
             ) {
                 item {
                     HeroSection(
@@ -65,14 +68,26 @@ fun HomeScreen(
                         onSearchSubmit = onSearchSubmit,
                     )
                 }
-                item { QuickActions(onMapsClick, onWishlistClick, onBookingClick, onGroupHubClick, onPartnershipClick) }
-                uiState.errorMessage?.let { message ->
-                    item { Text(message, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 20.dp)) }
+                item {
+                    QuickActions(onMapsClick, onWishlistClick, onBookingClick, onGroupHubClick, onPartnershipClick)
                 }
-                item { SectionTitle("Recommended For You") }
+                uiState.errorMessage?.let { message ->
+                    item {
+                        EkataErrorState(
+                            title = stringResource(R.string.home_error_title),
+                            message = message,
+                            modifier = Modifier.padding(horizontal = EkataSpacing.md),
+                        )
+                    }
+                }
+                item {
+                    HomeSectionHeading(stringResource(R.string.home_recommended_title))
+                }
                 item { RecommendedSection(uiState.recommendedDestinations, onRecommendedDestinationClick) }
                 item { HomeInfoCards(uiState.upcomingTrip, uiState.weather, onUpcomingTripClick) }
-                item { SectionTitle("Popular Destinations") }
+                item {
+                    HomeSectionHeading(stringResource(R.string.home_popular_title))
+                }
                 item { PopularDestinationsSection(uiState.popularDestinations, onPopularDestinationClick) }
             }
         }
@@ -84,18 +99,21 @@ fun HomeScreen(
             onExpensesClick = onExpensesClick,
             onProfileClick = onProfileClick,
             modifier = Modifier.align(Alignment.BottomCenter),
+            compact = true,
         )
     }
 }
 
 @Composable
-private fun SectionTitle(title: String) {
-    Text(
-        text = title,
-        fontSize = 21.sp,
-        lineHeight = 27.sp,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 12.dp),
+private fun HomeSectionHeading(title: String) {
+    EkataSectionHeading(
+        title = title,
+        modifier = Modifier.padding(
+            start = EkataSpacing.md,
+            end = EkataSpacing.md,
+            top = EkataSpacing.sm,
+            bottom = EkataSpacing.sm,
+        ),
     )
 }
 

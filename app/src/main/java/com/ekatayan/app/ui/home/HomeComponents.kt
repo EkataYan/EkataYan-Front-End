@@ -1,30 +1,22 @@
 package com.ekatayan.app.ui.home
 
-import com.ekatayan.app.data.model.*
-
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.ui.res.stringResource
-import androidx.compose.material.icons.filled.Storefront
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -33,30 +25,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBalanceWallet
-import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Map
-import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Thunderstorm
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.WorkOutline
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Luggage
+import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -68,23 +54,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ekatayan.app.R
-import com.ekatayan.app.core.designsystem.theme.EkataBlue
-import com.ekatayan.app.core.designsystem.theme.EkataCardBackground
-import com.ekatayan.app.core.designsystem.theme.EkataLightBlue
-import com.ekatayan.app.core.designsystem.theme.EkataNavigationBackground
-import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
-import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
+import com.ekatayan.app.core.designsystem.component.EkataEmptyState
+import com.ekatayan.app.core.designsystem.component.EkataImageSupportingText
+import com.ekatayan.app.core.designsystem.component.EkataImageCard
+import com.ekatayan.app.core.designsystem.component.EkataImageTitle
+import com.ekatayan.app.core.designsystem.component.EkataPageIndicator
+import com.ekatayan.app.core.designsystem.component.EkataQuickActionCard
 import com.ekatayan.app.core.designsystem.component.HeaderActions
 import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
+import com.ekatayan.app.core.designsystem.theme.EkataComponentSize
+import com.ekatayan.app.core.designsystem.theme.EkataElevation
+import com.ekatayan.app.core.designsystem.theme.EkataIconSize
+import com.ekatayan.app.core.designsystem.theme.EkataImageScrim
+import com.ekatayan.app.core.designsystem.theme.EkataOnImage
+import com.ekatayan.app.core.designsystem.theme.EkataRadius
+import com.ekatayan.app.core.designsystem.theme.EkataSpacing
+import com.ekatayan.app.core.designsystem.theme.EkataSuccess
+import com.ekatayan.app.core.designsystem.theme.EkataWarning
+import com.ekatayan.app.data.model.PopularDestination
+import com.ekatayan.app.data.model.RecommendedDestination
+import com.ekatayan.app.data.model.UpcomingTrip
+import com.ekatayan.app.data.model.User
+import com.ekatayan.app.data.model.WeatherInfo
+import com.ekatayan.app.data.model.WeatherType
 
 @Composable
 fun HeroSection(
@@ -96,34 +93,41 @@ fun HeroSection(
     onSearchQueryChange: (String) -> Unit,
     onSearchSubmit: () -> Unit,
 ) {
-    Box(Modifier.fillMaxWidth().height(262.dp)) {
+    Box(Modifier.fillMaxWidth().height(286.dp)) {
+        val heroShape = RoundedCornerShape(bottomStart = EkataRadius.extraLarge, bottomEnd = EkataRadius.extraLarge)
         Image(
             painter = painterResource(R.drawable.home_header),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxWidth().height(232.dp).clip(RoundedCornerShape(bottomStart = 34.dp, bottomEnd = 34.dp)),
+            modifier = Modifier.fillMaxWidth().height(254.dp).clip(heroShape),
         )
-        Column(Modifier.padding(start = 21.dp, top = 55.dp)) {
-            Text(
-                text = "Welcome, ${user.name}",
-                fontFamily = FontFamily.Serif,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 27.sp,
-                color = EkataTextPrimary,
-            )
-            Text("Where shall we explore today?", fontSize = 13.sp, color = EkataTextPrimary)
+        Box(
+            Modifier.fillMaxWidth().height(254.dp).clip(heroShape).background(
+                Brush.verticalGradient(
+                    listOf(EkataImageScrim.copy(alpha = 0.22f), Color.Transparent, EkataImageScrim.copy(alpha = 0.38f)),
+                ),
+            ),
+        )
+        Column(
+            Modifier.align(Alignment.TopStart).padding(start = EkataSpacing.md, top = 64.dp, end = 104.dp),
+            verticalArrangement = Arrangement.spacedBy(EkataSpacing.xxs),
+        ) {
+            EkataImageTitle(stringResource(R.string.home_welcome, user.name))
+            EkataImageSupportingText(stringResource(R.string.home_prompt))
         }
         HeaderActions(
             onNotificationClick = onNotificationClick,
             hasUnreadNotifications = hasUnreadNotifications,
             onSettingsClick = onSettingsClick,
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = HeaderActionsTopPadding, end = 14.dp),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = HeaderActionsTopPadding, end = EkataSpacing.sm)
+                .clip(CircleShape).background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+                .padding(horizontal = EkataSpacing.xxs),
         )
         HomeSearchBar(
             query = searchQuery,
             onQueryChange = onSearchQueryChange,
             onSearchSubmit = onSearchSubmit,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = 22.dp),
+            modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = EkataSpacing.md),
         )
     }
 }
@@ -131,22 +135,24 @@ fun HeroSection(
 @Composable
 fun HomeSearchBar(query: String, onQueryChange: (String) -> Unit, onSearchSubmit: () -> Unit, modifier: Modifier = Modifier) {
     Row(
-        modifier = modifier.fillMaxWidth().height(55.dp).shadow(8.dp, CircleShape).background(Color.White, CircleShape).padding(horizontal = 18.dp),
+        modifier = modifier.fillMaxWidth().height(EkataComponentSize.inputMinHeight)
+            .shadow(EkataElevation.low, CircleShape).background(MaterialTheme.colorScheme.surface, CircleShape)
+            .padding(horizontal = EkataSpacing.md),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(Icons.Default.Search, contentDescription = "Search", tint = EkataBlue)
-        Spacer(Modifier.width(11.dp))
+        Icon(Icons.Default.Search, stringResource(R.string.home_search_action), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(EkataIconSize.medium))
+        Spacer(Modifier.width(EkataSpacing.sm))
         BasicTextField(
             value = query,
             onValueChange = onQueryChange,
             modifier = Modifier.weight(1f),
             singleLine = true,
-            textStyle = TextStyle(fontSize = 14.sp, color = EkataTextPrimary),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { onSearchSubmit() }),
             decorationBox = { inner ->
                 Box {
-                    if (query.isEmpty()) Text("Search Your Destination", fontSize = 14.sp, color = EkataTextSecondary)
+                    if (query.isEmpty()) Text(stringResource(R.string.home_search_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     inner()
                 }
             },
@@ -157,127 +163,248 @@ fun HomeSearchBar(query: String, onQueryChange: (String) -> Unit, onSearchSubmit
 @Composable
 fun QuickActions(onMapsClick: () -> Unit, onWishlistClick: () -> Unit, onBookingClick: () -> Unit, onGroupHubClick: () -> Unit, onPartnershipClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 17.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        Modifier.fillMaxWidth().padding(
+            start = EkataSpacing.md,
+            end = EkataSpacing.md,
+            top = EkataSpacing.lg,
+            bottom = EkataSpacing.sm,
+        ),
+        horizontalArrangement = Arrangement.spacedBy(EkataSpacing.xxs),
     ) {
-        QuickActionItem("Maps", Icons.Default.Map, onMapsClick)
-        QuickActionItem("Wishlist", Icons.Outlined.FavoriteBorder, onWishlistClick)
-        QuickActionItem("Booking", Icons.Default.WorkOutline, onBookingClick)
-        QuickActionItem("Group Hub", Icons.Default.Groups, onGroupHubClick)
-        QuickActionItem(stringResource(R.string.bp_partnership), Icons.Default.Storefront, onPartnershipClick)
+        QuickActionItem(stringResource(R.string.home_maps), R.drawable.home_shortcut_maps, onMapsClick, Modifier.weight(1f))
+        QuickActionItem(stringResource(R.string.home_wishlist), R.drawable.home_shortcut_wishlist, onWishlistClick, Modifier.weight(1f))
+        QuickActionItem(stringResource(R.string.home_booking), R.drawable.home_shortcut_booking, onBookingClick, Modifier.weight(1f))
+        QuickActionItem(stringResource(R.string.home_group_hub), R.drawable.home_shortcut_group_hub, onGroupHubClick, Modifier.weight(1f))
+        QuickActionItem(stringResource(R.string.bp_partnership), R.drawable.home_shortcut_partnership, onPartnershipClick, Modifier.weight(1f))
     }
 }
 
 @Composable
-fun QuickActionItem(label: String, icon: ImageVector, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier.widthIn(min = 70.dp).clickable(onClick = onClick),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Box(Modifier.size(49.dp).background(EkataLightBlue, RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
-            Icon(icon, label, tint = EkataTextPrimary, modifier = Modifier.size(24.dp))
-        }
-        Spacer(Modifier.height(6.dp))
-        Text(label, fontSize = 12.sp, maxLines = 1)
-    }
+fun QuickActionItem(
+    label: String,
+    @DrawableRes artworkRes: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    EkataQuickActionCard(label = label, artworkRes = artworkRes, onClick = onClick, modifier = modifier)
 }
 
 @Composable
 fun RecommendedSection(destinations: List<RecommendedDestination>, onDestinationClick: (Int) -> Unit) {
     if (destinations.isEmpty()) {
-        EmptyMessage("Recommendations will appear here")
+        EkataEmptyState(
+            title = stringResource(R.string.home_no_recommendations_title),
+            message = stringResource(R.string.home_no_recommendations_message),
+            modifier = Modifier.padding(horizontal = EkataSpacing.md),
+        )
         return
     }
     val pagerState = rememberPagerState(pageCount = { destinations.size })
     HorizontalPager(
         state = pagerState,
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp),
-        pageSpacing = 12.dp,
+        contentPadding = PaddingValues(horizontal = EkataSpacing.md),
+        pageSpacing = EkataSpacing.sm,
         modifier = Modifier.fillMaxWidth(),
     ) { page ->
-        RecommendedDestinationCard(
-            destination = destinations[page],
-            page = page,
-            count = destinations.size,
-            selectedPage = pagerState.currentPage,
-            onClick = { onDestinationClick(destinations[page].id) },
-        )
+        RecommendedDestinationCard(destinations[page], page, destinations.size, pagerState.currentPage) {
+            onDestinationClick(destinations[page].id)
+        }
     }
 }
 
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun RecommendedDestinationCard(destination: RecommendedDestination, page: Int, count: Int, selectedPage: Int, onClick: () -> Unit) {
-    Box(
-        Modifier.fillMaxWidth().aspectRatio(1.9f).clip(RoundedCornerShape(24.dp)).clickable(onClick = onClick),
+    EkataImageCard(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().aspectRatio(1.72f),
     ) {
         Image(painterResource(destination.imageRes), destination.name, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xD9000000)), startY = 100f)))
-        Column(Modifier.align(Alignment.BottomStart).padding(start = 18.dp, end = 92.dp, bottom = 16.dp)) {
-            Text(destination.name, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(destination.description, color = Color.White.copy(alpha = .9f), fontSize = 11.sp, lineHeight = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(
+                    listOf(Color.Transparent, EkataImageScrim.copy(alpha = 0.24f), EkataImageScrim.copy(alpha = 0.9f)),
+                    startY = 40f,
+                ),
+            ),
+        )
+        Column(
+            Modifier.align(Alignment.BottomStart).padding(EkataSpacing.md).padding(end = 72.dp),
+            verticalArrangement = Arrangement.spacedBy(EkataSpacing.xxs),
+        ) {
+            Text(destination.name, color = EkataOnImage, style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(destination.description, color = EkataOnImage.copy(alpha = 0.9f), style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        PageIndicator(count, selectedPage, Modifier.align(Alignment.BottomEnd).padding(18.dp))
+        PageIndicator(count, selectedPage, Modifier.align(Alignment.BottomEnd).padding(EkataSpacing.md))
     }
 }
 
 @Composable
 fun PageIndicator(count: Int, selectedPage: Int, modifier: Modifier = Modifier) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-        repeat(count) { index ->
-            Box(Modifier.size(if (index == selectedPage) 8.dp else 6.dp).background(if (index == selectedPage) Color.White else Color.White.copy(alpha = .45f), CircleShape))
-        }
-    }
+    EkataPageIndicator(count = count, selectedPage = selectedPage, modifier = modifier)
 }
 
 @Composable
 fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    BoxWithConstraints(
+        Modifier.fillMaxWidth().padding(
+            start = EkataSpacing.md,
+            end = EkataSpacing.md,
+            top = EkataSpacing.lg,
+            bottom = EkataSpacing.sm,
+        ),
     ) {
-        UpcomingTripCard(trip, onUpcomingTripClick, Modifier.weight(1f))
-        WeatherCard(weather, Modifier.weight(1f))
+        if (maxWidth < 360.dp) {
+            Column(verticalArrangement = Arrangement.spacedBy(EkataSpacing.sm)) {
+                UpcomingTripCard(trip, onUpcomingTripClick, Modifier.fillMaxWidth().height(HomeWidgetHeight))
+                WeatherCard(weather, Modifier.fillMaxWidth().height(HomeWidgetHeight))
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(EkataSpacing.sm),
+            ) {
+                UpcomingTripCard(trip, onUpcomingTripClick, Modifier.weight(1f).height(HomeWidgetHeight))
+                WeatherCard(weather, Modifier.weight(1f).height(HomeWidgetHeight))
+            }
+        }
     }
 }
 
+private val HomeWidgetHeight = 264.dp
+
 @Composable
 fun UpcomingTripCard(trip: UpcomingTrip?, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    InfoCard(modifier.clickable(onClick = onClick)) {
-        Text("Upcoming Trip", color = EkataBlue, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(8.dp))
-        if (trip == null) {
-            Text("No upcoming trips", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-            Text("Plan a Trip", color = EkataBlue, fontSize = 12.sp, modifier = Modifier.padding(top = 8.dp))
-        } else {
-            Text(trip.destination, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            InfoLine(Icons.Default.CalendarMonth, trip.date)
-            InfoLine(Icons.Outlined.Schedule, trip.duration)
-            Text("View  >", color = EkataBlue, fontSize = 11.sp, modifier = Modifier.padding(top = 6.dp))
-            Image(painterResource(trip.imageRes), null, Modifier.align(Alignment.End).size(54.dp).offset(y = (-27).dp).clip(RoundedCornerShape(13.dp)), contentScale = ContentScale.Crop)
+    Card(
+        onClick = onClick,
+        modifier = modifier,
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low),
+    ) {
+        Column(Modifier.fillMaxSize().padding(EkataSpacing.sm)) {
+            HomeWidgetHeader(
+                icon = Icons.Default.Flight,
+                title = stringResource(R.string.home_upcoming_trip),
+                subtitle = stringResource(R.string.home_upcoming_trip_subtitle),
+            )
+            if (trip == null) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
+                    Text(stringResource(R.string.home_no_upcoming_trips), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.home_plan_trip), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelMedium)
+                }
+            } else {
+                Spacer(Modifier.height(EkataSpacing.xs))
+                HomeInfoImage(trip.imageRes)
+                Spacer(Modifier.height(EkataSpacing.xs))
+                Text(trip.destination, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(Modifier.fillMaxWidth().padding(top = EkataSpacing.xxs), horizontalArrangement = Arrangement.spacedBy(EkataSpacing.xs)) {
+                    WidgetMetric(Icons.Default.CalendarMonth, trip.date, stringResource(R.string.home_travel_date), Modifier.weight(1f))
+                    WidgetMetric(Icons.Outlined.Schedule, trip.duration, stringResource(R.string.home_duration), Modifier.weight(1f))
+                }
+                Spacer(Modifier.weight(1f))
+                Surface(
+                    onClick = onClick,
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = MaterialTheme.shapes.extraLarge,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(Modifier.padding(horizontal = EkataSpacing.sm, vertical = EkataSpacing.xs), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.home_view_trip), color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.labelLarge)
+                        Spacer(Modifier.width(EkataSpacing.xs))
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(EkataIconSize.small))
+                    }
+                }
+            }
         }
     }
 }
 
 @Composable
 fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier) {
-    InfoCard(modifier) {
-        if (weather == null) {
-            Text("Weather", color = EkataBlue, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(12.dp))
-            Text("Weather unavailable", fontSize = 13.sp, color = EkataTextSecondary)
-        } else {
-            Text("Weather in ${weather.location}", color = EkataBlue, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("${weather.temperature}°C", fontSize = 27.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.width(6.dp))
-                Icon(weatherIcon(weather.weatherType), weather.condition, tint = EkataBlue, modifier = Modifier.size(27.dp))
+    Card(modifier = modifier, shape = MaterialTheme.shapes.large, elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low)) {
+        Box(Modifier.fillMaxSize()) {
+            weather?.imageRes?.let {
+                Image(painterResource(it), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
             }
-            Text(weather.condition, fontSize = 12.sp, color = EkataTextSecondary)
-            Text("Humidity  ${weather.humidity}%", fontSize = 11.sp, color = EkataTextSecondary, modifier = Modifier.padding(top = 5.dp))
-            weather.imageRes?.let {
-                Image(painterResource(it), null, Modifier.align(Alignment.End).size(54.dp).offset(y = (-18).dp).clip(RoundedCornerShape(13.dp)), contentScale = ContentScale.Crop)
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.78f), Color.Transparent, EkataImageScrim.copy(alpha = 0.28f)))))
+            Column(Modifier.fillMaxSize().padding(EkataSpacing.sm)) {
+                HomeWidgetHeader(
+                    icon = Icons.Default.Cloud,
+                    title = weather?.let { stringResource(R.string.home_weather_in, it.location) } ?: stringResource(R.string.home_weather),
+                    subtitle = stringResource(R.string.home_weather_subtitle),
+                    onImage = true,
+                )
+                if (weather == null) {
+                    Text(stringResource(R.string.home_weather_unavailable), style = MaterialTheme.typography.bodyMedium, color = EkataOnImage, modifier = Modifier.padding(top = EkataSpacing.lg))
+                } else {
+                    Row(Modifier.padding(top = EkataSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.home_temperature, weather.temperature), style = MaterialTheme.typography.displaySmall, color = EkataOnImage)
+                        Spacer(Modifier.width(EkataSpacing.xs))
+                        Icon(weatherIcon(weather.weatherType), weather.condition, tint = EkataOnImage, modifier = Modifier.size(EkataIconSize.large))
+                    }
+                    Text(weather.condition, style = MaterialTheme.typography.titleMedium, color = EkataOnImage)
+                    Spacer(Modifier.weight(1f))
+                    Surface(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.93f), shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
+                        Row(Modifier.padding(horizontal = EkataSpacing.xxs, vertical = EkataSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
+                            WeatherMetric(Icons.Default.WaterDrop, stringResource(R.string.home_humidity_value, weather.humidity), stringResource(R.string.home_humidity_label), MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+                            WeatherMetricDivider()
+                            WeatherMetric(Icons.Default.Air, stringResource(R.string.home_wind_value), stringResource(R.string.home_wind_label), EkataSuccess, Modifier.weight(1f))
+                            WeatherMetricDivider()
+                            WeatherMetric(Icons.Default.WbTwilight, stringResource(R.string.home_sunrise_value), stringResource(R.string.home_sunrise_label), EkataWarning, Modifier.weight(1f))
+                        }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun WeatherMetric(icon: ImageVector, value: String, label: String, accent: Color, modifier: Modifier = Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(Modifier.size(28.dp).background(accent.copy(alpha = 0.12f), CircleShape), contentAlignment = Alignment.Center) {
+            Icon(icon, null, tint = accent, modifier = Modifier.size(EkataIconSize.small))
+        }
+        Text(value, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+@Composable
+private fun WeatherMetricDivider() {
+    Box(Modifier.width(1.dp).height(44.dp).background(MaterialTheme.colorScheme.outline))
+}
+
+@Composable
+private fun HomeWidgetHeader(icon: ImageVector, title: String, subtitle: String, onImage: Boolean = false) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            Modifier.size(40.dp).background(
+                if (onImage) EkataOnImage.copy(alpha = 0.2f) else MaterialTheme.colorScheme.primaryContainer,
+                MaterialTheme.shapes.medium,
+            ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(icon, null, tint = if (onImage) EkataOnImage else MaterialTheme.colorScheme.primary, modifier = Modifier.size(EkataIconSize.medium))
+        }
+        Spacer(Modifier.width(EkataSpacing.xs))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.titleSmall, color = if (onImage) EkataOnImage else MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = if (onImage) EkataOnImage.copy(alpha = 0.78f) else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+@Composable
+private fun WidgetMetric(icon: ImageVector, value: String, label: String, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(EkataIconSize.small))
+            Spacer(Modifier.width(EkataSpacing.xxs))
+            Text(value, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -288,52 +415,38 @@ private fun weatherIcon(type: WeatherType): ImageVector = when (type) {
 }
 
 @Composable
-private fun InfoCard(modifier: Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Card(
-        modifier = modifier.height(166.dp),
-        shape = RoundedCornerShape(21.dp),
-        colors = CardDefaults.cardColors(containerColor = EkataCardBackground),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-    ) { Column(Modifier.fillMaxSize().padding(14.dp), content = content) }
-}
-
-@Composable
-private fun InfoLine(icon: ImageVector, text: String) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 5.dp)) {
-        Icon(icon, null, tint = EkataTextSecondary, modifier = Modifier.size(13.dp))
-        Spacer(Modifier.width(4.dp))
-        Text(text, fontSize = 10.sp, color = EkataTextSecondary)
-    }
+private fun HomeInfoImage(@DrawableRes imageRes: Int) {
+    Image(
+        painter = painterResource(imageRes),
+        contentDescription = null,
+        modifier = Modifier.fillMaxWidth().height(EkataComponentSize.cardMediaHeight).clip(MaterialTheme.shapes.medium),
+        contentScale = ContentScale.Crop,
+    )
 }
 
 @Composable
 fun PopularDestinationsSection(destinations: List<PopularDestination>, onDestinationClick: (Int) -> Unit) {
     if (destinations.isEmpty()) {
-        EmptyMessage("Popular destinations will appear here")
+        EkataEmptyState(
+            title = stringResource(R.string.home_no_popular_title),
+            message = stringResource(R.string.home_no_popular_message),
+            modifier = Modifier.padding(horizontal = EkataSpacing.md),
+        )
         return
     }
-    LazyRow(
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(11.dp),
-    ) {
-        items(destinations, key = { it.id }) { destination ->
-            DestinationImageCard(destination) { onDestinationClick(destination.id) }
-        }
+    LazyRow(contentPadding = PaddingValues(horizontal = EkataSpacing.md), horizontalArrangement = Arrangement.spacedBy(EkataSpacing.sm)) {
+        items(destinations, key = { it.id }) { destination -> DestinationImageCard(destination) { onDestinationClick(destination.id) } }
     }
 }
 
 @Composable
 fun DestinationImageCard(destination: PopularDestination, onClick: () -> Unit) {
-    Box(Modifier.width(132.dp).height(104.dp).clip(RoundedCornerShape(19.dp)).clickable(onClick = onClick)) {
+    EkataImageCard(
+        onClick = onClick,
+        modifier = Modifier.width(164.dp).height(132.dp),
+    ) {
         Image(painterResource(destination.imageRes), destination.name, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xB8000000)))))
-        Text(destination.name, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, modifier = Modifier.align(Alignment.BottomStart).padding(10.dp))
-    }
-}
-
-@Composable
-private fun EmptyMessage(text: String) {
-    Box(Modifier.fillMaxWidth().height(100.dp).padding(horizontal = 20.dp).background(EkataCardBackground, RoundedCornerShape(20.dp)), contentAlignment = Alignment.Center) {
-        Text(text, fontSize = 13.sp, color = EkataTextSecondary)
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, EkataImageScrim.copy(alpha = 0.76f)))))
+        Text(destination.name, color = EkataOnImage, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.align(Alignment.BottomStart).padding(EkataSpacing.sm))
     }
 }
