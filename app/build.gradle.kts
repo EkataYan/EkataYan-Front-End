@@ -10,8 +10,10 @@ plugins {
 val localConfiguration = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
+val productionBackendUrl = "https://ekata-yan-463f8.containers.snapdeploy.app/"
 val backendUrl = providers.gradleProperty("BACKEND_BASE_URL")
-    .orElse(provider { localConfiguration.getProperty("BACKEND_BASE_URL", "") })
+    .orElse(provider { localConfiguration.getProperty("BACKEND_BASE_URL", productionBackendUrl) })
+    .map { it.ifBlank { productionBackendUrl } }
 val supabaseUrl = providers.gradleProperty("SUPABASE_URL")
     .orElse(provider { localConfiguration.getProperty("SUPABASE_URL", "") })
 val supabasePublishableKey = providers.gradleProperty("SUPABASE_PUBLISHABLE_KEY")
@@ -32,16 +34,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "BACKEND_BASE_URL", quoted(backendUrl.get()))
         buildConfigField("String", "SUPABASE_URL", quoted(supabaseUrl.get()))
         buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", quoted(supabasePublishableKey.get()))
     }
 
     buildTypes {
-        debug {
-            buildConfigField("String", "BACKEND_BASE_URL", quoted(backendUrl.get().ifBlank { "http://10.0.2.2:5000/" }))
-        }
         release {
-            buildConfigField("String", "BACKEND_BASE_URL", quoted(backendUrl.get()))
             optimization {
                 enable = false
             }
