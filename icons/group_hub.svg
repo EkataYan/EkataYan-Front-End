@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+
+<defs>
+  <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#57B7FF"/>
+    <stop offset="55%" stop-color="#2F80ED"/>
+    <stop offset="100%" stop-color="#1D5FD1"/>
+  </linearGradient>
+  <linearGradient id="blueLight" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#A8DBFF"/>
+    <stop offset="100%" stop-color="#6BB9F6"/>
+  </linearGradient>
+  <linearGradient id="tealGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#26E0B3"/>
+    <stop offset="100%" stop-color="#08B89A"/>
+  </linearGradient>
+  <filter id="softShadow" x="-25%" y="-25%" width="150%" height="150%">
+    <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1D5FD1" flood-opacity="0.16"/>
+  </filter>
+</defs>
+
+<g filter="url(#softShadow)">
+  <circle cx="256" cy="174" r="72" fill="url(#blueGrad)"/>
+  <circle cx="142" cy="211" r="50" fill="url(#blueLight)"/>
+  <circle cx="370" cy="211" r="50" fill="url(#blueLight)"/>
+  <path d="M133 384c0-67 55-121 123-121s123 54 123 121v28H133v-28Z" fill="url(#blueGrad)"/>
+  <path d="M53 372c0-52 41-94 92-94 27 0 50 12 67 30-25 27-41 64-41 104H53v-40Z" fill="#6BB9F6"/>
+  <path d="M459 372c0-52-41-94-92-94-27 0-50 12-67 30 25 27 41 64 41 104h118v-40Z" fill="#6BB9F6"/>
+  <g fill="url(#tealGrad)">
+    <rect x="386" y="78" width="18" height="60" rx="9" transform="rotate(4 395 108)"/>
+    <rect x="417" y="95" width="18" height="60" rx="9" transform="rotate(42 426 125)"/>
+    <rect x="433" y="132" width="18" height="60" rx="9" transform="rotate(88 442 162)"/>
+  </g>
+</g>
+</svg>

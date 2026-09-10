@@ -3,8 +3,10 @@ package com.ekatayan.app.app.navigation
 import com.ekatayan.app.ui.businesspartner.*
 import com.ekatayan.app.viewmodel.BusinessPartnerViewModel
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import android.net.Uri
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -39,6 +41,7 @@ import com.ekatayan.app.ui.settings.settingsScreen
 import com.ekatayan.app.ui.splash.SPLASH_ROUTE
 import com.ekatayan.app.ui.splash.splashScreen
 import com.ekatayan.app.ui.welcome.WELCOME_ROUTE
+import com.ekatayan.app.ui.welcome.WelcomePreferences
 import com.ekatayan.app.ui.welcome.welcomeScreen
 import com.ekatayan.app.ui.trips.CREATE_TRIP_ROUTE
 import com.ekatayan.app.ui.trips.TRIPS_ROUTE
@@ -57,6 +60,8 @@ fun EkataYanNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    val welcomePreferences = remember(context) { WelcomePreferences(context) }
     val businessPartnerViewModel: BusinessPartnerViewModel = hiltViewModel()
     val wishlistViewModel: WishlistViewModel = hiltViewModel()
     val groupHubViewModel: GroupHubViewModel = hiltViewModel()
@@ -67,8 +72,15 @@ fun EkataYanNavHost(
         startDestination = SPLASH_ROUTE,
         modifier = modifier,
     ) {
-        splashScreen(onSplashFinished = navController::navigateToWelcomeFromSplash)
+        splashScreen(onSplashFinished = {
+            if (welcomePreferences.hasCompletedWelcome()) {
+                navController.navigateToLoginFromSplash()
+            } else {
+                navController.navigateToWelcomeFromSplash()
+            }
+        })
         welcomeScreen(onGetStarted = {
+            welcomePreferences.markWelcomeCompleted()
             navController.navigate(LOGIN_ROUTE) {
                 popUpTo(WELCOME_ROUTE) { inclusive = true }
                 launchSingleTop = true
@@ -227,6 +239,13 @@ private fun NavHostController.navigateToSignUp() {
 
 private fun NavHostController.navigateToWelcomeFromSplash() {
     navigate(WELCOME_ROUTE) {
+        popUpTo(SPLASH_ROUTE) { inclusive = true }
+        launchSingleTop = true
+    }
+}
+
+private fun NavHostController.navigateToLoginFromSplash() {
+    navigate(LOGIN_ROUTE) {
         popUpTo(SPLASH_ROUTE) { inclusive = true }
         launchSingleTop = true
     }

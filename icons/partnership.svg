@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+
+<defs>
+  <linearGradient id="blueGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#57B7FF"/>
+    <stop offset="55%" stop-color="#2F80ED"/>
+    <stop offset="100%" stop-color="#1D5FD1"/>
+  </linearGradient>
+  <linearGradient id="blueLight" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#A8DBFF"/>
+    <stop offset="100%" stop-color="#6BB9F6"/>
+  </linearGradient>
+  <linearGradient id="tealGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#26E0B3"/>
+    <stop offset="100%" stop-color="#08B89A"/>
+  </linearGradient>
+  <filter id="softShadow" x="-25%" y="-25%" width="150%" height="150%">
+    <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#1D5FD1" flood-opacity="0.16"/>
+  </filter>
+</defs>
+
+<g filter="url(#softShadow)">
+  <path d="M120 153h272l34 78c8 18-5 38-25 38-18 0-31-12-35-27-4 16-18 27-36 27-18 0-31-12-35-27-4 16-18 27-36 27-18 0-31-12-35-27-4 16-18 27-36 27-18 0-31-12-35-27-4 16-18 27-36 27-20 0-33-20-25-38l28-78Z" fill="url(#blueGrad)"/>
+  <path d="M109 269h294v159H109V269Z" fill="url(#blueLight)"/>
+  <rect x="218" y="322" width="76" height="106" rx="14" fill="#2F80ED"/>
+  <rect x="140" y="305" width="57" height="62" rx="10" fill="#D8F0FF"/>
+  <rect x="315" y="305" width="57" height="62" rx="10" fill="#D8F0FF"/>
+  <path d="M168 153h45l-10 88c-2 16-15 28-31 28-19 0-33-17-29-35l25-81Zm89 0h45l8 88c2 16-11 28-27 28-17 0-31-13-31-30l5-86Zm89 0h46l28 78c7 19-7 38-27 38-16 0-29-11-32-27l-15-89Z" fill="#F7FBFF" opacity=".95"/>
+  <g fill="url(#tealGrad)">
+    <rect x="394" y="76" width="18" height="60" rx="9" transform="rotate(7 403 106)"/>
+    <rect x="424" y="96" width="18" height="60" rx="9" transform="rotate(43 433 126)"/>
+    <rect x="438" y="134" width="18" height="60" rx="9" transform="rotate(90 447 164)"/>
+  </g>
+</g>
+</svg>
