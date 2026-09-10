@@ -1,0 +1,18 @@
+<resources>
+    <string name="wishlist_title">Wish List</string>
+    <string name="wishlist_create_content_description">Create wishlist</string>
+    <string name="wishlist_edit">Edit</string>
+    <string name="wishlist_plan_with_ai">Plan your trip with AI</string>
+    <string name="wishlist_add_place">Add Place</string>
+    <string name="wishlist_back">Back</string>
+    <string name="wishlist_remove_place">Remove %1$s</string>
+    <string name="wishlist_search_destinations">Search destinations...</string>
+    <plurals name="wishlist_places">
+        <item quantity="one">%1$d place</item>
+        <item quantity="other">%1$d places</item>
+    </plurals>
+    <plurals name="wishlist_saved_places">
+        <item quantity="one">%1$d saved place</item>
+        <item quantity="other">%1$d saved places</item>
+    </plurals>
+</resources>

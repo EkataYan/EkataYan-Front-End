@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -30,6 +31,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -51,6 +54,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -58,7 +63,12 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.ekatayan.app.core.designsystem.theme.EkataLightBlue
+import com.ekatayan.app.core.designsystem.theme.EkataElevation
+import com.ekatayan.app.core.designsystem.theme.EkataRadius
+import com.ekatayan.app.core.designsystem.theme.EkataSpacing
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
+import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
+import com.ekatayan.app.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -81,11 +91,11 @@ fun WishlistGroupCard(
     val hasCover = coverPlace != null || deviceCover != null
     Surface(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(EkataRadius.large),
         color = EmptyCoverColor,
-        shadowElevation = 4.dp,
+        shadowElevation = EkataElevation.medium,
     ) {
-        Box(Modifier.fillMaxWidth().height(185.dp)) {
+        Box(Modifier.fillMaxWidth().height(190.dp)) {
             when {
                 deviceCover != null -> UriCoverImage(deviceCover, group.name)
                 coverPlace != null -> Image(
@@ -95,16 +105,34 @@ fun WishlistGroupCard(
                     contentScale = ContentScale.Crop,
                 )
             }
-            if (hasCover) Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC000000)), startY = 90f)))
-            Text(
-                text = group.name,
-                color = if (hasCover) Color.White else EkataTextPrimary,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(if (hasCover) Alignment.BottomStart else Alignment.Center).padding(18.dp),
-            )
+            if (hasCover) {
+                Box(
+                    Modifier.fillMaxSize().background(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, Color(0x16000000), Color(0xD9000000)),
+                            startY = 65f,
+                        ),
+                    ),
+                )
+            }
+            Column(
+                modifier = Modifier.align(Alignment.BottomStart).padding(EkataSpacing.md),
+            ) {
+                Text(
+                    text = group.name,
+                    color = if (hasCover) Color.White else EkataTextPrimary,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = pluralStringResource(R.plurals.wishlist_places, group.items.size, group.items.size),
+                    color = if (hasCover) Color.White.copy(alpha = 0.9f) else EkataTextSecondary,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+            }
             Box(Modifier.align(Alignment.TopEnd)) {
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(Icons.Default.MoreVert, "Wishlist options", tint = if (hasCover) Color.White else EkataTextPrimary)
@@ -140,25 +168,28 @@ private fun UriCoverImage(uriString: String, contentDescription: String) {
 
 @Composable
 fun CreateWishlistButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(
+    FloatingActionButton(
         onClick = onClick,
-        modifier = modifier.padding(top = 10.dp, bottom = 8.dp).height(44.dp),
-        shape = RoundedCornerShape(10.dp),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 14.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = EkataLightBlue, contentColor = EkataTextPrimary),
+        modifier = modifier.size(56.dp),
+        shape = CircleShape,
+        containerColor = EkataLightBlue.copy(alpha = 0.58f),
+        contentColor = EkataTextPrimary,
+        elevation = FloatingActionButtonDefaults.elevation(defaultElevation = EkataElevation.medium),
     ) {
-        Icon(Icons.Default.Add, null, Modifier.size(19.dp))
-        Spacer(Modifier.width(6.dp))
-        Text("Create Wishlist", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Icon(
+            Icons.Default.Add,
+            contentDescription = stringResource(R.string.wishlist_create_content_description),
+            tint = Color.Black,
+            modifier = Modifier.size(24.dp),
+        )
     }
 }
 
 @Composable
-fun EmptyWishlistState(onCreateClick: () -> Unit, modifier: Modifier = Modifier) {
+fun EmptyWishlistState(modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().padding(vertical = 70.dp, horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Text("No wishlists yet", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
         Text("Create your first wishlist to save the places you love.", color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp, bottom = 20.dp))
-        CreateWishlistButton(onCreateClick)
     }
 }
 
