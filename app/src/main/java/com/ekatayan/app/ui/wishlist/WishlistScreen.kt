@@ -8,19 +8,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.size
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,15 +24,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
-import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
+import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
+import com.ekatayan.app.R
 
 @Composable
 fun WishlistScreen(
@@ -74,16 +70,14 @@ fun WishlistScreen(
     Box(modifier.fillMaxSize().background(EkataBackground)) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 45.dp, bottom = 112.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 47.dp, bottom = 176.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
                 WishlistHeader(onNotificationClick, onSettingsClick, hasUnreadNotifications)
-                CreateWishlistButton(onClick = { createDialogVisible = true })
-                Spacer(Modifier.height(4.dp))
             }
             if (uiState.groups.isEmpty()) {
-                item { EmptyWishlistState(onCreateClick = { createDialogVisible = true }) }
+                item { EmptyWishlistState() }
             } else {
                 items(uiState.groups, key = WishlistGroup::id) { group ->
                     WishlistGroupCard(
@@ -99,6 +93,10 @@ fun WishlistScreen(
                 }
             }
         }
+        CreateWishlistButton(
+            onClick = { createDialogVisible = true },
+            modifier = Modifier.align(Alignment.BottomEnd).padding(end = 20.dp, bottom = 92.dp),
+        )
         AppBottomNavigation(
             selectedItem = AppBottomNavItem.HOME,
             onHomeClick = onHomeClick,
@@ -107,6 +105,7 @@ fun WishlistScreen(
             onExpensesClick = onExpensesClick,
             onProfileClick = onProfileClick,
             modifier = Modifier.align(Alignment.BottomCenter),
+            compact = true,
         )
     }
 
@@ -172,7 +171,14 @@ fun WishlistScreen(
 @Composable
 private fun WishlistHeader(onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Text("Wish List", fontSize = 28.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications, Modifier.offset(y = HeaderActionsTopPadding - 45.dp))
+        Text(
+            stringResource(R.string.wishlist_title),
+            color = EkataTextPrimary,
+            fontSize = 30.sp,
+            lineHeight = 34.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f),
+        )
+        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications)
     }
 }

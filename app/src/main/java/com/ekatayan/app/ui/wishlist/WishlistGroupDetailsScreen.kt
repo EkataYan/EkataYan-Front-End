@@ -15,18 +15,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -50,6 +50,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -57,10 +59,15 @@ import androidx.compose.ui.unit.sp
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
-import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
+import com.ekatayan.app.core.designsystem.theme.EkataBlue
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
+import com.ekatayan.app.core.designsystem.theme.EkataElevation
 import com.ekatayan.app.core.designsystem.theme.EkataLightBlue
+import com.ekatayan.app.core.designsystem.theme.EkataRadius
+import com.ekatayan.app.core.designsystem.theme.EkataSpacing
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
+import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
+import com.ekatayan.app.R
 
 @Composable
 fun WishlistGroupDetailsScreen(
@@ -97,6 +104,7 @@ fun WishlistGroupDetailsScreen(
                 onPlannerClick = onPlannerClick,
                 onExpensesClick = onExpensesClick,
                 onProfileClick = onProfileClick,
+                compact = true,
             )
         },
     ) { scaffoldPadding ->
@@ -108,11 +116,11 @@ fun WishlistGroupDetailsScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 45.dp, bottom = scaffoldPadding.calculateBottomPadding() + 16.dp),
-                verticalArrangement = Arrangement.spacedBy(11.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 47.dp, bottom = scaffoldPadding.calculateBottomPadding() + 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 item {
-                    GroupDetailsHeader(group.name, onBackClick, onNotificationClick, onSettingsClick, hasUnreadNotifications)
+                    GroupDetailsHeader(group.name, group.items.size, onBackClick, onNotificationClick, onSettingsClick, hasUnreadNotifications)
                     GroupActions(
                         onEditClick = { renameVisible = true },
                         onPlanWithAiClick = onPlanWithAiClick,
@@ -145,43 +153,114 @@ fun WishlistGroupDetailsScreen(
 }
 
 @Composable
-private fun GroupDetailsHeader(title: String, onBackClick: () -> Unit, onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onBackClick, modifier = Modifier.size(32.dp)) { Icon(Icons.Default.KeyboardArrowLeft, "Back", modifier = Modifier.size(28.dp)) }
-        Text(title, fontSize = 28.sp, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications, Modifier.offset(y = HeaderActionsTopPadding - 45.dp))
+private fun GroupDetailsHeader(title: String, placeCount: Int, onBackClick: () -> Unit, onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        IconButton(onClick = onBackClick, modifier = Modifier.size(40.dp)) {
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.wishlist_back), tint = EkataTextPrimary, modifier = Modifier.size(24.dp))
+        }
+        Column(Modifier.weight(1f).padding(start = 4.dp, top = 2.dp, end = 6.dp)) {
+            Text(
+                title,
+                color = EkataTextPrimary,
+                fontSize = 28.sp,
+                lineHeight = 32.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                pluralStringResource(R.plurals.wishlist_saved_places, placeCount, placeCount),
+                color = EkataTextSecondary,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 1.dp),
+            )
+        }
+        HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications)
     }
 }
 
 @Composable
 private fun GroupActions(onEditClick: () -> Unit, onPlanWithAiClick: () -> Unit, onAddPlaceClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(top = 14.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        CompactAction("Edit", Icons.Default.Edit, onEditClick)
-        CompactAction("Plan your trip with AI", Icons.Default.AutoAwesome, onPlanWithAiClick, Modifier.weight(1f))
-        IconButton(onClick = onAddPlaceClick, modifier = Modifier.size(44.dp).background(EkataLightBlue, RoundedCornerShape(10.dp))) {
-            Icon(Icons.Default.Add, "Add Place")
+    Row(
+        Modifier.fillMaxWidth().padding(top = EkataSpacing.md, bottom = EkataSpacing.xs),
+        horizontalArrangement = Arrangement.spacedBy(EkataSpacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        CompactAction(stringResource(R.string.wishlist_edit), Icons.Default.Edit, onEditClick)
+        CompactAction(stringResource(R.string.wishlist_plan_with_ai), Icons.Default.AutoAwesome, onPlanWithAiClick, Modifier.weight(1f), prominent = true)
+        Surface(
+            onClick = onAddPlaceClick,
+            modifier = Modifier.size(48.dp),
+            shape = RoundedCornerShape(EkataRadius.large),
+            color = EkataLightBlue,
+            contentColor = EkataBlue,
+            shadowElevation = EkataElevation.low,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(Icons.Default.Add, stringResource(R.string.wishlist_add_place), modifier = Modifier.size(25.dp))
+            }
         }
     }
 }
 
 @Composable
-private fun CompactAction(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(onClick, modifier.height(44.dp), shape = RoundedCornerShape(10.dp), contentPadding = PaddingValues(horizontal = 12.dp), colors = ButtonDefaults.buttonColors(containerColor = EkataLightBlue, contentColor = EkataTextPrimary)) {
-        Icon(icon, null, modifier = Modifier.size(19.dp)); Spacer(Modifier.width(5.dp)); Text(label, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+private fun CompactAction(
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    prominent: Boolean = false,
+) {
+    Surface(
+        onClick = onClick,
+        modifier = modifier.height(48.dp),
+        shape = RoundedCornerShape(EkataRadius.large),
+        color = if (prominent) EkataLightBlue else EkataLightBlue.copy(alpha = 0.58f),
+        contentColor = if (prominent) EkataBlue else EkataTextPrimary,
+        shadowElevation = if (prominent) EkataElevation.low else EkataElevation.none,
+    ) {
+        Row(
+            Modifier.padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            Icon(icon, null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(label, fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
     }
 }
 
 @Composable
 fun WishlistPlaceCard(item: WishlistItem, onHeartClick: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), shadowElevation = 3.dp) {
-        Box(Modifier.fillMaxWidth().height(190.dp)) {
+    Surface(modifier.fillMaxWidth(), shape = RoundedCornerShape(EkataRadius.large), shadowElevation = EkataElevation.medium) {
+        Box(Modifier.fillMaxWidth().height(196.dp)) {
             Image(painterResource(item.imageRes), item.name, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0x22000000), Color(0xD9000000)))))
-            Text(item.name, color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Medium, modifier = Modifier.align(Alignment.TopStart).padding(13.dp))
-            IconButton(onClick = onHeartClick, modifier = Modifier.align(Alignment.TopEnd)) { Icon(Icons.Default.Favorite, "Remove ${item.name}", tint = Color(0xFFFF2851), modifier = Modifier.size(27.dp)) }
-            Column(Modifier.align(Alignment.BottomStart).padding(13.dp).padding(end = 8.dp)) {
-                item.location?.let { Text(it, color = Color.White.copy(.8f), fontSize = 11.sp, fontWeight = FontWeight.SemiBold) }
-                Text(item.description, color = Color.White, fontSize = 12.sp, lineHeight = 15.sp, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0x08000000), Color(0x20000000), Color(0xE6000000)))))
+            Surface(
+                onClick = onHeartClick,
+                modifier = Modifier.align(Alignment.TopEnd).padding(10.dp).size(42.dp),
+                shape = RoundedCornerShape(EkataRadius.large),
+                color = Color.White.copy(alpha = 0.92f),
+                contentColor = Color(0xFFFF2851),
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Default.Favorite,
+                        stringResource(R.string.wishlist_remove_place, item.name),
+                        modifier = Modifier.size(23.dp),
+                    )
+                }
+            }
+            Column(Modifier.align(Alignment.BottomStart).padding(14.dp).padding(end = 8.dp)) {
+                Text(item.name, color = Color.White, fontSize = 22.sp, lineHeight = 25.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                item.location?.let { location ->
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 2.dp)) {
+                        Icon(Icons.Default.LocationOn, null, tint = Color.White, modifier = Modifier.size(15.dp))
+                        Text(location, color = Color.White.copy(alpha = 0.92f), fontSize = 12.sp, modifier = Modifier.padding(start = 3.dp))
+                    }
+                }
+                Text(item.description, color = Color.White.copy(alpha = 0.94f), fontSize = 12.sp, lineHeight = 15.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 3.dp))
             }
         }
     }
@@ -207,12 +286,12 @@ private fun AddPlaceDialog(
     val results = searchDestinations(query)
     WishlistPopupSurface(onDismiss) {
         Column(Modifier.padding(20.dp)) {
-            Text("Add Place", fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.wishlist_add_place), fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                placeholder = { Text("Search destinations...") },
+                placeholder = { Text(stringResource(R.string.wishlist_search_destinations)) },
                 leadingIcon = { Icon(Icons.Default.Search, null) },
                 singleLine = true,
                 colors = wishlistTextFieldColors(),
