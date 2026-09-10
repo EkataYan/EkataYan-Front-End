@@ -172,8 +172,8 @@ fun CreateWishlistButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
         onClick = onClick,
         modifier = modifier.size(56.dp),
         shape = CircleShape,
-        containerColor = EkataLightBlue.copy(alpha = 0.58f),
-        contentColor = EkataTextPrimary,
+        containerColor = Color(0xFFD6ECFA),
+        contentColor = Color.Black,
         elevation = FloatingActionButtonDefaults.elevation(defaultElevation = EkataElevation.medium),
     ) {
         Icon(
