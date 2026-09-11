@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 
 data class ProfileUiState(
     val profile: ProfileDetails? = null,
+    val name: String = "",
     val email: String = "",
     val isLoading: Boolean = true,
     val error: ProfileFailure? = null,
@@ -31,27 +32,73 @@ class ProfileViewModel @Inject constructor(
     val uiState = mutableState.asStateFlow()
     private var loadJob: Job? = null
 
-    init { loadProfile() }
+    init {
+        viewModelScope.launch {
+            repository.profile.collect { profile ->
+                if (profile != null) {
+                    mutableState.value = mutableState.value.withLocalIdentity(
+                        profile = profile,
+                        isLoading = false,
+                        error = null,
+                    )
+                }
+            }
+        }
+        loadProfile()
+    }
 
     fun loadProfile() {
         if (loadJob?.isActive == true) return
         loadJob = viewModelScope.launch {
-            mutableState.value = ProfileUiState(email = authRepository.currentUserEmail().orEmpty())
-            mutableState.value = try {
-                ProfileUiState(profile = repository.getProfile(), email = authRepository.currentUserEmail().orEmpty(), isLoading = false)
+            mutableState.value = mutableState.value.withLocalIdentity(
+                isLoading = mutableState.value.profile == null,
+                error = null,
+            )
+            try {
+                mutableState.value = mutableState.value.withLocalIdentity(
+                    profile = repository.getProfile(),
+                    isLoading = false,
+                    error = null,
+                )
             } catch (e: ProfileLoadException) {
                 if (e.failure == ProfileFailure.AUTHENTICATION && authRepository.refreshSession()) {
                     try {
-                        ProfileUiState(profile = repository.getProfile(), email = authRepository.currentUserEmail().orEmpty(), isLoading = false)
+                        mutableState.value = mutableState.value.withLocalIdentity(
+                            profile = repository.getProfile(),
+                            isLoading = false,
+                            error = null,
+                        )
                     } catch (retry: ProfileLoadException) {
-                        ProfileUiState(email = authRepository.currentUserEmail().orEmpty(), isLoading = false, error = retry.failure)
+                        mutableState.value = mutableState.value.withLocalIdentity(isLoading = false, error = retry.failure)
                     }
-                } else ProfileUiState(email = authRepository.currentUserEmail().orEmpty(), isLoading = false, error = e.failure)
+                } else {
+                    mutableState.value = mutableState.value.withLocalIdentity(isLoading = false, error = e.failure)
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                ProfileUiState(email = authRepository.currentUserEmail().orEmpty(), isLoading = false, error = ProfileFailure.SERVER)
+                mutableState.value = mutableState.value.withLocalIdentity(isLoading = false, error = ProfileFailure.SERVER)
             }
         }
     }
+
+    fun onRefreshErrorShown() {
+        mutableState.value = mutableState.value.copy(error = null)
+    }
+
+    fun logout() {
+        authRepository.clearSession()
+    }
+
+    private fun ProfileUiState.withLocalIdentity(
+        profile: ProfileDetails? = this.profile,
+        isLoading: Boolean = this.isLoading,
+        error: ProfileFailure? = this.error,
+    ) = copy(
+        profile = profile,
+        name = authRepository.currentUserName().orEmpty().ifBlank { name },
+        email = authRepository.currentUserEmail().orEmpty().ifBlank { email },
+        isLoading = isLoading,
+        error = error,
+    )
 }

@@ -8,6 +8,7 @@ import com.ekatayan.app.viewmodel.TripsUiState
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +16,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,12 +31,14 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.outlined.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
@@ -52,7 +54,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -63,12 +64,13 @@ import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
 import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
-import com.ekatayan.app.core.designsystem.theme.EkataBackground
+import com.ekatayan.app.core.designsystem.component.EkataSectionHeading
 import com.ekatayan.app.core.designsystem.theme.EkataBlue
-import com.ekatayan.app.core.designsystem.theme.EkataCardBackground
+import com.ekatayan.app.core.designsystem.theme.EkataBlueDark
+import com.ekatayan.app.core.designsystem.theme.EkataElevation
 import com.ekatayan.app.core.designsystem.theme.EkataLightBlue
-import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
-import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
+import com.ekatayan.app.core.designsystem.theme.EkataRadius
+import com.ekatayan.app.core.designsystem.theme.EkataSpacing
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -96,8 +98,8 @@ fun TripsScreen(
     modifier: Modifier = Modifier,
 ) {
     var pendingDeleteTrip by remember { mutableStateOf<Trip?>(null) }
-    Box(modifier = modifier.fillMaxSize().background(EkataBackground)) {
-        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 112.dp)) {
+    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = EkataSpacing.xxl * 2 + EkataSpacing.xl)) {
             item { TripsHeader(onAddTripClick, onNotificationClick, onSettingsClick, hasUnreadNotifications) }
             item {
                 MonthCalendar(
@@ -108,7 +110,7 @@ fun TripsScreen(
                     onNextMonthClick = onNextMonthClick,
                     selectedDate = uiState.selectedDate,
                     onDateClick = onDateClick,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                    modifier = Modifier.padding(horizontal = EkataSpacing.md, vertical = EkataSpacing.sm),
                 )
             }
             item { TimelineHeader() }
@@ -117,7 +119,7 @@ fun TripsScreen(
                 if (statusTrips.isNotEmpty()) {
                     item { TimelineStatusHeader(status) }
                     items(statusTrips, key = { it.id }) { trip ->
-                        TripTimelineCard(trip, { onTripClick(trip) }, uiState.today, Modifier.padding(horizontal = 20.dp, vertical = 6.dp), { pendingDeleteTrip = trip })
+                        TripTimelineCard(trip, { onTripClick(trip) }, uiState.today, Modifier.padding(horizontal = EkataSpacing.md, vertical = EkataSpacing.xs / 2), { pendingDeleteTrip = trip })
                     }
                 }
             }
@@ -130,6 +132,7 @@ fun TripsScreen(
             onExpensesClick = onExpensesClick,
             onProfileClick = onProfileClick,
             modifier = Modifier.align(Alignment.BottomCenter),
+            compact = true,
         )
     }
     pendingDeleteTrip?.let { trip ->
@@ -145,18 +148,37 @@ fun TripsScreen(
 
 @Composable
 private fun TimelineStatusHeader(@StringRes status: Int) {
-    Text(stringResource(status), style = androidx.compose.material3.MaterialTheme.typography.titleMedium, color = EkataTextPrimary, modifier = Modifier.padding(start = 20.dp, top = 14.dp, bottom = 2.dp))
+    Text(
+        stringResource(status).uppercase(Locale.getDefault()),
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = EkataSpacing.md, top = EkataSpacing.sm, bottom = EkataSpacing.xxs),
+    )
 }
 
 @Composable
 private fun TripsHeader(onAddTripClick: () -> Unit, onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(start = 21.dp, top = HeaderActionsTopPadding, end = 14.dp),
+        modifier = Modifier.fillMaxWidth().padding(start = EkataSpacing.md, top = HeaderActionsTopPadding, end = EkataSpacing.sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(stringResource(R.string.trips_title), fontFamily = FontFamily.Serif, fontWeight = FontWeight.SemiBold, fontSize = 27.sp, color = EkataTextPrimary)
-        IconButton(onClick = onAddTripClick, modifier = Modifier.size(38.dp)) {
-            Icon(Icons.Default.Add, stringResource(R.string.trips_add), tint = EkataBlue, modifier = Modifier.size(24.dp))
+        Text(
+            stringResource(R.string.trips_title),
+            style = MaterialTheme.typography.headlineMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Spacer(Modifier.width(EkataSpacing.xs))
+        Surface(
+            onClick = onAddTripClick,
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary,
+            shadowElevation = EkataElevation.medium,
+            modifier = Modifier.size(44.dp),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(Icons.Default.Add, stringResource(R.string.trips_add), tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(25.dp))
+            }
         }
         Spacer(Modifier.weight(1f))
         HeaderActions(onNotificationClick, onSettingsClick, hasUnreadNotifications)
@@ -176,41 +198,61 @@ private fun MonthCalendar(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(23.dp),
-        colors = CardDefaults.cardColors(containerColor = EkataLightBlue),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low),
     ) {
-        Column(Modifier.padding(horizontal = 15.dp, vertical = 13.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                IconButton(onClick = onPreviousMonthClick, modifier = Modifier.size(34.dp)) {
-                    Icon(Icons.Default.ChevronLeft, stringResource(R.string.trips_previous_month), tint = EkataTextPrimary)
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().background(EkataLightBlue).padding(horizontal = EkataSpacing.sm, vertical = 10.dp),
+            ) {
+                CalendarMonthButton(Icons.Default.ChevronLeft, R.string.trips_previous_month, onPreviousMonthClick)
+                Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        month.atDay(1).format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        textAlign = TextAlign.Center,
+                    )
                 }
-                Text(
-                    month.atDay(1).format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f),
-                )
-                IconButton(onClick = onNextMonthClick, modifier = Modifier.size(34.dp)) {
-                    Icon(Icons.Default.ChevronRight, stringResource(R.string.trips_next_month), tint = EkataTextPrimary)
-                }
+                CalendarMonthButton(Icons.Default.ChevronRight, R.string.trips_next_month, onNextMonthClick)
             }
-            Spacer(Modifier.height(8.dp))
-            CalendarWeekdayRow()
-            CalendarDays(month, today, selectedDate, trips, onDateClick)
+            Column(Modifier.padding(horizontal = EkataSpacing.sm, vertical = EkataSpacing.sm)) {
+                CalendarWeekdayRow()
+                Spacer(Modifier.height(EkataSpacing.xxs))
+                CalendarDays(month, today, selectedDate, trips, onDateClick)
+                Spacer(Modifier.height(EkataSpacing.sm))
+                CalendarLegend()
+            }
+        }
+    }
+}
+
+@Composable
+private fun CalendarMonthButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    @StringRes contentDescription: Int,
+    onClick: () -> Unit,
+) {
+    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)) {
+        IconButton(onClick = onClick, modifier = Modifier.size(40.dp)) {
+            Icon(icon, stringResource(contentDescription), tint = MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(23.dp))
         }
     }
 }
 
 @Composable
 private fun CalendarWeekdayRow() {
-    Row(Modifier.fillMaxWidth()) {
+    Row(
+        Modifier.fillMaxWidth().background(EkataLightBlue.copy(alpha = 0.65f), RoundedCornerShape(EkataRadius.medium)).padding(vertical = 7.dp),
+    ) {
         DayOfWeek.entries.forEach { day ->
             Text(
-                day.getDisplayName(TextStyle.NARROW, Locale.getDefault()),
-                color = EkataTextSecondary,
-                fontSize = 11.sp,
+                day.getDisplayName(TextStyle.SHORT, Locale.getDefault()).uppercase(Locale.getDefault()),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.weight(1f),
             )
@@ -226,8 +268,11 @@ private fun CalendarDays(
     trips: List<Trip>,
     onDateClick: (LocalDate) -> Unit,
 ) {
-    Column(Modifier.padding(top = 4.dp)) {
-        calendarMonthGrid(month).chunked(7).forEach { week ->
+    Column {
+        calendarMonthGrid(month)
+            .chunked(7)
+            .dropLastWhile { week -> week.all { it == null } }
+            .forEach { week ->
             Row(Modifier.fillMaxWidth()) {
                 week.forEach { date -> CalendarDay(date, today, selectedDate, trips, onDateClick, Modifier.weight(1f)) }
             }
@@ -251,69 +296,110 @@ private fun CalendarDay(
     val isStart = date != null && trip?.startDate == date
     val isEnd = date != null && trip?.endDate == date
     Box(
-        modifier = modifier.aspectRatio(1f).padding(2.dp).then(
+        modifier = modifier.height(40.dp).then(
             if (date != null) Modifier.clickable { onDateClick(date) } else Modifier
         ),
         contentAlignment = Alignment.Center,
     ) {
         if (date != null) {
-            val background = when { isToday -> EkataBlue; isSelected -> Color.White; hasTrip -> Color.White.copy(alpha = 0.8f); else -> Color.Transparent }
-            val shape = when { isStart && isEnd -> RoundedCornerShape(50); isStart -> RoundedCornerShape(topStart = 50.dp, bottomStart = 50.dp); isEnd -> RoundedCornerShape(topEnd = 50.dp, bottomEnd = 50.dp); hasTrip -> RoundedCornerShape(0.dp); else -> CircleShape }
-            Text(
-                date.dayOfMonth.toString(),
-                color = if (isToday) Color.White else EkataTextPrimary,
-                fontSize = 12.sp,
-                fontWeight = if (isToday || hasTrip || isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().background(background, shape).padding(vertical = 5.dp),
-            )
+            if (hasTrip) {
+                val rangeShape = when {
+                    isStart && isEnd -> RoundedCornerShape(50)
+                    isStart -> RoundedCornerShape(topStart = 50.dp, bottomStart = 50.dp)
+                    isEnd -> RoundedCornerShape(topEnd = 50.dp, bottomEnd = 50.dp)
+                    else -> RoundedCornerShape(0.dp)
+                }
+                Box(Modifier.fillMaxWidth().height(30.dp).background(EkataLightBlue, rangeShape))
+            }
+            Box(
+                modifier = Modifier.size(32.dp).then(
+                    when {
+                        isSelected -> Modifier.background(EkataBlue, CircleShape)
+                        isToday -> Modifier.border(2.dp, EkataBlue, CircleShape)
+                        else -> Modifier
+                    }
+                ),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    date.dayOfMonth.toString(),
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else if (hasTrip) EkataBlueDark else MaterialTheme.colorScheme.onSurface,
+                    fontSize = 13.sp,
+                    fontWeight = if (isToday || hasTrip || isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    textAlign = TextAlign.Center,
+                )
+                if (isToday && !isSelected) {
+                    Box(Modifier.align(Alignment.BottomCenter).padding(bottom = 3.dp).size(3.dp).background(EkataBlue, CircleShape))
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun TimelineHeader() {
+private fun CalendarLegend() {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 6.dp),
+        modifier = Modifier.fillMaxWidth().background(EkataLightBlue.copy(alpha = 0.55f), RoundedCornerShape(EkataRadius.medium)).padding(horizontal = EkataSpacing.sm, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(EkataSpacing.xs),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(stringResource(R.string.trips_timeline), fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
+        CalendarLegendItem(stringResource(R.string.trips_calendar_selected), Modifier.background(EkataBlue, CircleShape), Modifier.weight(1f))
+        CalendarLegendItem(stringResource(R.string.trips_calendar_trip_dates), Modifier.background(EkataLightBlue, RoundedCornerShape(50)), Modifier.weight(1f))
+        CalendarLegendItem(stringResource(R.string.trips_calendar_today), Modifier.border(2.dp, EkataBlue, CircleShape), Modifier.weight(1f))
     }
+}
+
+@Composable
+private fun CalendarLegendItem(label: String, markerModifier: Modifier, modifier: Modifier = Modifier) {
+    Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+        Box(markerModifier.size(12.dp))
+        Spacer(Modifier.width(5.dp))
+        Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun TimelineHeader() {
+    EkataSectionHeading(
+        title = stringResource(R.string.trips_timeline),
+        supportingText = stringResource(R.string.trips_timeline_subtitle),
+        modifier = Modifier.padding(horizontal = EkataSpacing.md, vertical = EkataSpacing.xs),
+    )
 }
 
 @Composable
 fun TripTimelineCard(trip: Trip, onClick: () -> Unit, today: LocalDate = LocalDate.now(), modifier: Modifier = Modifier, onDeleteClick: () -> Unit = {}) {
     Card(
         modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = EkataCardBackground),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low),
     ) {
-        Row(Modifier.height(116.dp).padding(11.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.height(112.dp).padding(EkataSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painterResource(trip.imageRes),
                 trip.customName ?: if (trip.nameRes != 0) stringResource(trip.nameRes) else "",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(94.dp).clip(RoundedCornerShape(14.dp)),
+                modifier = Modifier.size(88.dp).clip(MaterialTheme.shapes.medium),
             )
             Spacer(Modifier.width(13.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.Center) {
                 Text(tripDateRange(trip.startDate, trip.endDate), color = EkataBlue, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(4.dp))
-                Text(trip.customName ?: stringResource(trip.nameRes), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(trip.customName ?: stringResource(trip.nameRes), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(Modifier.height(5.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Outlined.LocationOn, null, tint = EkataTextSecondary, modifier = Modifier.size(14.dp))
+                    Icon(Icons.Outlined.LocationOn, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(3.dp))
-                    Text(trip.customLocation ?: stringResource(trip.locationRes), color = EkataTextSecondary, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(trip.customLocation ?: stringResource(trip.locationRes), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Spacer(Modifier.height(7.dp))
                 TripStatus(trip.statusFor(today))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(Icons.Outlined.ArrowForwardIos, stringResource(R.string.trips_open_trip), tint = EkataTextSecondary, modifier = Modifier.size(15.dp))
+                Icon(Icons.AutoMirrored.Outlined.ArrowForwardIos, stringResource(R.string.trips_open_trip), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(15.dp))
                 IconButton(onClick = onDeleteClick, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Delete, stringResource(R.string.trips_delete_action), tint = EkataTextSecondary, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Delete, stringResource(R.string.trips_delete_action), tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                 }
             }
         }
@@ -326,8 +412,8 @@ internal fun TripStatus(@StringRes statusRes: Int) {
         stringResource(statusRes),
         fontSize = 10.sp,
         fontWeight = FontWeight.Medium,
-        color = EkataBlue,
-        modifier = Modifier.background(EkataLightBlue, RoundedCornerShape(20.dp)).padding(horizontal = 9.dp, vertical = 3.dp),
+        color = MaterialTheme.colorScheme.onPrimaryContainer,
+        modifier = Modifier.background(MaterialTheme.colorScheme.primaryContainer, CircleShape).padding(horizontal = 9.dp, vertical = 3.dp),
     )
 }
 

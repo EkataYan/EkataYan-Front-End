@@ -26,6 +26,7 @@ interface AuthRepository {
     suspend fun restoreSession(): Boolean
     suspend fun refreshSession(): Boolean
     fun currentUserEmail(): String? = null
+    fun currentUserName(): String? = null
     fun clearSession()
 }
 
@@ -35,7 +36,7 @@ class SupabaseAuthRepository @Inject constructor(
 ) : AuthRepository {
     override suspend fun signIn(email: String, password: String) {
         try {
-            store(api.get().signInWithPassword(request = PasswordSignInRequest(email, password)), email)
+            store(api.get().signInWithPassword(request = PasswordSignInRequest(email, password)), authenticatedEmail = email)
         } catch (e: AuthenticationException) {
             throw e
         } catch (e: HttpException) {
@@ -59,7 +60,7 @@ class SupabaseAuthRepository @Inject constructor(
                 PasswordSignUpRequest(email, password, PasswordSignUpMetadata(fullName = name, phone = phone)),
             )
             val result = if (response.hasSession()) {
-                store(response, email)
+                store(response, authenticatedEmail = email, authenticatedName = name)
                 SignUpResult.AUTHENTICATED
             } else {
                 SignUpResult.EMAIL_CONFIRMATION_REQUIRED
@@ -85,7 +86,7 @@ class SupabaseAuthRepository @Inject constructor(
 
     override suspend fun restoreSession(): Boolean {
         if (session.currentAccessToken() != null) {
-            if (session.currentUserEmail() == null) refreshSession()
+            if (session.currentUserEmail() == null || session.currentUserName() == null) refreshSession()
             return session.currentAccessToken() != null
         }
         return refreshSession()
@@ -117,7 +118,13 @@ class SupabaseAuthRepository @Inject constructor(
 
     override fun currentUserEmail(): String? = session.currentUserEmail()
 
-    private fun store(value: SupabaseSessionDto, authenticatedEmail: String? = session.currentUserEmail()) {
+    override fun currentUserName(): String? = session.currentUserName()
+
+    private fun store(
+        value: SupabaseSessionDto,
+        authenticatedEmail: String? = session.currentUserEmail(),
+        authenticatedName: String? = session.currentUserName(),
+    ) {
         val access = value.accessToken
         val refresh = value.refreshToken
         val expiresAt = value.expiresAtSeconds?.times(1_000)
@@ -125,7 +132,13 @@ class SupabaseAuthRepository @Inject constructor(
         if (access.isNullOrBlank() || refresh.isNullOrBlank() || expiresAt == null || expiresAt <= System.currentTimeMillis()) {
             throw AuthenticationException(AuthenticationFailure.INVALID_RESPONSE)
         }
-        session.setSession(access, refresh, expiresAt, value.user?.email ?: authenticatedEmail)
+        session.setSession(
+            accessToken = access,
+            refreshToken = refresh,
+            expiresAtMillis = expiresAt,
+            email = value.user?.email ?: authenticatedEmail,
+            name = value.user?.userMetadata?.fullName ?: authenticatedName,
+        )
     }
 
     private fun SupabaseSessionDto.hasSession() =

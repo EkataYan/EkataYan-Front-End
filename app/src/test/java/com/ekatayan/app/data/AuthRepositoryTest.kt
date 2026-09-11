@@ -10,6 +10,7 @@ import com.ekatayan.app.data.remote.dto.PasswordSignUpMetadata
 import com.ekatayan.app.data.remote.dto.PasswordSignUpRequest
 import com.ekatayan.app.data.remote.dto.SupabaseSessionDto
 import com.ekatayan.app.data.remote.dto.SupabaseUserDto
+import com.ekatayan.app.data.remote.dto.SupabaseUserMetadataDto
 import com.ekatayan.app.data.repository.SupabaseAuthRepository
 import com.ekatayan.app.data.repository.SignUpResult
 import com.google.gson.Gson
@@ -42,8 +43,10 @@ class AuthRepositoryTest {
         assertEquals("access", session.currentAccessToken())
         assertEquals("refresh", session.refreshToken())
         assertEquals("traveler@example.com", session.currentUserEmail())
+        assertEquals("Traveler", session.currentUserName())
         assertEquals("access", UserSessionProvider(store).currentAccessToken())
         assertEquals("traveler@example.com", UserSessionProvider(store).currentUserEmail())
+        assertEquals("Traveler", UserSessionProvider(store).currentUserName())
     }
 
     @Test fun refreshReplacesPersistedSessionAndClearRemovesIt() = runTest {
@@ -53,13 +56,14 @@ class AuthRepositoryTest {
         val repository = SupabaseAuthRepository(Lazy { FakeSupabaseAuthApi() }, session)
         assertTrue(repository.refreshSession())
         assertEquals("access", session.currentAccessToken())
+        assertEquals("Traveler", session.currentUserName())
         repository.clearSession()
         assertNull(UserSessionProvider(store).refreshToken())
     }
 
     @Test fun restoreUsesPersistedAccessTokenWithoutNetworkRequest() = runTest {
         val store = AuthMemorySessionStore()
-        UserSessionProvider(store).setSession("access", "refresh", Long.MAX_VALUE, "traveler@example.com")
+        UserSessionProvider(store).setSession("access", "refresh", Long.MAX_VALUE, "traveler@example.com", "Traveler")
         val api = FakeSupabaseAuthApi()
         val repository = SupabaseAuthRepository(Lazy { api }, UserSessionProvider(store))
 
@@ -77,11 +81,20 @@ class AuthRepositoryTest {
         assertTrue(repository.restoreSession())
         assertEquals(1, api.refreshCalls)
         assertEquals("traveler@example.com", repository.currentUserEmail())
+        assertEquals("Traveler", repository.currentUserName())
     }
 
     @Test fun authenticatedSignUpStoresTheSharedSession() = runTest {
         val store = AuthMemorySessionStore()
-        val api = FakeSupabaseAuthApi()
+        val api = FakeSupabaseAuthApi(
+            signUpResponse = SupabaseSessionDto(
+                "access",
+                "refresh",
+                3600,
+                null,
+                SupabaseUserDto("user-id", "new@example.com"),
+            ),
+        )
         val session = UserSessionProvider(store)
 
         assertEquals(SignUpResult.AUTHENTICATED, SupabaseAuthRepository(Lazy { api }, session).signUp("New Traveler", "new@example.com", "+94771234567", "password"))
@@ -90,6 +103,7 @@ class AuthRepositoryTest {
             api.signUpRequest,
         )
         assertEquals("access", session.currentAccessToken())
+        assertEquals("New Traveler", session.currentUserName())
     }
 
     @Test fun confirmationRequiredSignUpDoesNotStoreASession() = runTest {
@@ -133,7 +147,7 @@ private class FakeSupabaseAuthApi(
             "refresh",
             3600,
             null,
-            SupabaseUserDto("user-id", "traveler@example.com"),
+            SupabaseUserDto("user-id", "traveler@example.com", SupabaseUserMetadataDto("Traveler")),
         )
     }
 }
