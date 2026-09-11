@@ -9,7 +9,15 @@ data class PasswordSignUpMetadata(
     val phone: String,
 )
 
-data class SupabaseUserDto(val id: String?, val email: String?)
+data class SupabaseUserMetadataDto(
+    @SerializedName("full_name") val fullName: String? = null,
+)
+
+data class SupabaseUserDto(
+    val id: String?,
+    val email: String?,
+    @SerializedName("user_metadata") val userMetadata: SupabaseUserMetadataDto? = null,
+)
 
 data class PasswordSignUpRequest(
     val email: String,

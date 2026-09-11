@@ -4,6 +4,15 @@ import com.google.gson.annotations.SerializedName
 
 data class ApiResponse<T>(val success: Boolean, val data: T?)
 
+data class UpdateProfileRequest(
+    @SerializedName("display_name") val displayName: String,
+    val bio: String,
+    @SerializedName("home_city") val homeCity: String,
+    val language: String,
+    val interests: List<String>,
+    val phone: String,
+)
+
 data class ProfileDto(
     val id: String?,
     @SerializedName("display_name") val displayName: String?,

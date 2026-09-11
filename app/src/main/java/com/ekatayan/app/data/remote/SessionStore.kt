@@ -12,6 +12,7 @@ data class StoredSession(
     val refreshToken: String,
     val expiresAtMillis: Long,
     val email: String? = null,
+    val name: String? = null,
 )
 
 interface SessionStore {
@@ -37,14 +38,15 @@ class EncryptedSessionStore @Inject constructor(
         val refresh = preferences.getString(REFRESH_TOKEN, null)
         val expiry = preferences.getLong(EXPIRES_AT, 0)
         val email = preferences.getString(EMAIL, null)
+        val name = preferences.getString(NAME, null)
         return if (access.isNullOrBlank() || refresh.isNullOrBlank() || expiry <= 0) null
-        else StoredSession(access, refresh, expiry, email)
+        else StoredSession(access, refresh, expiry, email, name)
     }
 
     override fun save(session: StoredSession) {
         preferences.edit().putString(ACCESS_TOKEN, session.accessToken)
             .putString(REFRESH_TOKEN, session.refreshToken).putLong(EXPIRES_AT, session.expiresAtMillis)
-            .putString(EMAIL, session.email).apply()
+            .putString(EMAIL, session.email).putString(NAME, session.name).apply()
     }
 
     override fun clear() { preferences.edit().clear().apply() }
@@ -54,5 +56,6 @@ class EncryptedSessionStore @Inject constructor(
         const val REFRESH_TOKEN = "refresh_token"
         const val EXPIRES_AT = "expires_at"
         const val EMAIL = "email"
+        const val NAME = "name"
     }
 }
