@@ -30,6 +30,14 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
     private fun WishlistData.toUiState() = WishlistUiState(groups, availableDestinations)
 
     fun createGroup(name: String): Boolean {
+        return createGroup(name, initialItem = null)
+    }
+
+    fun createGroupWithPlace(name: String, item: WishlistItem): Boolean {
+        return createGroup(name, initialItem = item)
+    }
+
+    private fun createGroup(name: String, initialItem: WishlistItem?): Boolean {
         val trimmedName = name.trim()
         if (trimmedName.isEmpty()) return false
         repository.update { state ->
@@ -38,6 +46,7 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
                 groups = state.groups + WishlistGroup(
                     id = nextId,
                     name = trimmedName,
+                    items = listOfNotNull(initialItem).distinctBy(WishlistItem::id),
                 ),
             )
         }

@@ -7,13 +7,6 @@ data class User(
     @param:DrawableRes val profileImageRes: Int?,
 )
 
-data class RecommendedDestination(
-    val id: Int,
-    val name: String,
-    val description: String,
-    @param:DrawableRes val imageRes: Int,
-)
-
 data class UpcomingTrip(
     val id: Int,
     val destination: String,
@@ -31,10 +24,4 @@ data class WeatherInfo(
     val humidity: Int,
     val weatherType: WeatherType,
     @param:DrawableRes val imageRes: Int?,
-)
-
-data class PopularDestination(
-    val id: Int,
-    val name: String,
-    @param:DrawableRes val imageRes: Int,
 )

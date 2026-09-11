@@ -1,11 +1,10 @@
 package com.ekatayan.app.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.ekatayan.app.data.model.PopularDestination
-import com.ekatayan.app.data.model.RecommendedDestination
 import com.ekatayan.app.data.model.UpcomingTrip
 import com.ekatayan.app.data.model.User
 import com.ekatayan.app.data.model.WeatherInfo
+import com.ekatayan.app.data.model.WishlistItem
 import com.ekatayan.app.data.repository.HomeRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -16,10 +15,10 @@ import kotlinx.coroutines.flow.update
 
 data class HomeUiState(
     val user: User,
-    val recommendedDestinations: List<RecommendedDestination>,
+    val recommendedDestinations: List<WishlistItem>,
     val upcomingTrip: UpcomingTrip?,
     val weather: WeatherInfo?,
-    val popularDestinations: List<PopularDestination>,
+    val popularDestinations: List<WishlistItem>,
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
