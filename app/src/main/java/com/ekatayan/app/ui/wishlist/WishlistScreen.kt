@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Intent
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -60,8 +62,12 @@ fun WishlistScreen(
     var coverGroup by remember { mutableStateOf<WishlistGroup?>(null) }
     var coverChoicesVisible by remember { mutableStateOf(false) }
     var savedPlaceSelectorVisible by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     var coverGroupId by remember { mutableStateOf<Int?>(null) }
     val coverPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) runCatching {
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
         val selectedGroupId = coverGroupId
         if (uri != null && selectedGroupId != null) onUpdateGroupCoverFromDevice(selectedGroupId, uri.toString())
         coverGroupId = null

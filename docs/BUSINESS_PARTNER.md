@@ -6,7 +6,7 @@ Created under `app/src/main/java/com/ekatayan/app/feature/businesspartner/`:
 
 - `BusinessPartnerModels.kt`: profile, categories, listings, booking statuses, hours, links, document references, drafts, state, validation.
 - `ListingConfiguration.kt`: category-specific field definitions, validation, business-category mapping, and simple availability model.
-- `LocalBusinessPartnerRepository.kt`: in-memory state and demo seed data.
+- `LocalBusinessPartnerRepository.kt`: Room-backed local state and one-time demo data.
 - `BusinessPartnerViewModel.kt`: shared state transitions and validation.
 - `BusinessPartnerNavigation.kt`: partner route constants and existing-graph registration.
 - `BusinessPartnerRoute.kt`: state collection, system pickers, event wiring, screen scaffold, and partner bottom navigation.

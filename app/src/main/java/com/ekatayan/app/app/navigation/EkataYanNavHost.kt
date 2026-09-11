@@ -54,6 +54,7 @@ import com.ekatayan.app.ui.wishlist.wishlistGroupRoute
 import com.ekatayan.app.ui.wishlist.wishlistScreens
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @Composable
 fun EkataYanNavHost(
@@ -62,6 +63,7 @@ fun EkataYanNavHost(
 ) {
     val context = LocalContext.current
     val welcomePreferences = remember(context) { WelcomePreferences(context) }
+    val preferenceScope = androidx.compose.runtime.rememberCoroutineScope()
     val businessPartnerViewModel: BusinessPartnerViewModel = hiltViewModel()
     val wishlistViewModel: WishlistViewModel = hiltViewModel()
     val groupHubViewModel: GroupHubViewModel = hiltViewModel()
@@ -80,10 +82,12 @@ fun EkataYanNavHost(
             }
         })
         welcomeScreen(onGetStarted = {
-            welcomePreferences.markWelcomeCompleted()
-            navController.navigate(LOGIN_ROUTE) {
-                popUpTo(WELCOME_ROUTE) { inclusive = true }
-                launchSingleTop = true
+            preferenceScope.launch {
+                welcomePreferences.markWelcomeCompleted()
+                navController.navigate(LOGIN_ROUTE) {
+                    popUpTo(WELCOME_ROUTE) { inclusive = true }
+                    launchSingleTop = true
+                }
             }
         })
         loginScreen(

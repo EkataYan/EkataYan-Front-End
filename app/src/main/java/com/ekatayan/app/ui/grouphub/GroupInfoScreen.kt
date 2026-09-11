@@ -8,6 +8,7 @@ import com.ekatayan.app.viewmodel.GroupHubUiState
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,8 +32,12 @@ import com.ekatayan.app.core.designsystem.theme.*
 fun GroupInfoScreen(groupId: String, state: GroupHubUiState, onBackClick: () -> Unit, onRename: (String, String) -> Unit, onDescription: (String, String) -> Unit, onPhoto: (String, String) -> Unit, onAddMembers: (String, Set<String>) -> Unit, onRemoveMember: (String, String) -> Unit, onFavourite: (String) -> Unit, onTheme: (String, ChatTheme) -> Unit, onBackground: (String, String?) -> Unit, onRemoveGroup: () -> Unit, modifier: Modifier = Modifier) {
     val group = state.groups.find { it.id == groupId } ?: return EmptyState("Group unavailable")
     var editName by remember { mutableStateOf(false) }; var editDescription by remember { mutableStateOf(false) }; var addMembers by remember { mutableStateOf(false) }; var themeDialog by remember { mutableStateOf(false) }; var leaveDialog by remember { mutableStateOf(false) }; var deleteDialog by remember { mutableStateOf(false) }
-    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let { uri -> onPhoto(groupId, uri.toString()) } }
-    val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let { uri -> onBackground(groupId, uri.toString()) } }
+    val context = LocalContext.current
+    fun retain(uri: android.net.Uri) {
+        runCatching { context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+    }
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let { uri -> retain(uri); onPhoto(groupId, uri.toString()) } }
+    val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let { uri -> retain(uri); onBackground(groupId, uri.toString()) } }
     Column(modifier.fillMaxSize().background(EkataBackground).statusBarsPadding()) {
         Row(Modifier.fillMaxWidth().height(60.dp).background(Color.White), verticalAlignment = Alignment.CenterVertically) { IconButton(onBackClick) { Icon(Icons.Default.ArrowBack, "Back") }; Text("Group Info", fontSize = 20.sp, fontWeight = FontWeight.Bold) }
         LazyColumn(contentPadding = PaddingValues(20.dp, 20.dp, 20.dp, 40.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {

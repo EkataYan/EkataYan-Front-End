@@ -79,7 +79,7 @@ fun BusinessPartnerRoute(route: String, listingId: String?, viewModel: BusinessP
     val partnerArea = route in listOf(PARTNER_HOME_ROUTE, PARTNER_LISTINGS_ROUTE, PARTNER_BOOKINGS_ROUTE,
         PARTNER_PROFILE_ROUTE, PARTNER_ANALYTICS_ROUTE, PARTNER_ADD_LISTING_ROUTE, PARTNER_EDIT_PROFILE_ROUTE,
         PARTNER_DETAIL_ROUTE, PARTNER_EDIT_LISTING_ROUTE)
-    // In-memory demo state intentionally does not survive process death; never show an empty restored workspace.
+    // Protected destinations require the locally persisted partner session and completed onboarding state.
     if (partnerArea && !state.loggedIn || step == 5 && !state.profile.submitted) {
         LaunchedEffect(route) { onRestartFlow() }
         return

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.UUID
 
 @HiltViewModel
 class WishlistViewModel @Inject constructor(private val repository: WishlistRepository) : ViewModel() {
@@ -41,7 +42,9 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
         val trimmedName = name.trim()
         if (trimmedName.isEmpty()) return false
         repository.update { state ->
-            val nextId = (state.groups.maxOfOrNull(WishlistGroup::id) ?: 0) + 1
+            var nextId: Int
+            do nextId = UUID.randomUUID().hashCode() and Int.MAX_VALUE
+            while (nextId == 0 || state.groups.any { it.id == nextId })
             state.copy(
                 groups = state.groups + WishlistGroup(
                     id = nextId,

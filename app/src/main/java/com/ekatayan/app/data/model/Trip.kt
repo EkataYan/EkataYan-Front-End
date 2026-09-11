@@ -14,5 +14,6 @@ data class Trip(
     val customLocation: String? = null,
     val budget: String? = null,
     val notes: String? = null,
+    val imageUri: String? = null,
 )
 

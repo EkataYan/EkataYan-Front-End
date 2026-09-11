@@ -10,6 +10,7 @@ import com.ekatayan.app.viewmodel.GroupHubUiState
 
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +31,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -126,7 +128,13 @@ private fun messagePreview(message: ChatMessage?, state: GroupHubUiState): Strin
 
 @Composable private fun CreateGroupDialog(users: List<ChatUser>, onDismiss: () -> Unit, onCreate: (String, String, Set<String>, String?) -> Unit) {
     var name by remember { mutableStateOf("") }; var description by remember { mutableStateOf("") }; var search by remember { mutableStateOf("") }; var selected by remember { mutableStateOf(setOf<String>()) }; var imageUri by remember { mutableStateOf<String?>(null) }
-    val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { imageUri = it?.toString() }
+    val context = LocalContext.current
+    val picker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) runCatching {
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        imageUri = uri?.toString()
+    }
     StyledDialog(onDismiss) {
         Text("Create Group", fontSize = 21.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp)); DialogInput(name, { name = it }, "Group name *"); Spacer(Modifier.height(8.dp)); DialogInput(description, { description = it }, "Description (optional)")
