@@ -7,49 +7,93 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
 
-data class PlannerUiState(
-    val destination: String = "", val startDate: LocalDate? = null, val endDate: LocalDate? = null,
-    val budget: String = "", val travelers: String = "2 travelers",
-    val accommodation: String = "Any accommodation", val transport: String = "Public transport",
-    val tripType: String = "A balanced trip", val interests: String = "Nature & culture", val error: String? = null,
-)
+enum class TravellerType(val fixedPartySize: Int?) {
+    SOLO(1),
+    COUPLE(2),
+    FAMILY(null),
+    FRIENDS(null),
+}
 
-enum class PreferenceKind { TRAVELERS, ACCOMMODATION, TRANSPORT, TRIP_TYPE, INTERESTS }
+data class PlannerUiState(
+    val destination: String = "",
+    val travellerType: TravellerType? = null,
+    val customPeopleCount: String = "",
+    val startDate: LocalDate? = null,
+    val endDate: LocalDate? = null,
+    val error: String? = null,
+) {
+    val requiresCustomPeopleCount: Boolean
+        get() = travellerType == TravellerType.FAMILY || travellerType == TravellerType.FRIENDS
+
+    val partySize: Int?
+        get() = when (travellerType) {
+            TravellerType.SOLO -> 1
+            TravellerType.COUPLE -> 2
+            TravellerType.FAMILY, TravellerType.FRIENDS ->
+                customPeopleCount.toIntOrNull()?.takeIf { it > 0 }
+            null -> null
+        }
+}
 
 @HiltViewModel
 class PlannerViewModel @Inject constructor() : ViewModel() {
     private val mutableUiState = mutableStateOf(PlannerUiState())
     val uiState: State<PlannerUiState> = mutableUiState
-    fun updateDestination(value: String) { mutableUiState.value = uiState.value.copy(destination = value, error = null) }
-    fun updateBudget(value: String) { mutableUiState.value = uiState.value.copy(budget = value.filter(Char::isDigit), error = null) }
+
+    fun updateDestination(value: String) {
+        mutableUiState.value = uiState.value.copy(destination = value, error = null)
+    }
+
+    fun updateTravellerType(value: TravellerType) {
+        mutableUiState.value = uiState.value.copy(
+            travellerType = value,
+            customPeopleCount = if (value.fixedPartySize != null) "" else uiState.value.customPeopleCount,
+            error = null,
+        )
+    }
+
+    fun updateCustomPeopleCount(value: String) {
+        mutableUiState.value = uiState.value.copy(
+            customPeopleCount = value.filter(Char::isDigit).take(3),
+            error = null,
+        )
+    }
+
     fun updateStartDate(value: LocalDate) {
         val previousEnd = uiState.value.endDate
         mutableUiState.value = uiState.value.copy(
             startDate = value,
             endDate = previousEnd?.takeUnless { it.isBefore(value) },
-            error = if (previousEnd != null && previousEnd.isBefore(value)) "The end date was cleared because it was before the new start date." else null,
+            error = if (previousEnd != null && previousEnd.isBefore(value)) {
+                "The end date was cleared because it was before the new start date."
+            } else {
+                null
+            },
         )
     }
-    fun updateEndDate(value: LocalDate) { mutableUiState.value = uiState.value.copy(endDate = value, error = null) }
-    fun clearStartDate() { mutableUiState.value = uiState.value.copy(startDate = null, error = null) }
-    fun clearEndDate() { mutableUiState.value = uiState.value.copy(endDate = null, error = null) }
-    fun setError(value: String) { mutableUiState.value = uiState.value.copy(error = value) }
-    fun updatePreference(kind: PreferenceKind, value: String) { mutableUiState.value = when (kind) {
-        PreferenceKind.TRAVELERS -> uiState.value.copy(travelers = value)
-        PreferenceKind.ACCOMMODATION -> uiState.value.copy(accommodation = value)
-        PreferenceKind.TRANSPORT -> uiState.value.copy(transport = value)
-        PreferenceKind.TRIP_TYPE -> uiState.value.copy(tripType = value)
-        PreferenceKind.INTERESTS -> uiState.value.copy(interests = value)
-    } }
+
+    fun updateEndDate(value: LocalDate) {
+        if (uiState.value.startDate?.let(value::isBefore) == true) {
+            setError("End date cannot be before the start date.")
+            return
+        }
+        mutableUiState.value = uiState.value.copy(endDate = value, error = null)
+    }
+
+    fun setError(value: String) {
+        mutableUiState.value = uiState.value.copy(error = value)
+    }
+
     fun validate(): Boolean {
         val state = uiState.value
         val error = when {
             state.destination.isBlank() -> "Tell us where you would like to go."
+            state.travellerType == null -> "Choose who will be travelling."
+            state.requiresCustomPeopleCount && state.partySize == null ->
+                "Enter a valid number of people greater than zero."
             state.startDate == null -> "Choose a start date."
             state.endDate == null -> "Choose an end date."
             state.endDate.isBefore(state.startDate) -> "End date cannot be before the start date."
-            state.budget.isBlank() -> "Enter a budget to continue."
-            state.budget.toLongOrNull() == null -> "Enter a valid budget."
             else -> null
         }
         mutableUiState.value = state.copy(error = error)

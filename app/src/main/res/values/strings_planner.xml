@@ -1,0 +1,23 @@
+<resources>
+    <string name="planner_header_title">✦ AI Planner</string>
+    <string name="planner_header_description">Tell us your preferences\nand let EkataYan create\nthe perfect trip for you.</string>
+    <string name="planner_header_image_description">AI Planner travel illustration</string>
+    <string name="planner_destination_label">Where to go?</string>
+    <string name="planner_destination_example">Example: Ella, Sri Lanka</string>
+    <string name="planner_traveller_question">How many people will be attending?</string>
+    <string name="planner_select_option">Select an option</string>
+    <string name="planner_solo">Solo</string>
+    <string name="planner_couple">Couple</string>
+    <string name="planner_family">Family</string>
+    <string name="planner_friends">Friends</string>
+    <string name="planner_number_people">Number of people</string>
+    <string name="planner_number_people_hint">Enter number of people</string>
+    <string name="planner_travel_dates">Travel Dates</string>
+    <string name="planner_start_date">Start Date</string>
+    <string name="planner_end_date">End Date</string>
+    <string name="planner_choose_date">Choose %1$s</string>
+    <string name="planner_ask_ai">Ask AI</string>
+    <string name="planner_ask_ai_subtitle">Generate my perfect itinerary</string>
+    <string name="planner_date_ok">OK</string>
+    <string name="planner_date_cancel">Cancel</string>
+</resources>

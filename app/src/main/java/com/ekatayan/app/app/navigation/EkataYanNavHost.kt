@@ -232,7 +232,11 @@ fun EkataYanNavHost(
 
 private val plannerRouteDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
 
-private fun createTripRoute(planner: PlannerUiState): String = "${CREATE_TRIP_ROUTE}?destination=${Uri.encode(planner.destination)}&start=${planner.startDate?.format(plannerRouteDateFormatter).orEmpty()}&end=${planner.endDate?.format(plannerRouteDateFormatter).orEmpty()}&budget=${Uri.encode(planner.budget)}&preferences=${Uri.encode("${planner.travelers}; ${planner.accommodation}; ${planner.transport}; ${planner.tripType}; ${planner.interests}")}"
+private fun createTripRoute(planner: PlannerUiState): String =
+    "${CREATE_TRIP_ROUTE}?destination=${Uri.encode(planner.destination)}" +
+        "&start=${planner.startDate?.format(plannerRouteDateFormatter).orEmpty()}" +
+        "&end=${planner.endDate?.format(plannerRouteDateFormatter).orEmpty()}" +
+        "&budget=&preferences=${Uri.encode("Party size: ${planner.partySize}")}"
 
 private fun NavHostController.navigateToSignUp() {
     navigate(SIGN_UP_ROUTE) { launchSingleTop = true }
