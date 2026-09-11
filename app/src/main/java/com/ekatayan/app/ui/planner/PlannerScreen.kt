@@ -373,20 +373,19 @@ fun PlannerScreen(
                 shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = EkataBlue
-                )
+                ),
+                enabled = !uiState.isGenerating,
             ) {
 
-                Icon(
-                    imageVector = Icons.Default.AutoAwesome,
-                    contentDescription = null
-                )
+                if (uiState.isGenerating) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
+                else Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null)
 
                 Spacer(modifier = Modifier.width(10.dp))
 
                 Column {
 
                     Text(
-                        text = "Ask AI",
+                        text = if (uiState.isGenerating) "Generating…" else "Ask AI",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
@@ -405,6 +404,33 @@ fun PlannerScreen(
                     contentDescription = null,
                     modifier = Modifier.size(20.dp)
                 )
+            }
+
+            uiState.itinerary?.let { itinerary ->
+                Spacer(Modifier.height(20.dp))
+                Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("Your itinerary", style = MaterialTheme.typography.titleLarge, color = EkataTextPrimary, fontWeight = FontWeight.Bold)
+                        Text(itinerary.summary, color = EkataTextSecondary)
+                        itinerary.days.forEach { day ->
+                            HorizontalDivider()
+                            Text("Day ${day.day} · ${day.date}", style = MaterialTheme.typography.titleMedium, color = EkataBlue, fontWeight = FontWeight.SemiBold)
+                            day.activities.forEach { activity ->
+                                Column(Modifier.padding(vertical = 4.dp)) {
+                                    Text("${activity.time.take(5)}  ${activity.title}", fontWeight = FontWeight.SemiBold, color = EkataTextPrimary)
+                                    Text(activity.location, style = MaterialTheme.typography.labelMedium, color = EkataTextSecondary)
+                                    Text(activity.description, style = MaterialTheme.typography.bodyMedium, color = EkataTextSecondary)
+                                    Text("Estimated: ${itinerary.currency} ${activity.estimatedCost}", style = MaterialTheme.typography.labelMedium, color = EkataBlue)
+                                }
+                            }
+                        }
+                        if (itinerary.travelTips.isNotEmpty()) {
+                            HorizontalDivider()
+                            Text("Travel tips", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            itinerary.travelTips.forEach { Text("• $it", color = EkataTextSecondary) }
+                        }
+                    }
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))

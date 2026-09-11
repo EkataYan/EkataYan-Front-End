@@ -84,7 +84,7 @@ fun HomeScreen(
                     HomeSectionHeading(stringResource(R.string.home_recommended_title))
                 }
                 item { RecommendedSection(uiState.recommendedDestinations, onRecommendedDestinationClick) }
-                item { HomeInfoCards(uiState.upcomingTrip, uiState.weather, onUpcomingTripClick) }
+                item { HomeInfoCards(uiState.upcomingTrip, uiState.weather, onUpcomingTripClick, uiState.isWeatherLoading, uiState.weatherError) }
                 item {
                     HomeSectionHeading(stringResource(R.string.home_popular_title))
                 }
@@ -125,7 +125,7 @@ private fun HomeScreenPreview() {
         user = localDataSource.getUser(),
         recommendedDestinations = localDataSource.getRecommendedDestinations(),
         upcomingTrip = localDataSource.getUpcomingTrip(),
-        weather = localDataSource.getWeather(),
+        weather = null,
         popularDestinations = localDataSource.getPopularDestinations(),
     )
     EkataYanTheme(darkTheme = false) {

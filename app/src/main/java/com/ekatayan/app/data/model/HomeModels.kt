@@ -31,6 +31,11 @@ data class WeatherInfo(
     val humidity: Int,
     val weatherType: WeatherType,
     @param:DrawableRes val imageRes: Int?,
+    val windKph: Double? = null,
+    val sunrise: String? = null,
+    val minCelsius: Double? = null,
+    val maxCelsius: Double? = null,
+    val rainChance: Int? = null,
 )
 
 data class PopularDestination(

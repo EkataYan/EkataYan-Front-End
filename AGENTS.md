@@ -73,13 +73,14 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 
 ## API & Backend Integration
 
-- Profile uses Retrofit/OkHttp through `data/remote/` and `ProfileRepository` for the confirmed `GET /api/users/me` and `PATCH /api/users/me` endpoints. The PATCH request supports `display_name`, `phone`, `bio`, `home_city`, `language`, and `interests`; email and avatar are not updated by this contract. Other feature repositories remain local demos. Profile DTOs map into app models; never expose network DTOs to screens.
+- Profile uses Retrofit/OkHttp through `data/remote/` and `ProfileRepository` for the confirmed `GET /api/users/me` and `PATCH /api/users/me` endpoints. The PATCH request supports `display_name`, `phone`, `bio`, `home_city`, `language`, and `interests`; email and avatar are not updated by this contract. `EkataYanApiService` centralizes the verified Flask contracts for trips, members, itineraries, expenses, chat, notifications, weather, and storage, but their existing UI repositories remain local until each screen is migrated to asynchronous UUID-backed state. Profile DTOs map into app models; never expose network DTOs to screens.
 - `UserSessionProvider` is the shared session boundary used by the Profile authorization interceptor and is backed by encrypted session storage. Supabase Login/Sign Up and refresh populate its tokens, authenticated user email, and full name. Successful backend profile reads and updates refresh the cached display name so stale local data cannot override the server; Profile obtains email from the session boundary. Never insert test tokens into app configuration.
 - The Flask backend defaults to the production HTTPS endpoint through `BACKEND_BASE_URL` in the app Gradle configuration. A Gradle property or ignored `local.properties` entry may override it when explicitly needed. Never configure user tokens or passwords through BuildConfig.
 - The profile response has display name, bio, home city, language, interests and an avatar storage path; it does not provide email or travel statistics. Retain the avatar placeholder until an authorized image-download contract exists.
 - When frontend work needs backend functionality, keep transport/data integration separate from UI and ViewModel presentation code.
 - Do not invent endpoints or contracts. Obtain or clearly document the required endpoint, HTTP method, request fields, response fields, error behavior, authentication requirements, and external backend dependency before implementation.
 - Preserve verified API contracts and existing integration patterns once they are introduced. Record stable cross-repository integration decisions here without including secrets.
+- Home weather uses the authenticated Flask weather endpoint through `WeatherRepository`; it queries the current profile home city and never stores provider credentials in Android. AI Planner creates a real trip, then `ItineraryRepository` calls the authenticated Gemini-backed itinerary endpoint and renders the complete database-persisted itinerary graph returned by Flask.
 
 ## Git & GitHub Workflow
 
