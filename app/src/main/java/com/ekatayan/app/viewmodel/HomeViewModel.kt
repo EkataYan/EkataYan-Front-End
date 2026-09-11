@@ -7,6 +7,8 @@ import com.ekatayan.app.data.model.UpcomingTrip
 import com.ekatayan.app.data.model.User
 import com.ekatayan.app.data.model.WeatherInfo
 import com.ekatayan.app.data.repository.HomeRepository
+import com.ekatayan.app.data.repository.ProfileRepository
+import com.ekatayan.app.data.repository.WeatherRepository
 import com.ekatayan.app.data.remote.UserSessionProvider
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 data class HomeUiState(
     val user: User,
@@ -26,12 +29,16 @@ data class HomeUiState(
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val isWeatherLoading: Boolean = false,
+    val weatherError: String? = null,
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
     private val session: UserSessionProvider,
+    private val profileRepository: ProfileRepository,
+    private val weatherRepository: WeatherRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -41,7 +48,7 @@ class HomeViewModel @Inject constructor(
             },
             recommendedDestinations = homeRepository.getRecommendedDestinations(),
             upcomingTrip = homeRepository.getUpcomingTrip(),
-            weather = homeRepository.getWeather(),
+            weather = null,
             popularDestinations = homeRepository.getPopularDestinations(),
         )
     )
@@ -51,6 +58,24 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             session.userName.collect { name ->
                 if (!name.isNullOrBlank()) _uiState.update { it.copy(user = it.user.copy(name = name)) }
+            }
+        }
+        refreshWeather()
+    }
+
+    fun refreshWeather() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isWeatherLoading = true, weatherError = null) }
+            try {
+                val city = profileRepository.profile.value?.location?.takeIf(String::isNotBlank)
+                    ?: profileRepository.getProfile().location.takeIf(String::isNotBlank)
+                    ?: throw IllegalStateException("Add a home city to your profile to see weather.")
+                val weather = weatherRepository.forecast(city)
+                _uiState.update { it.copy(weather = weather, isWeatherLoading = false) }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                _uiState.update { it.copy(weather = null, isWeatherLoading = false, weatherError = error.message ?: "Weather is unavailable.") }
             }
         }
     }

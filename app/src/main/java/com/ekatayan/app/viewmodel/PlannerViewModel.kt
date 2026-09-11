@@ -3,21 +3,28 @@ package com.ekatayan.app.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ekatayan.app.data.model.Itinerary
+import com.ekatayan.app.data.repository.ItineraryPlanInput
+import com.ekatayan.app.data.repository.ItineraryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 data class PlannerUiState(
     val destination: String = "", val startDate: LocalDate? = null, val endDate: LocalDate? = null,
     val budget: String = "", val travelers: String = "2 travelers",
     val accommodation: String = "Any accommodation", val transport: String = "Public transport",
     val tripType: String = "A balanced trip", val interests: String = "Nature & culture", val error: String? = null,
+    val isGenerating: Boolean = false, val itinerary: Itinerary? = null,
 )
 
 enum class PreferenceKind { TRAVELERS, ACCOMMODATION, TRANSPORT, TRIP_TYPE, INTERESTS }
 
 @HiltViewModel
-class PlannerViewModel @Inject constructor() : ViewModel() {
+class PlannerViewModel @Inject constructor(private val repository: ItineraryRepository) : ViewModel() {
     private val mutableUiState = mutableStateOf(PlannerUiState())
     val uiState: State<PlannerUiState> = mutableUiState
     fun updateDestination(value: String) { mutableUiState.value = uiState.value.copy(destination = value, error = null) }
@@ -54,5 +61,29 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
         }
         mutableUiState.value = state.copy(error = error)
         return error == null
+    }
+
+    fun generate() {
+        if (!validate()) return
+        val state = uiState.value
+        mutableUiState.value = state.copy(isGenerating = true, error = null, itinerary = null)
+        viewModelScope.launch {
+            try {
+                val itinerary = repository.generate(ItineraryPlanInput(
+                    destination = state.destination.trim(), startDate = requireNotNull(state.startDate),
+                    endDate = requireNotNull(state.endDate), budget = state.budget,
+                    travelers = Regex("\\d+").find(state.travelers)?.value?.toIntOrNull()?.coerceIn(1, 100) ?: 1,
+                    accommodation = state.accommodation, transport = state.transport,
+                    travelStyle = state.tripType,
+                    interests = state.interests.split(',', '&').map(String::trim).filter(String::isNotEmpty),
+                ))
+                mutableUiState.value = mutableUiState.value.copy(isGenerating = false, itinerary = itinerary)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                mutableUiState.value = mutableUiState.value.copy(isGenerating = false,
+                    error = error.message ?: "Itinerary generation is temporarily unavailable.")
+            }
+        }
     }
 }

@@ -5,8 +5,6 @@ import com.ekatayan.app.data.model.PopularDestination
 import com.ekatayan.app.data.model.RecommendedDestination
 import com.ekatayan.app.data.model.UpcomingTrip
 import com.ekatayan.app.data.model.User
-import com.ekatayan.app.data.model.WeatherInfo
-import com.ekatayan.app.data.model.WeatherType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,8 +20,6 @@ class HomeLocalDataSource @Inject constructor() {
     )
 
     fun getUpcomingTrip(): UpcomingTrip? = UpcomingTrip(1, "Anuradhapura", "26 Aug 2026", "6 Days", R.drawable.anuradhapura)
-
-    fun getWeather(): WeatherInfo? = WeatherInfo("Colombo", 29, "Sunny", 60, WeatherType.SUNNY, R.drawable.colombo)
 
     fun getPopularDestinations(): List<PopularDestination> = listOf(
         PopularDestination(1, "Sigiriya", R.drawable.sigiriya),

@@ -13,5 +13,5 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun PlannerRoute(onCreateTrip: (PlannerUiState) -> Unit, onHomeClick: () -> Unit, onTripsClick: () -> Unit, onExpensesClick: () -> Unit, onProfileClick: () -> Unit, onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, notificationsUiState: StateFlow<NotificationsUiState>, viewModel: PlannerViewModel = hiltViewModel()) {
     val notificationState by notificationsUiState.collectAsStateWithLifecycle()
-    PlannerScreen(viewModel.uiState.value, viewModel::updateDestination, viewModel::updateBudget, viewModel::updateStartDate, viewModel::updateEndDate, viewModel::clearStartDate, viewModel::clearEndDate, viewModel::setError, viewModel::updatePreference, { if (viewModel.validate()) onCreateTrip(viewModel.uiState.value) }, onHomeClick, onTripsClick, onExpensesClick, onProfileClick, onNotificationClick, onSettingsClick, notificationState.hasUnreadNotifications)
+    PlannerScreen(viewModel.uiState.value, viewModel::updateDestination, viewModel::updateBudget, viewModel::updateStartDate, viewModel::updateEndDate, viewModel::clearStartDate, viewModel::clearEndDate, viewModel::setError, viewModel::updatePreference, viewModel::generate, onHomeClick, onTripsClick, onExpensesClick, onProfileClick, onNotificationClick, onSettingsClick, notificationState.hasUnreadNotifications)
 }

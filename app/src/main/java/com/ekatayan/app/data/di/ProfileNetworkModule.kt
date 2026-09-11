@@ -3,6 +3,7 @@ package com.ekatayan.app.data.di
 import com.ekatayan.app.BuildConfig
 import com.ekatayan.app.data.remote.ProfileAuthInterceptor
 import com.ekatayan.app.data.remote.api.ProfileApiService
+import com.ekatayan.app.data.remote.api.EkataYanApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,20 +18,22 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Module
 @InstallIn(SingletonComponent::class)
 object ProfileNetworkModule {
-    @Provides
-    @Singleton
-    fun profileApi(auth: ProfileAuthInterceptor): ProfileApiService {
+    private fun backendRetrofit(auth: ProfileAuthInterceptor): Retrofit {
         val url = BuildConfig.BACKEND_BASE_URL.toHttpUrl()
         require(url.username.isEmpty() && url.password.isEmpty() && url.query == null && url.fragment == null)
         require(BuildConfig.DEBUG || url.isHttps) { "Release backend must use HTTPS" }
-        val client = OkHttpClient.Builder()
-            .addInterceptor(auth)
-            .followRedirects(false)
-            .followSslRedirects(false)
-            .callTimeout(30, TimeUnit.SECONDS)
-            .build()
+        val client = OkHttpClient.Builder().addInterceptor(auth).followRedirects(false)
+            .followSslRedirects(false).callTimeout(30, TimeUnit.SECONDS).build()
         return Retrofit.Builder().baseUrl(url).client(client)
             .addConverterFactory(GsonConverterFactory.create()).build()
-            .create(ProfileApiService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun profileApi(auth: ProfileAuthInterceptor): ProfileApiService {
+        return backendRetrofit(auth).create(ProfileApiService::class.java)
+    }
+
+    @Provides @Singleton
+    fun applicationApi(auth: ProfileAuthInterceptor): EkataYanApiService = backendRetrofit(auth).create(EkataYanApiService::class.java)
 }
