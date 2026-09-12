@@ -9,6 +9,30 @@ import org.junit.Test
 
 class PlannerViewModelTest {
     @Test
+    fun additionalDestinationsCanBeAddedUpdatedAndRemoved() {
+        val viewModel = PlannerViewModel()
+
+        viewModel.addDestination()
+        viewModel.addDestination()
+        viewModel.updateAdditionalDestination(0, "Kandy")
+        viewModel.updateAdditionalDestination(1, "Galle")
+        viewModel.removeAdditionalDestination(0)
+
+        assertEquals(listOf("Galle"), viewModel.uiState.value.additionalDestinations)
+    }
+
+    @Test
+    fun validationRequiresPrimaryDestinationAndRemovesBlankAdditionalDestinations() {
+        val viewModel = PlannerViewModel()
+        viewModel.addDestination()
+        viewModel.updateAdditionalDestination(0, "Kandy")
+        viewModel.addDestination()
+
+        assertFalse(viewModel.validate())
+        assertEquals(listOf("Kandy"), viewModel.uiState.value.additionalDestinations)
+    }
+
+    @Test
     fun fixedTravellerTypesSetPartySizeAndClearCustomCount() {
         val viewModel = PlannerViewModel()
         viewModel.updateTravellerType(TravellerType.FRIENDS)

@@ -24,8 +24,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
@@ -33,12 +34,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -85,6 +88,7 @@ import java.util.Locale
 private val plannerDateFormat = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
 private val PlannerFieldBorder = Color(0xFFD9E0EA)
 private val PlannerPopupBorder = Color(0xFFAEDCFA)
+private val PlannerDatePickerBackground = Color(0xFFF2F8FC)
 private val PlannerFieldShape = RoundedCornerShape(16.dp)
 private val PlannerPopupShape = RoundedCornerShape(16.dp)
 
@@ -93,6 +97,9 @@ private val PlannerPopupShape = RoundedCornerShape(16.dp)
 fun PlannerScreen(
     uiState: PlannerUiState,
     onDestinationChange: (String) -> Unit,
+    onAddDestination: () -> Unit,
+    onAdditionalDestinationChange: (Int, String) -> Unit,
+    onRemoveAdditionalDestination: (Int) -> Unit,
     onTravellerTypeSelected: (TravellerType) -> Unit,
     onPeopleCountChange: (String) -> Unit,
     onStartDateSelected: (LocalDate) -> Unit,
@@ -150,6 +157,54 @@ fun PlannerScreen(
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 2.dp, top = 6.dp),
                     )
+
+                    uiState.additionalDestinations.forEachIndexed { index, destination ->
+                        Text(
+                            text = stringResource(R.string.planner_additional_place),
+                            color = EkataTextPrimary,
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(top = 14.dp, bottom = 8.dp),
+                        )
+                        OutlinedTextField(
+                            value = destination,
+                            onValueChange = { onAdditionalDestinationChange(index, it) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 62.dp),
+                            placeholder = { Text(stringResource(R.string.planner_additional_place)) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = { onRemoveAdditionalDestination(index) },
+                                    modifier = Modifier.size(48.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = stringResource(R.string.planner_remove_place),
+                                        tint = EkataTextSecondary,
+                                    )
+                                }
+                            },
+                            singleLine = true,
+                            shape = PlannerFieldShape,
+                            colors = fieldColors,
+                        )
+                    }
+
+                    TextButton(
+                        onClick = onAddDestination,
+                        modifier = Modifier.padding(top = 10.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            containerColor = EkataLightBlue,
+                            contentColor = EkataTextPrimary,
+                        ),
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(R.string.planner_add_place),
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
                 }
 
                 Column {
@@ -388,19 +443,13 @@ private fun PlannerDateField(label: String, value: String?, onClick: () -> Unit)
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = EkataTextSecondary)
             Text(
                 text = value ?: label,
                 color = if (value == null) EkataTextSecondary else EkataTextPrimary,
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f).padding(horizontal = 14.dp),
+                modifier = Modifier.weight(1f),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-            )
-            Icon(
-                Icons.Default.CalendarMonth,
-                contentDescription = stringResource(R.string.planner_choose_date, label),
-                tint = EkataTextSecondary,
             )
         }
     }
@@ -417,7 +466,7 @@ private fun PlannerDatePickerDialog(
     MaterialTheme(
         colorScheme = lightColorScheme(
             primary = EkataBlue,
-            surface = Color.White,
+            surface = PlannerDatePickerBackground,
             onSurface = EkataTextPrimary,
         ),
     ) {
@@ -439,11 +488,29 @@ private fun PlannerDatePickerDialog(
                     Text(stringResource(R.string.planner_date_cancel), color = EkataTextPrimary)
                 }
             },
-            modifier = Modifier.border(1.dp, PlannerPopupBorder, RoundedCornerShape(24.dp)),
             shape = RoundedCornerShape(24.dp),
-            colors = androidx.compose.material3.DatePickerDefaults.colors(containerColor = Color.White),
+            colors = DatePickerDefaults.colors(containerColor = PlannerDatePickerBackground),
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    containerColor = PlannerDatePickerBackground,
+                    titleContentColor = EkataTextPrimary,
+                    headlineContentColor = EkataTextPrimary,
+                    weekdayContentColor = EkataTextPrimary,
+                    subheadContentColor = EkataTextPrimary,
+                    navigationContentColor = EkataTextPrimary,
+                    yearContentColor = EkataTextPrimary,
+                    currentYearContentColor = EkataBlue,
+                    selectedYearContentColor = Color.White,
+                    selectedYearContainerColor = EkataBlue,
+                    dayContentColor = EkataTextPrimary,
+                    selectedDayContentColor = Color.White,
+                    selectedDayContainerColor = EkataBlue,
+                    todayContentColor = EkataBlue,
+                    todayDateBorderColor = EkataBlue,
+                ),
+            )
         }
     }
 }

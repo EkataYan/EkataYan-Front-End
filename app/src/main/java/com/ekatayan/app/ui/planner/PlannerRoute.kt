@@ -17,6 +17,9 @@ fun PlannerRoute(onCreateTrip: (PlannerUiState) -> Unit, onHomeClick: () -> Unit
     PlannerScreen(
         uiState = uiState,
         onDestinationChange = viewModel::updateDestination,
+        onAddDestination = viewModel::addDestination,
+        onAdditionalDestinationChange = viewModel::updateAdditionalDestination,
+        onRemoveAdditionalDestination = viewModel::removeAdditionalDestination,
         onTravellerTypeSelected = viewModel::updateTravellerType,
         onPeopleCountChange = viewModel::updateCustomPeopleCount,
         onStartDateSelected = viewModel::updateStartDate,

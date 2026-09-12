@@ -16,6 +16,7 @@ enum class TravellerType(val fixedPartySize: Int?) {
 
 data class PlannerUiState(
     val destination: String = "",
+    val additionalDestinations: List<String> = emptyList(),
     val travellerType: TravellerType? = null,
     val customPeopleCount: String = "",
     val startDate: LocalDate? = null,
@@ -42,6 +43,31 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
 
     fun updateDestination(value: String) {
         mutableUiState.value = uiState.value.copy(destination = value, error = null)
+    }
+
+    fun addDestination() {
+        mutableUiState.value = uiState.value.copy(
+            additionalDestinations = uiState.value.additionalDestinations + "",
+            error = null,
+        )
+    }
+
+    fun updateAdditionalDestination(index: Int, value: String) {
+        val destinations = uiState.value.additionalDestinations
+        if (index !in destinations.indices) return
+        mutableUiState.value = uiState.value.copy(
+            additionalDestinations = destinations.toMutableList().apply { this[index] = value },
+            error = null,
+        )
+    }
+
+    fun removeAdditionalDestination(index: Int) {
+        val destinations = uiState.value.additionalDestinations
+        if (index !in destinations.indices) return
+        mutableUiState.value = uiState.value.copy(
+            additionalDestinations = destinations.filterIndexed { currentIndex, _ -> currentIndex != index },
+            error = null,
+        )
     }
 
     fun updateTravellerType(value: TravellerType) {
@@ -86,6 +112,7 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
 
     fun validate(): Boolean {
         val state = uiState.value
+        val validAdditionalDestinations = state.additionalDestinations.filterNot(String::isBlank)
         val error = when {
             state.destination.isBlank() -> "Tell us where you would like to go."
             state.travellerType == null -> "Choose who will be travelling."
@@ -96,7 +123,10 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
             state.endDate.isBefore(state.startDate) -> "End date cannot be before the start date."
             else -> null
         }
-        mutableUiState.value = state.copy(error = error)
+        mutableUiState.value = state.copy(
+            additionalDestinations = validAdditionalDestinations,
+            error = error,
+        )
         return error == null
     }
 }
