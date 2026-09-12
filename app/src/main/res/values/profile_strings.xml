@@ -94,8 +94,10 @@
     <string name="edit_profile_personal_information">Personal information</string>
     <string name="edit_profile_personal_information_subtitle">Keep your travel profile up to date</string>
     <string name="edit_profile_photo_title">Profile photo</string>
-    <string name="edit_profile_photo_unavailable">Photo updates are not available yet</string>
+    <string name="edit_profile_photo_description">Saved on this device and synced to your account</string>
+    <string name="edit_profile_photo_uploading">Uploading photo...</string>
     <string name="edit_profile_change_photo">Change photo</string>
+    <string name="edit_profile_invalid_image">Choose a valid image up to 5 MB</string>
     <string name="edit_profile_interests_hint">Separate interests with commas</string>
     <string name="edit_profile_saving">Saving…</string>
     <string name="edit_profile_saved_title">Profile updated</string>

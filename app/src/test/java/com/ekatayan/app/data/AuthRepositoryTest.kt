@@ -4,6 +4,7 @@ import com.ekatayan.app.data.remote.SessionStore
 import com.ekatayan.app.data.remote.StoredSession
 import com.ekatayan.app.data.remote.UserSessionProvider
 import com.ekatayan.app.data.remote.api.RefreshTokenRequest
+import com.ekatayan.app.data.remote.api.GoogleIdTokenRequest
 import com.ekatayan.app.data.remote.api.SupabaseAuthApiService
 import com.ekatayan.app.data.remote.dto.PasswordSignInRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignUpMetadata
@@ -47,6 +48,21 @@ class AuthRepositoryTest {
         assertEquals("access", UserSessionProvider(store).currentAccessToken())
         assertEquals("traveler@example.com", UserSessionProvider(store).currentUserEmail())
         assertEquals("Traveler", UserSessionProvider(store).currentUserName())
+    }
+
+    @Test fun googleIdTokenUsesTheSamePersistedSessionPath() = runTest {
+        val store = AuthMemorySessionStore()
+        val session = UserSessionProvider(store)
+        val api = FakeSupabaseAuthApi()
+        val repository = SupabaseAuthRepository(Lazy { api }, session)
+
+        repository.signInWithGoogle("google-id-token", "raw-nonce", "Google Traveler", "https://example.com/avatar")
+
+        assertEquals(GoogleIdTokenRequest("google", "google-id-token", "raw-nonce"), api.googleRequest)
+        assertEquals("access", session.currentAccessToken())
+        assertEquals("traveler@example.com", session.currentUserEmail())
+        assertEquals("Google Traveler", session.currentUserName())
+        assertEquals("access", UserSessionProvider(store).currentAccessToken())
     }
 
     @Test fun refreshReplacesPersistedSessionAndClearRemovesIt() = runTest {
@@ -128,6 +144,7 @@ private class FakeSupabaseAuthApi(
 ) : SupabaseAuthApiService {
     var request: PasswordSignInRequest? = null
     var signUpRequest: PasswordSignUpRequest? = null
+    var googleRequest: GoogleIdTokenRequest? = null
     var refreshCalls = 0
     override suspend fun signInWithPassword(grantType: String, request: PasswordSignInRequest): SupabaseSessionDto {
         this.request = request
@@ -136,6 +153,10 @@ private class FakeSupabaseAuthApi(
     override suspend fun signUpWithPassword(request: PasswordSignUpRequest): SupabaseSessionDto {
         signUpRequest = request
         return signUpResponse
+    }
+    override suspend fun signInWithIdToken(grantType: String, request: GoogleIdTokenRequest): SupabaseSessionDto {
+        googleRequest = request.copy(data = null)
+        return session()
     }
     override suspend fun refreshSession(grantType: String, request: RefreshTokenRequest): SupabaseSessionDto {
         refreshCalls++

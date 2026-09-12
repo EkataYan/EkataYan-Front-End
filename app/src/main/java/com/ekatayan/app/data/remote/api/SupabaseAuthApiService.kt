@@ -8,6 +8,12 @@ import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface SupabaseAuthApiService {
+    @POST("auth/v1/token")
+    suspend fun signInWithIdToken(
+        @Query("grant_type") grantType: String = "id_token",
+        @Body request: GoogleIdTokenRequest,
+    ): SupabaseSessionDto
+
     @POST("auth/v1/signup")
     suspend fun signUpWithPassword(
         @Body request: PasswordSignUpRequest,
@@ -27,3 +33,15 @@ interface SupabaseAuthApiService {
 }
 
 data class RefreshTokenRequest(val refresh_token: String)
+
+data class GoogleIdTokenRequest(
+    val provider: String = "google",
+    @com.google.gson.annotations.SerializedName("id_token") val idToken: String,
+    val nonce: String? = null,
+    val data: GoogleUserMetadataRequest? = null,
+)
+
+data class GoogleUserMetadataRequest(
+    @com.google.gson.annotations.SerializedName("full_name") val fullName: String? = null,
+    @com.google.gson.annotations.SerializedName("avatar_url") val avatarUrl: String? = null,
+)

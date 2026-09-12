@@ -11,6 +11,9 @@ data class PasswordSignUpMetadata(
 
 data class SupabaseUserMetadataDto(
     @SerializedName("full_name") val fullName: String? = null,
+    val name: String? = null,
+    @SerializedName("avatar_url") val avatarUrl: String? = null,
+    val picture: String? = null,
 )
 
 data class SupabaseUserDto(

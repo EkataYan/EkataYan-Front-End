@@ -1,5 +1,6 @@
 package com.ekatayan.app.viewmodel
 
+import com.ekatayan.app.TestProfileImageStore
 import com.ekatayan.app.data.remote.SessionStore
 import com.ekatayan.app.data.remote.StoredSession
 import com.ekatayan.app.data.remote.UserSessionProvider
@@ -44,7 +45,7 @@ class EditProfileViewModelTest {
                 )))
             }
             val viewModel = EditProfileViewModel(
-                repository = ProfileRepository(Lazy { api }, session, cache),
+                repository = ProfileRepository(Lazy { api }, session, cache, TestProfileImageStore()),
                 authRepository = EditProfileAuthRepository(session),
             )
 
@@ -95,7 +96,7 @@ class EditProfileViewModelTest {
                     name = "Old Name", location = "Kandy", email = "traveler@example.com", language = "en",
                 )))
             }
-            val repository = ProfileRepository(Lazy { api }, session, cache)
+            val repository = ProfileRepository(Lazy { api }, session, cache, TestProfileImageStore())
             val viewModel = EditProfileViewModel(repository, EditProfileAuthRepository(session))
 
             viewModel.updateName("Saved Locally")
@@ -139,6 +140,12 @@ private class EditProfileFakeApi : ProfileApiService {
         if (failUpdates) throw IOException("offline")
         return ApiResponse(true, profile(request.displayName ?: "Old Name", request.phone ?: "+94770000000"))
     }
+
+    override suspend fun uploadProfilePicture(file: okhttp3.MultipartBody.Part) =
+        error("Not used")
+
+    override suspend fun getProfilePicture() =
+        error("Not used")
 
     private fun profile(name: String, phone: String) = ProfileDto(
         id = "user-id",

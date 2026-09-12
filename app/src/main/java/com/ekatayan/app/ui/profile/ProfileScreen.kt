@@ -1,7 +1,6 @@
 package com.ekatayan.app.ui.profile
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,8 +17,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -71,6 +68,7 @@ fun ProfileScreen(
                 ProfileIdentityHeader(
                     name = state.name.ifBlank { profile.name },
                     email = state.email,
+                    avatarLocalPath = profile.avatarLocalPath,
                     onEditProfileClick = onEditProfileClick,
                     modifier = Modifier.padding(start = EkataSpacing.md, end = EkataSpacing.md, top = EkataSpacing.lg),
                 )
@@ -140,7 +138,13 @@ private fun ProfileTopBar() {
 }
 
 @Composable
-private fun ProfileIdentityHeader(name: String, email: String, onEditProfileClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ProfileIdentityHeader(
+    name: String,
+    email: String,
+    avatarLocalPath: String?,
+    onEditProfileClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
@@ -148,10 +152,8 @@ private fun ProfileIdentityHeader(name: String, email: String, onEditProfileClic
         elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low),
     ) {
         Row(Modifier.fillMaxWidth().padding(EkataSpacing.md), verticalAlignment = Alignment.CenterVertically) {
-            Image(
-                painter = painterResource(R.drawable.profile_avatar_placeholder),
-                contentDescription = stringResource(R.string.profile_avatar_description),
-                contentScale = ContentScale.Crop,
+            ProfileAvatar(
+                localPath = avatarLocalPath,
                 modifier = Modifier.size(ProfileAvatarSize).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
             )
             Spacer(Modifier.width(EkataSpacing.md))

@@ -1,5 +1,6 @@
 package com.ekatayan.app.data
 
+import com.ekatayan.app.TestProfileImageStore
 import com.ekatayan.app.data.remote.ProfileAuthInterceptor
 import com.ekatayan.app.data.remote.UserSessionProvider
 import com.ekatayan.app.data.remote.SessionStore
@@ -30,7 +31,7 @@ class ProfileRepositoryTest {
         val api = Retrofit.Builder().baseUrl(server.url("/"))
             .client(OkHttpClient.Builder().addInterceptor(ProfileAuthInterceptor(session)).build())
             .addConverterFactory(GsonConverterFactory.create()).build().create(ProfileApiService::class.java)
-        repository = ProfileRepository(Lazy { api }, session)
+        repository = ProfileRepository(Lazy { api }, session, imageStore = TestProfileImageStore())
     }
 
     @After fun teardown() { server.shutdown() }
@@ -96,6 +97,22 @@ class ProfileRepositoryTest {
         assertEquals("New Name", updated.name)
         assertEquals("New Name", session.currentUserName())
         assertEquals("user@example.com", session.currentUserEmail())
+    }
+
+    @Test fun profilePictureIsSavedLocallyUploadedAndMappedToCloudPath() = runTest {
+        session.setSession("test-session", "refresh", Long.MAX_VALUE, "user@example.com", "Traveller")
+        val json = """{"success":true,"data":{"profile":{"id":"test-user","display_name":"Traveller","avatar_path":"test-user/avatar.jpg"},"upload":{"bucket":"profile-images","path":"test-user/avatar.jpg"}}}"""
+        server.enqueue(MockResponse().setBody(json).setResponseCode(201))
+
+        val updated = repository.updateAvatar("content://selected/profile")
+
+        val request = server.takeRequest()
+        assertEquals("POST", request.method)
+        assertEquals("/api/storage/profile-picture", request.path)
+        assertTrue(request.getHeader("Content-Type").orEmpty().startsWith("multipart/form-data"))
+        assertEquals("test-user/avatar.jpg", updated.avatarPath)
+        assertEquals("C:/test/profile.jpg", updated.avatarLocalPath)
+        assertFalse(repository.hasPendingChanges())
     }
 
     private suspend fun assertFailure(expected: ProfileFailure) {

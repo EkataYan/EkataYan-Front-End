@@ -12,6 +12,10 @@ import com.ekatayan.app.data.remote.EncryptedSessionStore
 import com.ekatayan.app.data.remote.SessionStore
 import com.ekatayan.app.data.local.ProfileCacheStore
 import com.ekatayan.app.data.local.SharedPreferencesProfileCacheStore
+import com.ekatayan.app.data.local.AndroidProfileImageStore
+import com.ekatayan.app.data.local.ProfileImageStore
+import com.ekatayan.app.data.auth.AndroidGoogleCredentialProvider
+import com.ekatayan.app.data.auth.GoogleCredentialProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,6 +32,14 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindProfileCacheStore(impl: SharedPreferencesProfileCacheStore): ProfileCacheStore
+
+    @Binds
+    @Singleton
+    abstract fun bindProfileImageStore(impl: AndroidProfileImageStore): ProfileImageStore
+
+    @Binds
+    @Singleton
+    abstract fun bindGoogleCredentialProvider(impl: AndroidGoogleCredentialProvider): GoogleCredentialProvider
 
     @Binds
     @Singleton

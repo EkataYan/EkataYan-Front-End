@@ -4,6 +4,7 @@ import com.ekatayan.app.viewmodel.LoginViewModel
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
@@ -12,6 +13,7 @@ fun LoginRoute(
     onSignUpClick: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
     LaunchedEffect(viewModel.uiState.loginSucceeded) {
         if (viewModel.uiState.loginSucceeded) {
             viewModel.consumeLoginSuccess()
@@ -25,8 +27,7 @@ fun LoginRoute(
         onPasswordVisibilityClick = viewModel::onPasswordVisibilityClick,
         onForgotPasswordClick = viewModel::onForgotPasswordClick,
         onLogInClick = viewModel::signIn,
-        onGoogleClick = viewModel::onGoogleClick,
-        onAppleClick = viewModel::onAppleClick,
+        onGoogleClick = { viewModel.onGoogleClick(context) },
         onSignUpClick = onSignUpClick,
     )
 }

@@ -18,6 +18,8 @@ val supabaseUrl = providers.gradleProperty("SUPABASE_URL")
     .orElse(provider { localConfiguration.getProperty("SUPABASE_URL", "") })
 val supabasePublishableKey = providers.gradleProperty("SUPABASE_PUBLISHABLE_KEY")
     .orElse(provider { localConfiguration.getProperty("SUPABASE_PUBLISHABLE_KEY", "") })
+val googleWebClientId = providers.gradleProperty("GOOGLE_WEB_CLIENT_ID")
+    .orElse(provider { localConfiguration.getProperty("GOOGLE_WEB_CLIENT_ID", "") })
 fun quoted(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 android {
@@ -37,6 +39,7 @@ android {
         buildConfigField("String", "BACKEND_BASE_URL", quoted(backendUrl.get()))
         buildConfigField("String", "SUPABASE_URL", quoted(supabaseUrl.get()))
         buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", quoted(supabasePublishableKey.get()))
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", quoted(googleWebClientId.get()))
     }
 
     buildTypes {
@@ -80,6 +83,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.android)
     implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     ksp(libs.hilt.android.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

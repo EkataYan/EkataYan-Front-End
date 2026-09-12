@@ -1,5 +1,6 @@
 package com.ekatayan.app.viewmodel
 
+import com.ekatayan.app.TestProfileImageStore
 import com.ekatayan.app.data.remote.AuthenticationRequiredException
 import com.ekatayan.app.data.remote.api.ProfileApiService
 import com.ekatayan.app.data.remote.dto.ApiResponse
@@ -36,6 +37,8 @@ class ProfileViewModelTest {
                         emptyList(), null, null, null))
                 }
                 override suspend fun updateProfile(request: UpdateProfileRequest): ApiResponse<ProfileDto> = error("Not used")
+                override suspend fun uploadProfilePicture(file: okhttp3.MultipartBody.Part) = error("Not used")
+                override suspend fun getProfilePicture() = error("Not used")
             }
             val session = UserSessionProvider(object : SessionStore {
                 override fun read(): StoredSession? = null
@@ -53,7 +56,7 @@ class ProfileViewModelTest {
                 override fun currentUserName() = session.currentUserName()
                 override fun clearSession() = Unit
             }
-            val vm = ProfileViewModel(ProfileRepository(Lazy { api }, session), auth)
+            val vm = ProfileViewModel(ProfileRepository(Lazy { api }, session, imageStore = TestProfileImageStore()), auth)
             assertFalse(vm.uiState.value.isLoading)
             advanceUntilIdle()
             assertEquals(ProfileFailure.AUTHENTICATION, vm.uiState.value.error)

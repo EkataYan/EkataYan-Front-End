@@ -1,7 +1,6 @@
 package com.ekatayan.app.ui.profile
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,8 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -78,6 +75,7 @@ fun EditProfileScreen(
     onLanguageChange: (String) -> Unit,
     onInterestsChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
+    onChangePhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showDiscardDialog by remember { mutableStateOf(false) }
@@ -129,6 +127,7 @@ fun EditProfileScreen(
                     onLanguageChange = onLanguageChange,
                     onInterestsChange = onInterestsChange,
                     onPhoneChange = onPhoneChange,
+                    onChangePhoto = onChangePhoto,
                     contentPadding = PaddingValues(
                         start = EkataSpacing.md,
                         top = EkataSpacing.md,
@@ -170,6 +169,7 @@ private fun EditProfileForm(
     onLanguageChange: (String) -> Unit,
     onInterestsChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
+    onChangePhoto: () -> Unit,
     contentPadding: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
@@ -178,7 +178,13 @@ private fun EditProfileForm(
         contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(EkataSpacing.lg),
     ) {
-        item { EditProfileAvatar() }
+        item {
+            EditProfileAvatar(
+                localPath = state.avatarLocalPath,
+                isUploading = state.isSaving && state.avatarUploadPending,
+                onChangePhoto = onChangePhoto,
+            )
+        }
         item {
             EkataSectionHeading(
                 title = stringResource(R.string.edit_profile_personal_information),
@@ -295,7 +301,7 @@ private fun EditProfileForm(
 }
 
 @Composable
-private fun EditProfileAvatar() {
+private fun EditProfileAvatar(localPath: String?, isUploading: Boolean, onChangePhoto: () -> Unit) {
     EkataCard(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
@@ -303,12 +309,7 @@ private fun EditProfileAvatar() {
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
             ) {
-                Image(
-                    painter = painterResource(R.drawable.profile_avatar_placeholder),
-                    contentDescription = stringResource(R.string.profile_avatar_description),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.clip(CircleShape),
-                )
+                ProfileAvatar(localPath = localPath, modifier = Modifier.clip(CircleShape))
             }
             Spacer(Modifier.width(EkataSpacing.md))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(EkataSpacing.xs)) {
@@ -318,14 +319,17 @@ private fun EditProfileAvatar() {
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = stringResource(R.string.edit_profile_photo_unavailable),
+                    text = stringResource(
+                        if (isUploading) R.string.edit_profile_photo_uploading
+                        else R.string.edit_profile_photo_description,
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 EkataSecondaryButton(
                     text = stringResource(R.string.edit_profile_change_photo),
-                    onClick = {},
-                    enabled = false,
+                    onClick = onChangePhoto,
+                    enabled = !isUploading,
                 )
             }
         }
@@ -355,6 +359,7 @@ private fun profileErrorMessage(error: ProfileFailure): String = stringResource(
         ProfileFailure.AUTHENTICATION -> R.string.edit_profile_auth_error
         ProfileFailure.NETWORK -> R.string.edit_profile_network_error
         ProfileFailure.INVALID_RESPONSE -> R.string.edit_profile_validation_error
+        ProfileFailure.INVALID_IMAGE -> R.string.edit_profile_invalid_image
         ProfileFailure.FORBIDDEN -> R.string.edit_profile_forbidden_error
         else -> R.string.edit_profile_server_error
     },

@@ -22,7 +22,16 @@ data class UpcomingTrip(
     @param:DrawableRes val imageRes: Int,
 )
 
-enum class WeatherType { SUNNY, CLOUDY, RAINY, STORMY }
+enum class WeatherType {
+    CLEAR,
+    CLOUDY,
+    RAIN,
+    DRIZZLE,
+    THUNDERSTORM,
+    MIST,
+    NIGHT,
+    DEFAULT,
+}
 
 data class WeatherInfo(
     val location: String,
@@ -30,7 +39,6 @@ data class WeatherInfo(
     val condition: String,
     val humidity: Int,
     val weatherType: WeatherType,
-    @param:DrawableRes val imageRes: Int?,
     val windKph: Double? = null,
     val sunrise: String? = null,
     val minCelsius: Double? = null,

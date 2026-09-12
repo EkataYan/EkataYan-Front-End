@@ -33,6 +33,8 @@ data class EditProfileUiState(
     val interests: String = "",
     val phone: String = "",
     val avatarPath: String? = null,
+    val avatarLocalPath: String? = null,
+    val avatarUploadPending: Boolean = false,
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isDirty: Boolean = false,
@@ -70,6 +72,43 @@ class EditProfileViewModel @Inject constructor(
     fun updateInterests(value: String) = edit { copy(interests = value) }
     fun updatePhone(value: String) = edit { copy(phone = value) }
 
+    fun updateAvatar(uri: String) {
+        if (mutableState.value.isSaving) return
+        viewModelScope.launch {
+            mutableState.value = mutableState.value.copy(
+                isSaving = true,
+                avatarUploadPending = true,
+                error = null,
+                saved = false,
+                syncFailed = false,
+            )
+            try {
+                val updated = repository.updateAvatar(uri)
+                originalProfile = updated
+                mutableState.value = mutableState.value.copy(
+                    avatarPath = updated.avatarPath,
+                    avatarLocalPath = updated.avatarLocalPath,
+                    avatarUploadPending = false,
+                    isSaving = false,
+                    isDirty = repository.hasPendingChanges(),
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: ProfileLoadException) {
+                val local = repository.currentProfile()
+                mutableState.value = mutableState.value.copy(
+                    avatarPath = local?.avatarPath,
+                    avatarLocalPath = local?.avatarLocalPath,
+                    avatarUploadPending = repository.hasPendingAvatar(),
+                    isSaving = false,
+                    isDirty = repository.hasPendingChanges(),
+                    error = e.failure,
+                    syncFailed = e.failure != ProfileFailure.INVALID_IMAGE,
+                )
+            }
+        }
+    }
+
     fun retry() = save()
 
     fun save() {
@@ -102,6 +141,8 @@ class EditProfileViewModel @Inject constructor(
                     interests = updated.interests.joinToString(", "),
                     phone = updated.phone,
                     avatarPath = updated.avatarPath,
+                    avatarLocalPath = updated.avatarLocalPath,
+                    avatarUploadPending = false,
                     isSaving = false,
                     isDirty = false,
                     saved = true,
@@ -131,6 +172,8 @@ class EditProfileViewModel @Inject constructor(
             interests = profile.interests.joinToString(", "),
             phone = profile.phone,
             avatarPath = profile.avatarPath,
+            avatarLocalPath = profile.avatarLocalPath,
+            avatarUploadPending = repository.hasPendingAvatar(),
             isLoading = false,
             isDirty = pendingSync,
             syncFailed = pendingSync,
@@ -170,6 +213,7 @@ class EditProfileViewModel @Inject constructor(
         language = language.trim(),
         interests = parsedInterests(),
         avatarPath = avatarPath,
+        avatarLocalPath = avatarLocalPath,
     )
 
     private fun EditProfileUiState.parsedInterests() = interests.split(',')

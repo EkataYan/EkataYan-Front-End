@@ -44,6 +44,7 @@ class SharedPreferencesProfileCacheStore @Inject constructor(
                 language = preferences.getString(LANGUAGE, "en").orEmpty(),
                 interests = preferences.getStringSet(INTERESTS, emptySet()).orEmpty().toList().sorted(),
                 avatarPath = preferences.getString(AVATAR_PATH, null),
+                avatarLocalPath = preferences.getString(AVATAR_LOCAL_PATH, null),
             ),
             pendingFields = preferences.getStringSet(PENDING_FIELDS, emptySet()).orEmpty().toSet(),
         )
@@ -61,6 +62,7 @@ class SharedPreferencesProfileCacheStore @Inject constructor(
             .putString(LANGUAGE, profile.language)
             .putStringSet(INTERESTS, profile.interests.toSet())
             .putString(AVATAR_PATH, profile.avatarPath)
+            .putString(AVATAR_LOCAL_PATH, profile.avatarLocalPath)
             .putStringSet(PENDING_FIELDS, value.pendingFields)
             .apply()
     }
@@ -79,6 +81,7 @@ class SharedPreferencesProfileCacheStore @Inject constructor(
         const val LANGUAGE = "language"
         const val INTERESTS = "interests"
         const val AVATAR_PATH = "avatar_path"
+        const val AVATAR_LOCAL_PATH = "avatar_local_path"
         const val PENDING_FIELDS = "pending_fields"
     }
 }
