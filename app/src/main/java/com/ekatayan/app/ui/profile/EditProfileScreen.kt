@@ -261,8 +261,17 @@ private fun EditProfileForm(
         if (state.error != null) {
             item {
                 EkataErrorState(
-                    title = stringResource(R.string.edit_profile_save_error_title),
-                    message = profileErrorMessage(state.error),
+                    title = stringResource(
+                        if (state.syncFailed) R.string.edit_profile_saved_local_title
+                        else R.string.edit_profile_save_error_title,
+                    ),
+                    message = if (state.syncFailed) {
+                        stringResource(R.string.edit_profile_saved_local_sync_failed)
+                    } else {
+                        profileErrorMessage(state.error)
+                    },
+                    actionLabel = if (state.syncFailed) stringResource(R.string.profile_retry) else null,
+                    onAction = if (state.syncFailed) onSave else null,
                 )
             }
         }

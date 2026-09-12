@@ -100,6 +100,8 @@
     <string name="edit_profile_saving">Saving…</string>
     <string name="edit_profile_saved_title">Profile updated</string>
     <string name="edit_profile_saved_message">Your changes have been saved.</string>
+    <string name="edit_profile_saved_local_title">Saved locally</string>
+    <string name="edit_profile_saved_local_sync_failed">Saved on this device. Sync failed.</string>
     <string name="edit_profile_load_error_title">Couldn\'t load profile</string>
     <string name="edit_profile_save_error_title">Couldn\'t save profile</string>
     <string name="edit_profile_name_required">Enter your full name</string>

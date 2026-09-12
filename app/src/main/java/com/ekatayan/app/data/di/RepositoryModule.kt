@@ -10,6 +10,8 @@ import com.ekatayan.app.data.repository.AuthRepository
 import com.ekatayan.app.data.repository.SupabaseAuthRepository
 import com.ekatayan.app.data.remote.EncryptedSessionStore
 import com.ekatayan.app.data.remote.SessionStore
+import com.ekatayan.app.data.local.ProfileCacheStore
+import com.ekatayan.app.data.local.SharedPreferencesProfileCacheStore
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -22,6 +24,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindSessionStore(impl: EncryptedSessionStore): SessionStore
+
+    @Binds
+    @Singleton
+    abstract fun bindProfileCacheStore(impl: SharedPreferencesProfileCacheStore): ProfileCacheStore
 
     @Binds
     @Singleton
