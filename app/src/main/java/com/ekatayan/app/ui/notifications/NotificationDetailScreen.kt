@@ -26,7 +26,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.material3.MaterialTheme
+import com.ekatayan.app.core.designsystem.component.EkataEmptyState
+import com.ekatayan.app.core.designsystem.component.EkataTopAppBar
+import com.ekatayan.app.core.designsystem.theme.*
 import com.ekatayan.app.R
 import com.ekatayan.app.data.model.NotificationCategory
 import com.ekatayan.app.data.model.NotificationItem
@@ -37,31 +40,21 @@ fun NotificationDetailScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Scaffold(modifier = modifier.fillMaxSize(), containerColor = Color(0xFFFCFCFC)) { padding ->
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
+        topBar = { EkataTopAppBar(title = stringResource(R.string.notification_detail_title), navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.notification_detail_back)) } }) },
+    ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 22.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = EkataSpacing.pageHorizontal),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 22.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = onBackClick, modifier = Modifier.size(40.dp)) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.notification_detail_back))
-                }
-                Text(
-                    text = stringResource(R.string.notification_detail_title),
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            }
-
             if (notification != null) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.White,
-                    shadowElevation = 2.dp,
+                    shape = MaterialTheme.shapes.large,
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = EkataElevation.low,
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Box(
@@ -72,16 +65,14 @@ fun NotificationDetailScreen(
                         }
                         Text(
                             text = stringResource(notification.titleRes),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF141212),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(top = 18.dp),
                         )
                         Text(
                             text = stringResource(notification.messageRes),
-                            fontSize = 14.sp,
-                            lineHeight = 21.sp,
-                            color = Color(0xFF625B5B),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 10.dp),
                         )
                         Row(
@@ -89,14 +80,17 @@ fun NotificationDetailScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(Icons.Outlined.AccessTime, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
-                            Text(stringResource(notification.timeLabelRes), fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(start = 6.dp))
+                            Text(stringResource(notification.timeLabelRes), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 6.dp))
                             Spacer(Modifier.weight(1f))
-                            Text(stringResource(notification.category.labelRes), fontSize = 12.sp, color = notification.iconTint, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(notification.category.labelRes), style = MaterialTheme.typography.labelMedium, color = notification.iconTint)
                         }
                     }
                 }
             } else {
-                Text(stringResource(R.string.notification_detail_not_found), color = Color.Gray)
+                EkataEmptyState(
+                    title = stringResource(R.string.notification_detail_title),
+                    message = stringResource(R.string.notification_detail_not_found),
+                )
             }
         }
     }

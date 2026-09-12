@@ -37,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -59,19 +58,18 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
     val query = state.query
     val filter = state.filter
     var creating by remember { mutableStateOf(false) }
-    val statusBarHeight = with(LocalDensity.current) { WindowInsets.statusBars.getTop(this).toDp() }
     val groups = state.filteredGroups
     Box(modifier.fillMaxSize().background(EkataBackground)) {
-        Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 20.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("Group Hub", fontSize = 28.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                HeaderActions(onNotificationClick = onNotificationClick, onSettingsClick = onSettingsClick, hasUnreadNotifications = hasUnreadNotifications, modifier = Modifier.offset(y = HeaderActionsTopPadding - statusBarHeight))
+        Column(Modifier.fillMaxSize().padding(horizontal = EkataSpacing.pageHorizontal)) {
+            Row(Modifier.fillMaxWidth().height(HeaderActionsTopPadding), verticalAlignment = Alignment.CenterVertically) {
+                Text("Group Hub", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
+                HeaderActions(onNotificationClick = onNotificationClick, onSettingsClick = onSettingsClick, hasUnreadNotifications = hasUnreadNotifications)
             }
             Spacer(Modifier.height(18.dp))
             SearchField(query, onQueryChange, "Search Your Groups")
             Spacer(Modifier.height(14.dp))
-            Button(onClick = { creating = true }, colors = ButtonDefaults.buttonColors(containerColor = EkataBlue), shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().height(52.dp)) { Icon(Icons.Default.GroupAdd, null); Spacer(Modifier.width(8.dp)); Text("Create Group") }
-            Text("My Groups", fontSize = 21.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 22.dp, bottom = 12.dp))
+            Button(onClick = { creating = true }, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().height(EkataComponentSize.buttonHeight)) { Icon(Icons.Default.GroupAdd, null); Spacer(Modifier.width(EkataSpacing.xs)); Text("Create Group", style = MaterialTheme.typography.labelLarge) }
+            Text("My Groups", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = EkataSpacing.lg, bottom = EkataSpacing.sm))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { GroupFilter.entries.forEach { item -> FilterChip(selected = filter == item, onClick = { onFilterChange(item) }, label = { Text(item.name) }, colors = FilterChipDefaults.filterChipColors(selectedContainerColor = EkataLightBlue), border = FilterChipDefaults.filterChipBorder(enabled = true, selected = filter == item, borderColor = PopupBorder, selectedBorderColor = EkataBlue)) } }
             LazyColumn(contentPadding = PaddingValues(top = 12.dp, bottom = 106.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (groups.isEmpty()) item { EmptyState(if (query.isNotBlank()) "No groups found" else "No groups yet") }
@@ -85,16 +83,16 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
 
 @Composable private fun GroupRow(group: ChatGroup, state: GroupHubUiState, onClick: (String) -> Unit) {
     val last = state.messagesByGroup[group.id].orEmpty().lastOrNull()
-    Card(Modifier.fillMaxWidth().clickable { onClick(group.id) }, shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(2.dp)) {
+    Card(Modifier.fillMaxWidth().clickable { onClick(group.id) }, shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(EkataElevation.low)) {
         Row(Modifier.padding(13.dp), verticalAlignment = Alignment.CenterVertically) {
             GroupAvatar(group, 56)
             Spacer(Modifier.width(13.dp))
             Column(Modifier.weight(1f)) {
-                Text(group.name, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
-                Text(messagePreview(last, state), color = EkataTextSecondary, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(group.name, style = MaterialTheme.typography.titleSmall)
+                Text(messagePreview(last, state), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Column(horizontalAlignment = Alignment.End) {
-                last?.let { Text(it.timestamp.format(DateTimeFormatter.ofPattern("h:mm a")), color = EkataTextSecondary, fontSize = 10.sp) }
+                last?.let { Text(it.timestamp.format(DateTimeFormatter.ofPattern("h:mm a")), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
                 if (group.unreadCount > 0) Box(Modifier.padding(top = 7.dp).size(22.dp).background(EkataBlue, CircleShape), contentAlignment = Alignment.Center) { Text(group.unreadCount.toString(), color = Color.White, fontSize = 11.sp) }
             }
         }
@@ -108,9 +106,9 @@ private fun messagePreview(message: ChatMessage?, state: GroupHubUiState): Strin
 }
 
 @Composable internal fun SearchField(value: String, onValueChange: (String) -> Unit, placeholder: String) {
-    Row(Modifier.fillMaxWidth().height(52.dp).background(Color.White, RoundedCornerShape(18.dp)).border(1.dp, PopupBorder, RoundedCornerShape(18.dp)).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().height(EkataComponentSize.inputMinHeight).background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.medium).border(EkataStroke.thin, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.medium).padding(horizontal = EkataSpacing.md), verticalAlignment = Alignment.CenterVertically) {
         Icon(Icons.Default.Search, null, tint = EkataBlue); Spacer(Modifier.width(10.dp))
-        BasicTextField(value, onValueChange, Modifier.weight(1f), singleLine = true, textStyle = TextStyle(color = EkataTextPrimary, fontSize = 14.sp), decorationBox = { inner -> Box { if (value.isEmpty()) Text(placeholder, color = EkataTextSecondary, fontSize = 14.sp); inner() } })
+        BasicTextField(value, onValueChange, Modifier.weight(1f), singleLine = true, textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface), decorationBox = { inner -> Box { if (value.isEmpty()) Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium); inner() } })
     }
 }
 
@@ -145,6 +143,6 @@ private fun messagePreview(message: ChatMessage?, state: GroupHubUiState): Strin
     }
 }
 
-@Composable internal fun StyledDialog(onDismiss: () -> Unit, content: @Composable ColumnScope.() -> Unit) { Dialog(onDismissRequest = onDismiss) { Column(Modifier.fillMaxWidth().background(Color.White, RoundedCornerShape(24.dp)).border(1.dp, PopupBorder, RoundedCornerShape(24.dp)).padding(20.dp), content = content) } }
-@Composable internal fun DialogInput(value: String, onChange: (String) -> Unit, label: String) { OutlinedTextField(value, onChange, label = { Text(label) }, textStyle = TextStyle(color = EkataTextPrimary), colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = EkataBlue, unfocusedBorderColor = PopupBorder, focusedTextColor = EkataTextPrimary, unfocusedTextColor = EkataTextPrimary), shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) }
-@Composable internal fun EmptyState(text: String) { Box(Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) { Text(text, color = EkataTextSecondary) } }
+@Composable internal fun StyledDialog(onDismiss: () -> Unit, content: @Composable ColumnScope.() -> Unit) { Dialog(onDismissRequest = onDismiss) { Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.large).border(EkataStroke.thin, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.large).padding(EkataSpacing.lg), content = content) } }
+@Composable internal fun DialogInput(value: String, onChange: (String) -> Unit, label: String) { OutlinedTextField(value, onChange, label = { Text(label) }, textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface), shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().heightIn(min = EkataComponentSize.inputMinHeight)) }
+@Composable internal fun EmptyState(text: String) { Box(Modifier.fillMaxWidth().padding(EkataSpacing.xl), contentAlignment = Alignment.Center) { Text(text, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodyMedium) } }

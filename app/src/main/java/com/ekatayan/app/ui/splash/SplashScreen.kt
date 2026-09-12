@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,7 +29,7 @@ fun SplashScreen(modifier: Modifier = Modifier) {
             contentScale = ContentScale.Crop,
         )
         Box(
-            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = BiasAlignment(0f, -0.25f),
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

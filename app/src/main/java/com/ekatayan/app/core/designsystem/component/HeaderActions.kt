@@ -16,9 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.unit.dp
+import com.ekatayan.app.core.designsystem.theme.EkataComponentSize
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
 
-val HeaderActionsTopPadding = 47.dp
+val HeaderActionsTopPadding = EkataComponentSize.pageHeaderTop
 
 @Composable
 fun HeaderActions(
@@ -28,7 +29,7 @@ fun HeaderActions(
     modifier: Modifier = Modifier,
 ) {
     Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-        IconButton(onClick = onNotificationClick, modifier = Modifier.size(38.dp)) {
+        IconButton(onClick = onNotificationClick, modifier = Modifier.size(EkataComponentSize.pageHeaderAction)) {
             Box(modifier = Modifier.size(26.dp), contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = Icons.Default.NotificationsNone,
@@ -46,7 +47,7 @@ fun HeaderActions(
                 }
             }
         }
-        IconButton(onClick = onSettingsClick, modifier = Modifier.size(38.dp)) {
+        IconButton(onClick = onSettingsClick, modifier = Modifier.size(EkataComponentSize.pageHeaderAction)) {
             Icon(
                 imageVector = Icons.Default.Settings,
                 contentDescription = "Settings",

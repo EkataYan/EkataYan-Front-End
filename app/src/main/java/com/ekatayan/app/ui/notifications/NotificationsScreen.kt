@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,18 +32,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
+import com.ekatayan.app.core.designsystem.theme.*
 import com.ekatayan.app.data.model.NotificationCategory
 import com.ekatayan.app.data.model.NotificationFilter
 import com.ekatayan.app.data.model.NotificationItem
 import com.ekatayan.app.viewmodel.NotificationsUiState
 
-private val SelectedFilterBackground = Color(0xFFC8E9EF)
-private val PrimaryText = Color(0xFF141212)
-private val SecondaryText = Color(0xFF625B5B)
 private val UnreadDot = Color(0xFF2DBE72)
 
 @Composable
@@ -60,7 +58,8 @@ fun NotificationsScreen(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = Color(0xFFFCFCFC),
+        containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         bottomBar = {
             AppBottomNavigation(
                 selectedItem = selectedBottomNavItem,
@@ -75,19 +74,18 @@ fun NotificationsScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 22.dp,
-                top = innerPadding.calculateTopPadding() + 28.dp,
-                end = 22.dp,
-                bottom = innerPadding.calculateBottomPadding() + 18.dp,
+                start = EkataSpacing.pageHorizontal,
+                top = innerPadding.calculateTopPadding() + EkataComponentSize.pageHeaderTop,
+                end = EkataSpacing.pageHorizontal,
+                bottom = innerPadding.calculateBottomPadding() + EkataSpacing.md,
             ),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             item {
                 Text(
                     text = stringResource(R.string.notifications_title),
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Black,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
             }
             item { NotificationFilters(uiState.selectedFilter, onFilterSelected) }
@@ -110,16 +108,15 @@ private fun NotificationFilters(
         NotificationFilter.entries.forEach { filter ->
             val isSelected = filter == selectedFilter
             Surface(
-                modifier = Modifier.clip(RoundedCornerShape(999.dp)).clickable { onFilterSelected(filter) },
-                shape = RoundedCornerShape(999.dp),
-                color = if (isSelected) SelectedFilterBackground else Color.White,
-                border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E4E8)),
+                modifier = Modifier.clip(RoundedCornerShape(EkataRadius.pill)).clickable { onFilterSelected(filter) },
+                shape = RoundedCornerShape(EkataRadius.pill),
+                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                border = if (isSelected) null else androidx.compose.foundation.BorderStroke(EkataStroke.thin, MaterialTheme.colorScheme.outline),
             ) {
                 Text(
                     text = stringResource(filter.labelRes),
-                    color = if (isSelected) PrimaryText else SecondaryText,
-                    fontSize = 12.sp,
-                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium),
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
                 )
             }
@@ -135,11 +132,11 @@ private fun NotificationCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(MaterialTheme.shapes.large)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFEFF2F6)),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(EkataStroke.thin, MaterialTheme.colorScheme.outline),
     ) {
         Row(
             modifier = Modifier.padding(14.dp),
@@ -165,15 +162,13 @@ private fun NotificationCard(
             ) {
                 Text(
                     text = stringResource(notification.titleRes),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = PrimaryText,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = stringResource(notification.messageRes),
-                    fontSize = 12.sp,
-                    lineHeight = 17.sp,
-                    color = SecondaryText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp),
                 )
                 Row(
@@ -184,12 +179,12 @@ private fun NotificationCard(
                         imageVector = Icons.Outlined.AccessTime,
                         contentDescription = null,
                         modifier = Modifier.size(13.dp),
-                        tint = SecondaryText,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         text = stringResource(notification.timeLabelRes),
-                        fontSize = 11.sp,
-                        color = SecondaryText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = 4.dp),
                     )
                 }

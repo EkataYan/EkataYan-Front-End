@@ -87,6 +87,7 @@ fun EditProfileScreen(
     androidx.compose.material3.Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         topBar = {
             EkataTopAppBar(
                 title = stringResource(R.string.edit_profile_title),
