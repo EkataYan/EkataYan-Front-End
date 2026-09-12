@@ -18,7 +18,7 @@ class HomeLocalDataSource @Inject constructor() {
 
     fun getUpcomingTrip(): UpcomingTrip? = UpcomingTrip(1, "Anuradhapura", "26 Aug 2026", "6 Days", R.drawable.anuradhapura)
 
-    fun getWeather(): WeatherInfo? = WeatherInfo("Colombo", 29, "Sunny", 60, WeatherType.SUNNY, R.drawable.colombo)
+    fun getWeather(): WeatherInfo? = WeatherInfo("Colombo", 29, "Sunny", 60, WeatherType.CLEAR)
 
     fun getPopularDestinations(): List<WishlistItem> = destinationsById(1, 11, 12, 14, 15)
 

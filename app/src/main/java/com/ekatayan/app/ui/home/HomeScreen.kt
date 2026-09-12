@@ -102,7 +102,15 @@ fun HomeScreen(
                         onWishlistClick = { selectedWishlistItem = it },
                     )
                 }
-                item { HomeInfoCards(uiState.upcomingTrip, uiState.weather, onUpcomingTripClick) }
+                item {
+                    HomeInfoCards(
+                        uiState.upcomingTrip,
+                        uiState.weather,
+                        onUpcomingTripClick,
+                        uiState.isWeatherLoading,
+                        uiState.weatherError,
+                    )
+                }
                 item {
                     HomeSectionHeading(stringResource(R.string.home_popular_title))
                 }

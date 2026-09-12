@@ -54,7 +54,6 @@ fun LoginScreen(
     onForgotPasswordClick: () -> Unit,
     onLogInClick: () -> Unit,
     onGoogleClick: () -> Unit,
-    onAppleClick: () -> Unit,
     onSignUpClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -94,14 +93,6 @@ fun LoginScreen(
                     text = stringResource(R.string.signup_google),
                     icon = R.drawable.signup_google,
                     onClick = onGoogleClick,
-                )
-            }
-            item(contentType = "social_space") { Spacer(Modifier.height(11.dp)) }
-            item(contentType = "apple") {
-                AuthSocialButton(
-                    text = stringResource(R.string.signup_apple),
-                    icon = R.drawable.signup_apple,
-                    onClick = onAppleClick,
                 )
             }
             item(contentType = "signup_space") { Spacer(Modifier.height(12.dp)) }
@@ -177,6 +168,9 @@ private fun LoginForm(
                     com.ekatayan.app.data.repository.AuthenticationFailure.INVALID_CREDENTIALS -> R.string.login_error_invalid_credentials
                     com.ekatayan.app.data.repository.AuthenticationFailure.NETWORK -> R.string.login_error_network
                     com.ekatayan.app.data.repository.AuthenticationFailure.CONFIGURATION -> R.string.login_error_configuration
+                    com.ekatayan.app.data.repository.AuthenticationFailure.GOOGLE_CANCELED -> R.string.auth_google_canceled
+                    com.ekatayan.app.data.repository.AuthenticationFailure.GOOGLE_NO_CREDENTIAL -> R.string.auth_google_no_credential
+                    com.ekatayan.app.data.repository.AuthenticationFailure.GOOGLE_INVALID_TOKEN -> R.string.auth_google_invalid_token
                     else -> R.string.login_error_generic
                 }),
                 color = Color(0xFFB3261E),

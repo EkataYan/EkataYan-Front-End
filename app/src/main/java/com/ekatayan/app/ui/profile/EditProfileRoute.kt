@@ -1,5 +1,8 @@
 package com.ekatayan.app.ui.profile
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -11,6 +14,9 @@ import kotlinx.coroutines.delay
 @Composable
 fun EditProfileRoute(onBackClick: () -> Unit, onSaved: () -> Unit, viewModel: EditProfileViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { viewModel.updateAvatar(it.toString()) }
+    }
     LaunchedEffect(state.saved) {
         if (state.saved) {
             delay(750)
@@ -22,5 +28,8 @@ fun EditProfileRoute(onBackClick: () -> Unit, onSaved: () -> Unit, viewModel: Ed
         onNameChange = viewModel::updateName, onBioChange = viewModel::updateBio,
         onHomeCityChange = viewModel::updateHomeCity, onLanguageChange = viewModel::updateLanguage,
         onInterestsChange = viewModel::updateInterests, onPhoneChange = viewModel::updatePhone,
+        onChangePhoto = {
+            photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        },
     )
 }

@@ -1,5 +1,6 @@
 package com.ekatayan.app.viewmodel
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,8 +9,12 @@ import androidx.lifecycle.viewModelScope
 import com.ekatayan.app.data.repository.AuthRepository
 import com.ekatayan.app.data.repository.AuthenticationException
 import com.ekatayan.app.data.repository.AuthenticationFailure
+import com.ekatayan.app.data.auth.GoogleCredentialException
+import com.ekatayan.app.data.auth.GoogleCredentialProvider
+import com.ekatayan.app.data.auth.UnavailableGoogleCredentialProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -23,7 +28,10 @@ data class LoginUiState(
 )
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val authRepository: AuthRepository) : ViewModel() {
+class LoginViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
+    private val googleCredentials: GoogleCredentialProvider = UnavailableGoogleCredentialProvider(),
+) : ViewModel() {
     var uiState by mutableStateOf(LoginUiState())
         private set
 
@@ -40,8 +48,28 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
     }
 
     fun onForgotPasswordClick() = Unit
-    fun onGoogleClick() = Unit
-    fun onAppleClick() = Unit
+    fun onGoogleClick(context: Context) {
+        if (uiState.isLoading || signInJob?.isActive == true) return
+        signInJob = viewModelScope.launch {
+            uiState = uiState.copy(isLoading = true, error = null, loginSucceeded = false)
+            try {
+                val credential = googleCredentials.getCredential(context)
+                authRepository.signInWithGoogle(
+                    idToken = credential.idToken,
+                    nonce = credential.nonce,
+                    displayName = credential.displayName,
+                    avatarUrl = credential.profilePictureUrl,
+                )
+                uiState = uiState.copy(isLoading = false, loginSucceeded = true)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: GoogleCredentialException) {
+                uiState = uiState.copy(isLoading = false, error = e.reason.toAuthenticationFailure())
+            } catch (e: AuthenticationException) {
+                uiState = uiState.copy(isLoading = false, error = e.failure)
+            }
+        }
+    }
 
     fun signIn() {
         if (uiState.isLoading || signInJob?.isActive == true) return
@@ -72,15 +100,20 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
     private fun restoreSession() {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
-            if (authRepository.restoreSession()) {
-                uiState = uiState.copy(isLoading = false, loginSucceeded = true)
-            } else {
-                uiState = uiState.copy(isLoading = false)
-            }
+            val sessionRestored = authRepository.restoreSession()
+            uiState = uiState.copy(isLoading = false, loginSucceeded = sessionRestored)
         }
     }
 
     private inline fun update(transform: LoginUiState.() -> LoginUiState) {
         uiState = uiState.transform()
+    }
+
+    private fun GoogleCredentialException.Reason.toAuthenticationFailure() = when (this) {
+        GoogleCredentialException.Reason.CANCELED -> AuthenticationFailure.GOOGLE_CANCELED
+        GoogleCredentialException.Reason.NO_CREDENTIAL -> AuthenticationFailure.GOOGLE_NO_CREDENTIAL
+        GoogleCredentialException.Reason.INVALID_TOKEN -> AuthenticationFailure.GOOGLE_INVALID_TOKEN
+        GoogleCredentialException.Reason.CONFIGURATION -> AuthenticationFailure.CONFIGURATION
+        GoogleCredentialException.Reason.UNKNOWN -> AuthenticationFailure.SERVER
     }
 }

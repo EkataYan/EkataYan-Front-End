@@ -48,6 +48,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -356,12 +357,17 @@ fun UpcomingTripCard(trip: UpcomingTrip?, onClick: () -> Unit, modifier: Modifie
 
 @Composable
 fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier, isLoading: Boolean = false, errorMessage: String? = null) {
+    val backgroundRes = remember(weather?.weatherType) { weatherBackgroundRes(weather?.weatherType) }
     Card(modifier = modifier, shape = MaterialTheme.shapes.large, elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low)) {
         Box(Modifier.fillMaxSize()) {
-            weather?.imageRes?.let {
-                Image(painterResource(it), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
-            }
-            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.78f), Color.Transparent, EkataImageScrim.copy(alpha = 0.28f)))))
+            Image(painterResource(backgroundRes), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            Box(
+                Modifier.fillMaxSize().background(
+                    Brush.verticalGradient(
+                        listOf(Color(0x80204C73), Color(0x2612304B), EkataImageScrim.copy(alpha = 0.48f)),
+                    ),
+                ),
+            )
             Column(Modifier.fillMaxSize().padding(EkataSpacing.sm)) {
                 HomeWidgetHeader(
                     title = weather?.let { stringResource(R.string.home_weather_in, it.location) } ?: stringResource(R.string.home_weather),
@@ -434,9 +440,24 @@ private fun WidgetMetric(icon: ImageVector, value: String, label: String, modifi
 }
 
 private fun weatherIcon(type: WeatherType): ImageVector = when (type) {
-    WeatherType.SUNNY -> Icons.Default.WbSunny
+    WeatherType.CLEAR -> Icons.Default.WbSunny
     WeatherType.CLOUDY -> Icons.Default.Cloud
-    WeatherType.RAINY, WeatherType.STORMY -> Icons.Default.Thunderstorm
+    WeatherType.RAIN, WeatherType.DRIZZLE -> Icons.Default.WaterDrop
+    WeatherType.THUNDERSTORM -> Icons.Default.Thunderstorm
+    WeatherType.MIST, WeatherType.DEFAULT -> Icons.Default.Cloud
+    WeatherType.NIGHT -> Icons.Default.WbTwilight
+}
+
+@DrawableRes
+private fun weatherBackgroundRes(type: WeatherType?): Int = when (type) {
+    WeatherType.CLEAR -> R.drawable.weather_bg_clear
+    WeatherType.CLOUDY -> R.drawable.weather_bg_cloudy
+    WeatherType.RAIN -> R.drawable.weather_bg_rain
+    WeatherType.DRIZZLE -> R.drawable.weather_bg_drizzle
+    WeatherType.THUNDERSTORM -> R.drawable.weather_bg_thunderstorm
+    WeatherType.MIST -> R.drawable.weather_bg_mist
+    WeatherType.NIGHT -> R.drawable.weather_bg_night
+    WeatherType.DEFAULT, null -> R.drawable.weather_bg_default
 }
 
 @Composable

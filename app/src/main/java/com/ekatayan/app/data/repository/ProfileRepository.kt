@@ -2,7 +2,9 @@ package com.ekatayan.app.data.repository
 
 import com.ekatayan.app.data.local.CachedProfile
 import com.ekatayan.app.data.local.MemoryProfileCacheStore
+import com.ekatayan.app.data.local.InvalidProfileImageException
 import com.ekatayan.app.data.local.ProfileCacheStore
+import com.ekatayan.app.data.local.ProfileImageStore
 import com.ekatayan.app.data.model.ProfileDetails
 import com.ekatayan.app.data.remote.AuthenticationRequiredException
 import com.ekatayan.app.data.remote.UserSessionProvider
@@ -18,9 +20,11 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
-enum class ProfileFailure { AUTHENTICATION, NETWORK, NOT_FOUND, FORBIDDEN, SERVER, INVALID_RESPONSE, CONFIGURATION }
+enum class ProfileFailure { AUTHENTICATION, NETWORK, NOT_FOUND, FORBIDDEN, SERVER, INVALID_RESPONSE, INVALID_IMAGE, CONFIGURATION }
 class ProfileLoadException(val failure: ProfileFailure) : Exception()
 
 @Singleton
@@ -28,6 +32,7 @@ class ProfileRepository @Inject constructor(
     private val api: Lazy<ProfileApiService>,
     private val session: UserSessionProvider,
     private val cache: ProfileCacheStore = MemoryProfileCacheStore(),
+    private val imageStore: ProfileImageStore,
 ) {
     private var activeIdentity = cacheIdentity()
     private var cachedEntry = activeIdentity?.let(cache::read)
@@ -43,6 +48,11 @@ class ProfileRepository @Inject constructor(
     fun hasPendingChanges(): Boolean {
         activateCurrentUser()
         return cachedEntry?.pendingFields?.isNotEmpty() == true
+    }
+
+    fun hasPendingAvatar(): Boolean {
+        activateCurrentUser()
+        return AVATAR in cachedEntry?.pendingFields.orEmpty()
     }
 
     fun activateCurrentUser() {
@@ -69,7 +79,7 @@ class ProfileRepository @Inject constructor(
                 throw ProfileLoadException(ProfileFailure.INVALID_RESPONSE)
             }
             logger.info("Profile fetch succeeded userUuid=${dto!!.id}")
-            return mergeCloudProfile(dto)
+            return cacheCloudAvatar(mergeCloudProfile(dto))
         } catch (e: CancellationException) {
             throw e
         } catch (e: ProfileLoadException) {
@@ -80,6 +90,8 @@ class ProfileRepository @Inject constructor(
             throw ProfileLoadException(e.toProfileFailure())
         } catch (e: JsonParseException) {
             throw ProfileLoadException(ProfileFailure.INVALID_RESPONSE)
+        } catch (e: InvalidProfileImageException) {
+            throw ProfileLoadException(ProfileFailure.INVALID_IMAGE)
         } catch (e: IOException) {
             throw ProfileLoadException(ProfileFailure.NETWORK)
         } catch (e: IllegalArgumentException) {
@@ -96,12 +108,7 @@ class ProfileRepository @Inject constructor(
         if (pending.isEmpty()) return profile
 
         try {
-            val response = api.get().updateProfile(profile.toPatch(pending))
-            val dto = response?.data
-            if (response?.success != true || dto?.id.isNullOrBlank()) {
-                throw ProfileLoadException(ProfileFailure.INVALID_RESPONSE)
-            }
-            return dto!!.toDetails(profile).also { saveLocal(it, emptySet()) }
+            return syncPending(profile)
         } catch (e: CancellationException) {
             throw e
         } catch (e: ProfileLoadException) {
@@ -112,10 +119,99 @@ class ProfileRepository @Inject constructor(
             throw ProfileLoadException(e.toProfileFailure(update = true))
         } catch (e: JsonParseException) {
             throw ProfileLoadException(ProfileFailure.INVALID_RESPONSE)
+        } catch (e: InvalidProfileImageException) {
+            throw ProfileLoadException(ProfileFailure.INVALID_IMAGE)
         } catch (e: IOException) {
             throw ProfileLoadException(ProfileFailure.NETWORK)
         } catch (e: IllegalArgumentException) {
             throw ProfileLoadException(ProfileFailure.CONFIGURATION)
+        }
+    }
+
+    /** Saves a normalized account-scoped local image first, then uploads it and persists avatar_path. */
+    suspend fun updateAvatar(uri: String): ProfileDetails {
+        activateCurrentUser()
+        val identity = activeIdentity ?: throw ProfileLoadException(ProfileFailure.AUTHENTICATION)
+        val store = imageStore
+        val previous = mutableProfile.value ?: authProfile() ?: throw ProfileLoadException(ProfileFailure.AUTHENTICATION)
+        try {
+            val localPath = withContext(Dispatchers.IO) { store.importFromPicker(uri, identity) }
+            val local = previous.copy(avatarLocalPath = localPath)
+            saveLocal(local, cachedEntry?.pendingFields.orEmpty() + AVATAR)
+            return syncPending(local)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: ProfileLoadException) {
+            throw e
+        } catch (e: InvalidProfileImageException) {
+            throw ProfileLoadException(ProfileFailure.INVALID_IMAGE)
+        } catch (e: AuthenticationRequiredException) {
+            throw ProfileLoadException(ProfileFailure.AUTHENTICATION)
+        } catch (e: HttpException) {
+            throw ProfileLoadException(e.toProfileFailure(update = true))
+        } catch (e: IOException) {
+            throw ProfileLoadException(ProfileFailure.NETWORK)
+        } catch (e: IllegalArgumentException) {
+            throw ProfileLoadException(ProfileFailure.CONFIGURATION)
+        }
+    }
+
+    private suspend fun syncPending(profile: ProfileDetails): ProfileDetails {
+        var synced = profile
+        var pending = cachedEntry?.pendingFields.orEmpty()
+
+        if (AVATAR in pending) {
+            val store = imageStore
+            val localPath = synced.avatarLocalPath ?: throw ProfileLoadException(ProfileFailure.INVALID_IMAGE)
+            val response = api.get().uploadProfilePicture(store.multipart(localPath))
+            val upload = response?.data
+            val avatarPath = upload?.profile?.avatarPath ?: upload?.upload?.path
+            if (response?.success != true || upload?.profile?.id.isNullOrBlank() || avatarPath.isNullOrBlank()) {
+                throw ProfileLoadException(ProfileFailure.INVALID_RESPONSE)
+            }
+            synced = synced.copy(avatarPath = avatarPath)
+            pending = pending - AVATAR
+            saveLocal(synced, pending)
+        }
+
+        val patchFields = pending.intersect(PROFILE_FIELDS)
+        if (patchFields.isNotEmpty()) {
+            val response = api.get().updateProfile(synced.toPatch(patchFields))
+            val dto = response?.data
+            if (response?.success != true || dto?.id.isNullOrBlank()) {
+                throw ProfileLoadException(ProfileFailure.INVALID_RESPONSE)
+            }
+            synced = dto!!.toDetails(synced)
+            pending = pending - patchFields
+            saveLocal(synced, pending)
+        }
+        return synced
+    }
+
+    private suspend fun cacheCloudAvatar(profile: ProfileDetails): ProfileDetails {
+        val store = imageStore
+        val identity = activeIdentity ?: return profile
+        if (profile.avatarPath.isNullOrBlank()) {
+            return profile.copy(avatarLocalPath = null).also {
+                saveLocal(it, cachedEntry?.pendingFields.orEmpty())
+            }
+        }
+        if (store.exists(profile.avatarLocalPath)) return profile
+
+        return try {
+            val response = api.get().getProfilePicture()
+            val body = response.body()
+            if (!response.isSuccessful || body == null) return profile
+            val localPath = body.use { responseBody ->
+                withContext(Dispatchers.IO) { store.saveDownloaded(responseBody.byteStream(), identity) }
+            }
+            profile.copy(avatarLocalPath = localPath).also {
+                saveLocal(it, cachedEntry?.pendingFields.orEmpty())
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            profile
         }
     }
 
@@ -155,16 +251,20 @@ class ProfileRepository @Inject constructor(
         phone = phone.takeIf { PHONE in fields },
     )
 
-    private fun ProfileDto.toDetails(fallback: ProfileDetails?) = ProfileDetails(
-        name = displayName ?: fallback?.name.orEmpty(),
-        location = homeCity ?: fallback?.location.orEmpty(),
-        email = email ?: fallback?.email ?: session.currentUserEmail().orEmpty(),
-        phone = phone ?: fallback?.phone.orEmpty(),
-        bio = bio ?: fallback?.bio.orEmpty(),
-        language = language ?: fallback?.language.orEmpty().ifBlank { "en" },
-        interests = interests ?: fallback?.interests.orEmpty(),
-        avatarPath = avatarPath ?: fallback?.avatarPath,
-    )
+    private fun ProfileDto.toDetails(fallback: ProfileDetails?): ProfileDetails {
+        val resolvedAvatarPath = avatarPath ?: fallback?.avatarPath
+        return ProfileDetails(
+            name = displayName ?: fallback?.name.orEmpty(),
+            location = homeCity ?: fallback?.location.orEmpty(),
+            email = email ?: fallback?.email ?: session.currentUserEmail().orEmpty(),
+            phone = phone ?: fallback?.phone.orEmpty(),
+            bio = bio ?: fallback?.bio.orEmpty(),
+            language = language ?: fallback?.language.orEmpty().ifBlank { "en" },
+            interests = interests ?: fallback?.interests.orEmpty(),
+            avatarPath = resolvedAvatarPath,
+            avatarLocalPath = fallback?.avatarLocalPath?.takeIf { fallback.avatarPath == resolvedAvatarPath },
+        )
+    }
 
     private fun mergeCloudProfile(dto: ProfileDto): ProfileDetails {
         val local = mutableProfile.value
@@ -177,6 +277,8 @@ class ProfileRepository @Inject constructor(
             location = local.location.takeIf { HOME_CITY in pending } ?: cloud.location,
             language = local.language.takeIf { LANGUAGE in pending } ?: cloud.language,
             interests = local.interests.takeIf { INTERESTS in pending } ?: cloud.interests,
+            avatarPath = local.avatarPath.takeIf { AVATAR in pending } ?: cloud.avatarPath,
+            avatarLocalPath = local.avatarLocalPath.takeIf { AVATAR in pending } ?: cloud.avatarLocalPath,
         )
         saveLocal(merged, pending)
         return merged
@@ -197,6 +299,8 @@ class ProfileRepository @Inject constructor(
         const val HOME_CITY = "home_city"
         const val LANGUAGE = "language"
         const val INTERESTS = "interests"
+        const val AVATAR = "avatar"
+        val PROFILE_FIELDS = setOf(DISPLAY_NAME, PHONE, BIO, HOME_CITY, LANGUAGE, INTERESTS)
         val logger: Logger = Logger.getLogger("EkataYanProfile")
     }
 }

@@ -19,7 +19,6 @@
     <string name="signup_action">Sign Up</string>
     <string name="signup_or">OR</string>
     <string name="signup_google">Continue with Google</string>
-    <string name="signup_apple">Continue with Apple</string>
     <string name="signup_existing">Already have an account? </string>
     <string name="signup_login">Log In</string>
     <string name="signup_error_required_fields">Enter your email and password to continue.</string>
@@ -31,6 +30,9 @@
     <string name="signup_error_configuration">Authentication is not configured for this build.</string>
     <string name="signup_error_registration">Unable to create this account. Check your details or try logging in.</string>
     <string name="signup_error_generic">Unable to create your account. Please try again.</string>
+    <string name="auth_google_canceled">Google sign-in was canceled.</string>
+    <string name="auth_google_no_credential">No Google account was found. Add a Google account and try again.</string>
+    <string name="auth_google_invalid_token">Google sign-in could not be verified. Please try again.</string>
     <string name="signup_confirmation_required">Check your email and verify your account before logging in.</string>
     <string name="login_title">Welcome Back!</string>
     <string name="login_subtitle">Login to continue your journey</string>

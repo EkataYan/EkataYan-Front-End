@@ -13,4 +13,5 @@ data class ProfileDetails(
     val language: String = "",
     val interests: List<String> = emptyList(),
     val avatarPath: String? = null,
+    val avatarLocalPath: String? = null,
 )

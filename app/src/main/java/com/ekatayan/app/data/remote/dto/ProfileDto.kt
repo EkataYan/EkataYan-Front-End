@@ -4,6 +4,16 @@ import com.google.gson.annotations.SerializedName
 
 data class ApiResponse<T>(val success: Boolean, val data: T?)
 
+data class ProfilePictureUploadDto(
+    val profile: ProfileDto?,
+    val upload: StoredProfileImageDto?,
+)
+
+data class StoredProfileImageDto(
+    val bucket: String?,
+    val path: String?,
+)
+
 data class UpdateProfileRequest(
     @SerializedName("display_name") val displayName: String? = null,
     val bio: String? = null,

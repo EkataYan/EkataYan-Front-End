@@ -4,6 +4,8 @@ package com.ekatayan.app.data.repository
 import com.ekatayan.app.data.remote.SupabaseConfigurationException
 import com.ekatayan.app.data.remote.UserSessionProvider
 import com.ekatayan.app.data.remote.api.SupabaseAuthApiService
+import com.ekatayan.app.data.remote.api.GoogleIdTokenRequest
+import com.ekatayan.app.data.remote.api.GoogleUserMetadataRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignInRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignUpMetadata
 import com.ekatayan.app.data.remote.dto.PasswordSignUpRequest
@@ -15,13 +17,24 @@ import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 import retrofit2.HttpException
 
-enum class AuthenticationFailure { INVALID_CREDENTIALS, NETWORK, SERVER, CONFIGURATION, INVALID_RESPONSE }
+enum class AuthenticationFailure {
+    INVALID_CREDENTIALS, NETWORK, SERVER, CONFIGURATION, INVALID_RESPONSE,
+    GOOGLE_CANCELED, GOOGLE_NO_CREDENTIAL, GOOGLE_INVALID_TOKEN,
+}
 class AuthenticationException(val failure: AuthenticationFailure) : Exception()
 
 enum class SignUpResult { AUTHENTICATED, EMAIL_CONFIRMATION_REQUIRED }
 
 interface AuthRepository {
     suspend fun signIn(email: String, password: String)
+    suspend fun signInWithGoogle(
+        idToken: String,
+        nonce: String? = null,
+        displayName: String? = null,
+        avatarUrl: String? = null,
+    ) {
+        throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
+    }
     suspend fun signUp(name: String, email: String, phone: String, password: String): SignUpResult
     suspend fun restoreSession(): Boolean
     suspend fun refreshSession(): Boolean
@@ -50,6 +63,44 @@ class SupabaseAuthRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            throw AuthenticationException(AuthenticationFailure.SERVER)
+        }
+    }
+
+    override suspend fun signInWithGoogle(
+        idToken: String,
+        nonce: String?,
+        displayName: String?,
+        avatarUrl: String?,
+    ) {
+        if (idToken.isBlank()) throw AuthenticationException(AuthenticationFailure.INVALID_RESPONSE)
+        try {
+            store(
+                api.get().signInWithIdToken(
+                    request = GoogleIdTokenRequest(
+                        idToken = idToken,
+                        nonce = nonce,
+                        data = GoogleUserMetadataRequest(displayName, avatarUrl),
+                    ),
+                ),
+                authenticatedName = displayName,
+                preferAuthenticatedName = true,
+            )
+        } catch (e: AuthenticationException) {
+            throw e
+        } catch (e: HttpException) {
+            throw AuthenticationException(
+                if (e.code() in 400..401) AuthenticationFailure.GOOGLE_INVALID_TOKEN else AuthenticationFailure.SERVER,
+            )
+        } catch (e: SupabaseConfigurationException) {
+            throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
+        } catch (e: IOException) {
+            throw AuthenticationException(AuthenticationFailure.NETWORK)
+        } catch (e: IllegalArgumentException) {
+            throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
             throw AuthenticationException(AuthenticationFailure.SERVER)
         }
     }
@@ -124,6 +175,7 @@ class SupabaseAuthRepository @Inject constructor(
         value: SupabaseSessionDto,
         authenticatedEmail: String? = session.currentUserEmail(),
         authenticatedName: String? = session.currentUserName(),
+        preferAuthenticatedName: Boolean = false,
     ) {
         val access = value.accessToken
         val refresh = value.refreshToken
@@ -137,7 +189,15 @@ class SupabaseAuthRepository @Inject constructor(
             refreshToken = refresh,
             expiresAtMillis = expiresAt,
             email = value.user?.email ?: authenticatedEmail,
-            name = value.user?.userMetadata?.fullName ?: authenticatedName,
+            name = if (preferAuthenticatedName) {
+                authenticatedName
+                    ?: value.user?.userMetadata?.fullName
+                    ?: value.user?.userMetadata?.name
+            } else {
+                value.user?.userMetadata?.fullName
+                    ?: value.user?.userMetadata?.name
+                    ?: authenticatedName
+            },
         )
     }
 
