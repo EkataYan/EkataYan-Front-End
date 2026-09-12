@@ -13,5 +13,25 @@ import kotlinx.coroutines.flow.StateFlow
 @Composable
 fun PlannerRoute(onCreateTrip: (PlannerUiState) -> Unit, onHomeClick: () -> Unit, onTripsClick: () -> Unit, onExpensesClick: () -> Unit, onProfileClick: () -> Unit, onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, notificationsUiState: StateFlow<NotificationsUiState>, viewModel: PlannerViewModel = hiltViewModel()) {
     val notificationState by notificationsUiState.collectAsStateWithLifecycle()
-    PlannerScreen(viewModel.uiState.value, viewModel::updateDestination, viewModel::updateBudget, viewModel::updateStartDate, viewModel::updateEndDate, viewModel::clearStartDate, viewModel::clearEndDate, viewModel::setError, viewModel::updatePreference, viewModel::generate, onHomeClick, onTripsClick, onExpensesClick, onProfileClick, onNotificationClick, onSettingsClick, notificationState.hasUnreadNotifications)
+    val uiState by viewModel.uiState
+    PlannerScreen(
+        uiState = uiState,
+        onDestinationChange = viewModel::updateDestination,
+        onAddDestination = viewModel::addDestination,
+        onAdditionalDestinationChange = viewModel::updateAdditionalDestination,
+        onRemoveAdditionalDestination = viewModel::removeAdditionalDestination,
+        onTravellerTypeSelected = viewModel::updateTravellerType,
+        onPeopleCountChange = viewModel::updateCustomPeopleCount,
+        onStartDateSelected = viewModel::updateStartDate,
+        onEndDateSelected = viewModel::updateEndDate,
+        onDateValidationError = viewModel::setError,
+        onAskAiClick = { if (viewModel.validate()) onCreateTrip(viewModel.uiState.value) },
+        onHomeClick = onHomeClick,
+        onTripsClick = onTripsClick,
+        onExpensesClick = onExpensesClick,
+        onProfileClick = onProfileClick,
+        onNotificationClick = onNotificationClick,
+        onSettingsClick = onSettingsClick,
+        hasUnreadNotifications = notificationState.hasUnreadNotifications,
+    )
 }

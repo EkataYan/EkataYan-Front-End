@@ -60,6 +60,10 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", file("schemas").path)
+}
+
 dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
@@ -86,7 +90,11 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.datastore.preferences)
     ksp(libs.hilt.android.compiler)
+    ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(platform(libs.androidx.compose.bom))

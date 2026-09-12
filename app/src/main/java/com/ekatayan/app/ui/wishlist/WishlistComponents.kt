@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +30,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -203,6 +206,102 @@ fun WishlistPopupSurface(onDismiss: () -> Unit, content: @Composable () -> Unit)
             contentColor = EkataTextPrimary,
             shadowElevation = 8.dp,
         ) { content() }
+    }
+}
+
+@Composable
+fun WishlistGroupSelector(
+    item: WishlistItem,
+    groups: List<WishlistGroup>,
+    onDismiss: () -> Unit,
+    onGroupSelectionChange: (groupId: Int, selected: Boolean) -> Unit,
+    onCreateGroupWithPlace: (name: String, item: WishlistItem) -> Boolean,
+) {
+    var createDialogVisible by remember(item.id) { mutableStateOf(false) }
+
+    if (createDialogVisible) {
+        WishlistNameDialog(
+            title = stringResource(R.string.wishlist_create_new),
+            confirmLabel = stringResource(R.string.wishlist_create_action),
+            initialName = "",
+            onDismiss = { createDialogVisible = false },
+            onConfirm = { name ->
+                onCreateGroupWithPlace(name, item).also { created ->
+                    if (created) createDialogVisible = false
+                }
+            },
+        )
+        return
+    }
+
+    WishlistPopupSurface(onDismiss) {
+        Column(Modifier.padding(22.dp)) {
+            Text(
+                text = stringResource(R.string.wishlist_save_to),
+                color = EkataTextPrimary,
+                fontSize = 21.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Text(
+                text = item.name,
+                color = EkataTextSecondary,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(top = 2.dp, bottom = 10.dp),
+            )
+            if (groups.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.wishlist_empty_selector_title),
+                    color = EkataTextPrimary,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+                Text(
+                    text = stringResource(R.string.wishlist_empty_selector_message),
+                    color = EkataTextSecondary,
+                    modifier = Modifier.padding(top = 6.dp, bottom = 8.dp),
+                )
+            } else {
+                LazyColumn(Modifier.fillMaxWidth().heightIn(max = 320.dp)) {
+                    items(groups, key = WishlistGroup::id) { group ->
+                        val selected = group.items.any { savedItem -> savedItem.id == item.id }
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .clickable { onGroupSelectionChange(group.id, !selected) }
+                                .padding(vertical = 5.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = selected,
+                                onCheckedChange = { checked -> onGroupSelectionChange(group.id, checked) },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = EkataLightBlue,
+                                    checkmarkColor = EkataTextPrimary,
+                                    uncheckedColor = WishlistPopupBorder,
+                                ),
+                            )
+                            Column(Modifier.weight(1f)) {
+                                Text(group.name, color = EkataTextPrimary, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    pluralStringResource(R.plurals.wishlist_places, group.items.size, group.items.size),
+                                    color = EkataTextSecondary,
+                                    fontSize = 12.sp,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            TextButton(
+                onClick = { createDialogVisible = true },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, tint = EkataTextPrimary)
+                Text(stringResource(R.string.wishlist_create_new), color = EkataTextPrimary)
+            }
+            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
+                Text(stringResource(R.string.wishlist_close), color = EkataTextPrimary)
+            }
+        }
     }
 }
 

@@ -33,7 +33,7 @@ Dependency versions are centralized in `gradle/libs.versions.toml`. Do not dupli
 - Features retain the `FeatureNavigation.kt` -> `FeatureRoute.kt` -> `FeatureScreen.kt` boundary, with Android ViewModels in `viewmodel/` and local data access in `data/repository/`. The dependency direction is UI -> ViewModel -> Repository -> local data; preserve the existing Hilt injection and navigation scopes.
 - Route composables obtain Hilt ViewModels and pass state plus event callbacks to screen composables. Keep screen composables independent of `NavController`; navigation is expressed through callbacks.
 - Keep UI state and user-event handling in the feature ViewModel when state must survive recomposition. Keep reusable, presentation-only composables stateless where practical.
-- Splash is the current start destination. After its 1.5-second display delay, it leads to Welcome only until the user completes Get Started once; subsequent launches skip Welcome and open Login. This first-run state uses private app preferences and resets when app data is cleared or the app is uninstalled. Welcome's Get Started opens the existing Login destination; startup destinations are removed from the back stack as the user continues. Welcome is static and does not require a ViewModel. The repository includes Home, Trips, Wishlist, Group Hub, booking, expenses, profile, notifications, and Business Partner feature packages; inspect each feature before assuming it is a placeholder.
+- Splash is the current start destination. After its 1.5-second display delay, it leads to Welcome only until the user completes Get Started once; subsequent launches skip Welcome and open Login. This first-run state uses Preferences DataStore (with migration from the former private onboarding SharedPreferences) and resets when app data is cleared or the app is uninstalled. Welcome's Get Started opens the existing Login destination; startup destinations are removed from the back stack as the user continues. Welcome is static and does not require a ViewModel. The repository includes Home, Trips, Wishlist, Group Hub, booking, expenses, profile, notifications, and Business Partner feature packages; inspect each feature before assuming it is a placeholder.
 
 ## Project Structure
 
@@ -41,6 +41,8 @@ Dependency versions are centralized in `gradle/libs.versions.toml`. Do not dupli
 - `app/src/main/java/com/ekatayan/app/ui/<feature>/`: migrated feature navigation, routes, and Compose screens.
 - `app/src/main/java/com/ekatayan/app/viewmodel/`: Android ViewModels and presentation state.
 - `app/src/main/java/com/ekatayan/app/data/`: models, local demo catalogs/data sources, repositories, and Hilt repository bindings.
+- `app/src/main/java/com/ekatayan/app/data/local/database/`: Room database version 1, normalized entities, DAOs, snapshots, and domain mappers for Wishlist, Trips, Group Hub, and Business Partner local data.
+- `app/src/main/java/com/ekatayan/app/data/local/preferences/`: shared Preferences DataStore used for small frontend preferences and onboarding state.
 - `app/src/main/java/com/ekatayan/app/utils/`: shared date parsing and calendar helpers.
 - Splash and Welcome use `ui/splash/` and `ui/welcome/`, respectively, with Navigation -> Route -> Screen separation; these static startup screens do not require ViewModels or repositories.
 - `app/src/main/java/com/ekatayan/app/core/designsystem/`: shared Compose components and theme definitions.
@@ -125,7 +127,7 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 - Business Partner is entered through `onPartnershipClick` in the Home quick-action row, immediately after Group Hub. Do not add it to the traveller bottom navigation.
 - Register all partner destinations in the existing `EkataYanNavHost`. `PARTNER_HOME_ROUTE` is the partner dashboard; `HOME_ROUTE` remains traveller Home.
 - The traveller access-denied dialog has exactly two actions: Go Back dismisses it on Partner Entry; Cancel exits the partner flow to traveller Home. Application Submitted's Back to Home also exits to traveller Home.
-- One host-scoped `BusinessPartnerViewModel` and `LocalBusinessPartnerRepository` own the session's profile, onboarding, documents, listing drafts/listings, bookings, hours, and links. The repository is in-memory: navigation and configuration changes retain state, process death/restart does not.
+- One host-scoped `BusinessPartnerViewModel` and singleton `LocalBusinessPartnerRepository` own the profile, onboarding, document references, listing drafts/listings, bookings, hours, and links. Durable fields are stored in Room and survive process death/restart; form drafts, picker errors, filters, and passwords remain transient.
 - Business Partner remains a frontend demo. Registration, login, verification, files, listings, bookings, and analytics do not contact a backend or upload data.
 - Partner image selection uses Android Photo Picker contracts; document selection uses OpenDocument. Store URI references, use bounded preview decoding, and never request broad storage permission. Add Photos has a plus/text action with no adjacent photo icon.
 - Partner dialogs and menus reuse the Wishlist popup surface/border convention: white background, dark text, light-blue border, and rounded corners. All partner input text is explicitly dark, including in dark device mode.
@@ -133,4 +135,13 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 - Registration and profile editing share required city, district, country, and owner/manager contact fields. Verification remains local-only; do not promise review turnaround times without a real verification workflow.
 
 - Internal Business Partner headers use page titles rather than repeated EkataYan branding; public/auth and onboarding branding remains.
-- Partner Sign Out clears login and transient editing state while retaining local account data for the session. Delete Account resets the in-memory repository only; real account deletion requires backend integration. Both exit through the public Partner Entry route and clear protected destinations from the back stack.
+- Partner Sign Out clears login and transient editing state while retaining locally persisted account data. Delete Account resets the local Room-backed partner data only; real account deletion requires backend integration. Both exit through the public Partner Entry route and clear protected destinations from the back stack.
+
+## Local Frontend Persistence
+
+- Room 2.8.4 is the structured local source of truth. `EkataYanDatabase` uses schema version 1 and is provided with its DAOs through the existing Hilt/KSP setup; generated schemas are kept under `app/schemas/`.
+- Wishlist groups, covers, and destination membership; Trips; Group Hub groups, members, messages, reactions, themes, backgrounds, and attachment references; and Business Partner profiles, images, hours, links, document references, listings, listing fields, availability, bookings, and local session flags are persisted in normalized Room tables.
+- Preferences DataStore 1.2.1 stores lightweight settings and the welcome-completion flag. Existing encrypted authentication session storage remains separate and unchanged.
+- Static destination catalogue records are not duplicated in Room. Wishlist membership stores destination IDs, and Home observes the same Wishlist repository for heart state. Home's upcoming-trip card observes the persisted Trips repository.
+- Initial Wishlist, Trips, and Group Hub demo records use persistent feature seed markers. Empty tables after user deletion are not treated as a first run, so deleted sample records are not reinserted. Business Partner demo records are guarded by the persisted `demoLoaded` flag.
+- URI strings and metadata are stored instead of image/document binaries. OpenDocument flows retain read access through `DocumentRepository`; Photo Picker flows make a best-effort persistable read grant and rely on the platform Photo Picker grant behavior when the provider does not support it. Broad storage permission is not requested.

@@ -10,6 +10,7 @@ import com.ekatayan.app.viewmodel.GroupHubUiState
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -27,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -43,7 +45,11 @@ import java.time.format.DateTimeFormatter
 fun GroupChatScreen(groupId: String, state: GroupHubUiState, onBackClick: () -> Unit, onInfoClick: () -> Unit, onSendText: (String, String, String?) -> Unit, onSendAttachment: (String, MessageType, String?, String?, Int?) -> Unit, onReact: (String, String) -> Unit, onDeleteMessage: (String, String) -> Unit, onTheme: (String, ChatTheme) -> Unit, onBackground: (String, String?) -> Unit, onLeave: () -> Unit, onFileSelected: (String) -> Unit, modifier: Modifier = Modifier) {
     val group = state.groups.find { it.id == groupId } ?: return EmptyState("Group unavailable")
     val messages = state.messagesByGroup[groupId].orEmpty(); val listState = rememberLazyListState(); var input by rememberSaveable(groupId) { mutableStateOf("") }; var menu by remember { mutableStateOf(false) }; var attachmentMenu by remember { mutableStateOf(false) }; var placePicker by remember { mutableStateOf(false) }; var searchMode by remember { mutableStateOf(false) }; var search by remember { mutableStateOf("") }; var selectedMessage by remember { mutableStateOf<ChatMessage?>(null) }; var replyTo by remember { mutableStateOf<ChatMessage?>(null) }; var confirmLeave by remember { mutableStateOf(false) }
-    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let { onSendAttachment(groupId, MessageType.Image, it.toString(), null, null) } }
+    val context = LocalContext.current
+    val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let {
+        runCatching { context.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
+        onSendAttachment(groupId, MessageType.Image, it.toString(), null, null)
+    } }
     val filePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let { onFileSelected(it.toString()) } }
     LaunchedEffect(messages.size) { if (messages.isNotEmpty()) listState.animateScrollToItem(messages.lastIndex) }
     val outgoing = themeColor(group.theme)

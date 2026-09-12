@@ -49,4 +49,23 @@ class WishlistViewModelTest {
         second.deleteGroup(id)
         assertEquals(count, first.uiState.value.groups.size)
     }
+
+    @Test
+    fun createGroupFromHomeAddsPlaceOnceAndSynchronizesConsumers() {
+        val repository = WishlistRepository()
+        val homeConsumer = WishlistViewModel(repository).also { store.put("home", it) }
+        val wishlistConsumer = WishlistViewModel(repository).also { store.put("wishlist", it) }
+        val place = homeConsumer.uiState.value.availableDestinations.first { it.id == 14 }
+
+        assertTrue(homeConsumer.createGroupWithPlace("Ancient Cities", place))
+
+        val createdGroup = wishlistConsumer.uiState.value.groups.last()
+        assertEquals("Ancient Cities", createdGroup.name)
+        assertEquals(listOf(place.id), createdGroup.items.map { it.id })
+        assertFalse(wishlistConsumer.addPlaceToGroup(createdGroup.id, place))
+        assertEquals(1, createdGroup.items.count { it.id == place.id })
+
+        wishlistConsumer.removePlaceFromGroup(createdGroup.id, place.id)
+        assertTrue(homeConsumer.uiState.value.groups.last().items.none { it.id == place.id })
+    }
 }

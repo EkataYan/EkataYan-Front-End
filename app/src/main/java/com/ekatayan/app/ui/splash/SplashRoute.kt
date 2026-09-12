@@ -7,7 +7,7 @@ import kotlinx.coroutines.delay
 private const val SPLASH_DISPLAY_DURATION_MILLIS = 1_500L
 
 @Composable
-fun SplashRoute(onSplashFinished: () -> Unit) {
+fun SplashRoute(onSplashFinished: suspend () -> Unit) {
     LaunchedEffect(Unit) {
         delay(SPLASH_DISPLAY_DURATION_MILLIS)
         onSplashFinished()

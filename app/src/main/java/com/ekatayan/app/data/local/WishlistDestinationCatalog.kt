@@ -4,7 +4,7 @@ import com.ekatayan.app.data.model.WishlistItem
 
 import com.ekatayan.app.R
 
-/** Prototype catalog boundary that can later be replaced by an API, Room, or Firebase source. */
+/** Static destination catalogue; Room stores only stable destination IDs in wishlist membership rows. */
 object WishlistDestinationCatalog {
     val destinations = listOf(
         WishlistItem(1, "Sigiriya", "An ancient rock fortress rising above Sri Lanka's central plains.", "Matale District", R.drawable.sigiriya),

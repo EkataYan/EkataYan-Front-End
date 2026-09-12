@@ -7,6 +7,14 @@
     <string name="wishlist_back">Back</string>
     <string name="wishlist_remove_place">Remove %1$s</string>
     <string name="wishlist_search_destinations">Search destinations...</string>
+    <string name="wishlist_save_to">Save to Wishlist</string>
+    <string name="wishlist_create_new">Create New Wishlist</string>
+    <string name="wishlist_create_action">Create</string>
+    <string name="wishlist_empty_selector_title">No wishlists yet</string>
+    <string name="wishlist_empty_selector_message">Create a wishlist to save this place.</string>
+    <string name="wishlist_close">Close</string>
+    <string name="wishlist_saved">Saved to at least one wishlist</string>
+    <string name="wishlist_not_saved">Not saved to a wishlist</string>
     <plurals name="wishlist_places">
         <item quantity="one">%1$d place</item>
         <item quantity="other">%1$d places</item>

@@ -56,6 +56,7 @@ import com.ekatayan.app.ui.wishlist.wishlistGroupRoute
 import com.ekatayan.app.ui.wishlist.wishlistScreens
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 @Composable
 fun EkataYanNavHost(
@@ -64,6 +65,7 @@ fun EkataYanNavHost(
 ) {
     val context = LocalContext.current
     val welcomePreferences = remember(context) { WelcomePreferences(context) }
+    val preferenceScope = androidx.compose.runtime.rememberCoroutineScope()
     val businessPartnerViewModel: BusinessPartnerViewModel = hiltViewModel()
     val wishlistViewModel: WishlistViewModel = hiltViewModel()
     val groupHubViewModel: GroupHubViewModel = hiltViewModel()
@@ -82,10 +84,12 @@ fun EkataYanNavHost(
             }
         })
         welcomeScreen(onGetStarted = {
-            welcomePreferences.markWelcomeCompleted()
-            navController.navigate(LOGIN_ROUTE) {
-                popUpTo(WELCOME_ROUTE) { inclusive = true }
-                launchSingleTop = true
+            preferenceScope.launch {
+                welcomePreferences.markWelcomeCompleted()
+                navController.navigate(LOGIN_ROUTE) {
+                    popUpTo(WELCOME_ROUTE) { inclusive = true }
+                    launchSingleTop = true
+                }
             }
         })
         loginScreen(
@@ -106,6 +110,7 @@ fun EkataYanNavHost(
             onRestartFlow = { navController.navigate(PARTNER_ENTRY_ROUTE) { popUpTo(HOME_ROUTE); launchSingleTop = true } },
         )
         homeScreen(
+            wishlistViewModel = wishlistViewModel,
             onPartnershipClick = { navController.navigate(PARTNER_ENTRY_ROUTE) { launchSingleTop = true } },
             onGroupHubClick = { navController.navigate(GROUP_HUB_ROUTE) },
             onWishlistClick = { navController.navigate(WISHLIST_ROUTE) },
@@ -238,7 +243,11 @@ fun EkataYanNavHost(
 
 private val plannerRouteDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
 
-private fun createTripRoute(planner: PlannerUiState): String = "${CREATE_TRIP_ROUTE}?destination=${Uri.encode(planner.destination)}&start=${planner.startDate?.format(plannerRouteDateFormatter).orEmpty()}&end=${planner.endDate?.format(plannerRouteDateFormatter).orEmpty()}&budget=${Uri.encode(planner.budget)}&preferences=${Uri.encode("${planner.travelers}; ${planner.accommodation}; ${planner.transport}; ${planner.tripType}; ${planner.interests}")}"
+private fun createTripRoute(planner: PlannerUiState): String =
+    "${CREATE_TRIP_ROUTE}?destination=${Uri.encode(planner.destination)}" +
+        "&start=${planner.startDate?.format(plannerRouteDateFormatter).orEmpty()}" +
+        "&end=${planner.endDate?.format(plannerRouteDateFormatter).orEmpty()}" +
+        "&budget=&preferences=${Uri.encode("Party size: ${planner.partySize}")}"
 
 private fun NavHostController.navigateToSignUp() {
     navigate(SIGN_UP_ROUTE) { launchSingleTop = true }

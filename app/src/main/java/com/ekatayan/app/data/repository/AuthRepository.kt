@@ -84,6 +84,7 @@ class SupabaseAuthRepository @Inject constructor(
                     ),
                 ),
                 authenticatedName = displayName,
+                preferAuthenticatedName = true,
             )
         } catch (e: AuthenticationException) {
             throw e
@@ -174,6 +175,7 @@ class SupabaseAuthRepository @Inject constructor(
         value: SupabaseSessionDto,
         authenticatedEmail: String? = session.currentUserEmail(),
         authenticatedName: String? = session.currentUserName(),
+        preferAuthenticatedName: Boolean = false,
     ) {
         val access = value.accessToken
         val refresh = value.refreshToken
@@ -187,9 +189,15 @@ class SupabaseAuthRepository @Inject constructor(
             refreshToken = refresh,
             expiresAtMillis = expiresAt,
             email = value.user?.email ?: authenticatedEmail,
-            name = value.user?.userMetadata?.fullName
-                ?: value.user?.userMetadata?.name
-                ?: authenticatedName,
+            name = if (preferAuthenticatedName) {
+                authenticatedName
+                    ?: value.user?.userMetadata?.fullName
+                    ?: value.user?.userMetadata?.name
+            } else {
+                value.user?.userMetadata?.fullName
+                    ?: value.user?.userMetadata?.name
+                    ?: authenticatedName
+            },
         )
     }
 
