@@ -38,7 +38,7 @@ fun GroupInfoScreen(groupId: String, state: GroupHubUiState, onBackClick: () -> 
     }
     val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let { uri -> retain(uri); onPhoto(groupId, uri.toString()) } }
     val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { it?.let { uri -> retain(uri); onBackground(groupId, uri.toString()) } }
-    Column(modifier.fillMaxSize().background(EkataBackground).statusBarsPadding()) {
+    Column(modifier.fillMaxSize().background(EkataBackground)) {
         Row(Modifier.fillMaxWidth().height(60.dp).background(Color.White), verticalAlignment = Alignment.CenterVertically) { IconButton(onBackClick) { Icon(Icons.Default.ArrowBack, "Back") }; Text("Group Info", fontSize = 20.sp, fontWeight = FontWeight.Bold) }
         LazyColumn(contentPadding = PaddingValues(20.dp, 20.dp, 20.dp, 40.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
             item { GroupAvatar(group, 104); TextButton({ photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) { Text("Change group photo") }; Text(group.name, fontSize = 24.sp, fontWeight = FontWeight.Bold); Text(group.description.ifEmpty { "Add a group description" }, color = EkataTextSecondary); Text("${group.memberIds.size} members", color = EkataTextSecondary) }

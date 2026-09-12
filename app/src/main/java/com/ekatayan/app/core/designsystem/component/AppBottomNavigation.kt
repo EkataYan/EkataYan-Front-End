@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -31,6 +34,7 @@ import com.ekatayan.app.core.designsystem.theme.EkataIconSize
 import com.ekatayan.app.core.designsystem.theme.EkataNavigationBackground
 import com.ekatayan.app.core.designsystem.theme.EkataElevation
 import com.ekatayan.app.core.designsystem.theme.EkataSpacing
+import com.ekatayan.app.core.designsystem.theme.EkataRadius
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
 import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
 
@@ -53,12 +57,16 @@ fun AppBottomNavigation(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
+    val isImeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    if (isImeVisible) return
+
     val callbacks = listOf(onHomeClick, onTripsClick, onPlannerClick, onExpensesClick, onProfileClick)
-    val outerPadding = if (compact) EkataSpacing.sm else 14.dp
-    val barHeight = if (compact) EkataComponentSize.bottomNavigationCompactHeight else EkataComponentSize.bottomNavigationHeight
-    val barRadius = if (compact) 24.dp else 25.dp
-    val barElevation = if (compact) EkataElevation.medium else 9.dp
-    val itemSize = if (compact) EkataComponentSize.bottomNavigationCompactIconContainer else EkataComponentSize.bottomNavigationIconContainer
+    // Keep the parameter while callers migrate, but use one geometry everywhere.
+    val outerPadding = EkataSpacing.sm
+    val barHeight = EkataComponentSize.bottomNavigationCompactHeight
+    val barRadius = EkataRadius.extraLarge
+    val barElevation = EkataElevation.medium
+    val itemSize = EkataComponentSize.bottomNavigationCompactIconContainer
     Row(
         modifier = modifier
             .padding(start = outerPadding, end = outerPadding, bottom = outerPadding)

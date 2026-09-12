@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -66,7 +65,6 @@ fun AuthBackdrop() {
         )
         AuthLanguageSelector(
             modifier = Modifier
-                .safeDrawingPadding()
                 .align(Alignment.TopEnd)
                 .padding(top = 10.dp, end = 13.dp),
         )

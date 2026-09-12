@@ -21,7 +21,10 @@ fun PlaceholderScreen(
     onBackClick: (() -> Unit)? = null,
     actions: List<PlaceholderAction> = emptyList(),
 ) {
-    Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

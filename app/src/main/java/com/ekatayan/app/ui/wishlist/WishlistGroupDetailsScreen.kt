@@ -95,6 +95,7 @@ fun WishlistGroupDetailsScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = EkataBackground,
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             AppBottomNavigation(

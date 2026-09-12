@@ -99,7 +99,7 @@ fun BusinessPartnerRoute(route: String, listingId: String?, viewModel: BusinessP
     BackHandler(onBack = back)
     val editListing: (String) -> Unit = { id -> viewModel.beginListing(id); onNavigate(partnerEditListingRoute(id)) }
     PartnerTheme {
-        Scaffold(containerColor = EkataBackground, contentWindowInsets = WindowInsets.safeDrawing,
+        Scaffold(containerColor = EkataBackground, contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
                 if (partnerArea && !editingListing && !editingProfile) PartnerBottomNavigation(route, onTab)
             }) { padding ->

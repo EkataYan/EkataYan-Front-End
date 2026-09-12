@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.EkataYan" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.EkataYan" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
 
     <style name="Theme.EkataYan.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/splash_sky</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/signup_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.EkataYan</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 </resources>

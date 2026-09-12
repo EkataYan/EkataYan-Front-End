@@ -11,6 +11,9 @@ object EkataSpacing {
     val lg = 24.dp
     val xl = 32.dp
     val xxl = 48.dp
+    val pageHorizontal = md
+    val section = lg
+    val screenBottom = xxl
 }
 
 object EkataRadius {
@@ -18,6 +21,7 @@ object EkataRadius {
     val medium = 12.dp
     val large = 18.dp
     val extraLarge = 24.dp
+    val pill = 999.dp
 }
 
 object EkataElevation {
@@ -51,6 +55,9 @@ object EkataComponentSize {
     val bottomNavigationCompactHeight = 64.dp
     val bottomNavigationIconContainer = 36.dp
     val bottomNavigationCompactIconContainer = 34.dp
+    val pageHeaderTop = 47.dp
+    val pageHeaderAction = 38.dp
+    val chipHeight = 36.dp
 }
 
 object EkataStroke {
