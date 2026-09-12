@@ -1,39 +1,72 @@
 package com.ekatayan.app.ui.planner
 
-import com.ekatayan.app.viewmodel.PlannerUiState
-import com.ekatayan.app.viewmodel.PreferenceKind
-
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DatePickerDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
@@ -41,30 +74,37 @@ import com.ekatayan.app.core.designsystem.component.HeaderActions
 import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.EkataBackground
 import com.ekatayan.app.core.designsystem.theme.EkataBlue
+import com.ekatayan.app.core.designsystem.theme.EkataLightBlue
 import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
 import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
+import com.ekatayan.app.viewmodel.PlannerUiState
+import com.ekatayan.app.viewmodel.TravellerType
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 import java.util.Locale
 
-private val plannerDateFormat =
-    DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
+private val plannerDateFormat = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
+private val PlannerFieldBorder = Color(0xFFD9E0EA)
+private val PlannerPopupBorder = Color(0xFFAEDCFA)
+private val PlannerDatePickerBackground = Color(0xFFF2F8FC)
+private val PlannerFieldShape = RoundedCornerShape(16.dp)
+private val PlannerPopupShape = RoundedCornerShape(16.dp)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlannerScreen(
     uiState: PlannerUiState,
     onDestinationChange: (String) -> Unit,
-    onBudgetChange: (String) -> Unit,
+    onAddDestination: () -> Unit,
+    onAdditionalDestinationChange: (Int, String) -> Unit,
+    onRemoveAdditionalDestination: (Int) -> Unit,
+    onTravellerTypeSelected: (TravellerType) -> Unit,
+    onPeopleCountChange: (String) -> Unit,
     onStartDateSelected: (LocalDate) -> Unit,
     onEndDateSelected: (LocalDate) -> Unit,
-    onStartDateCleared: () -> Unit,
-    onEndDateCleared: () -> Unit,
     onDateValidationError: (String) -> Unit,
-    onPreferenceSelected: (PreferenceKind, String) -> Unit,
     onAskAiClick: () -> Unit,
     onHomeClick: () -> Unit,
     onTripsClick: () -> Unit,
@@ -73,372 +113,242 @@ fun PlannerScreen(
     onNotificationClick: () -> Unit,
     onSettingsClick: () -> Unit,
     hasUnreadNotifications: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
+    var travellerMenuExpanded by rememberSaveable { mutableStateOf(false) }
     var pickerForStart by rememberSaveable { mutableStateOf(true) }
-    var showPicker by rememberSaveable { mutableStateOf(false) }
-    var startDateText by rememberSaveable { mutableStateOf(uiState.startDate?.format(plannerDateFormat).orEmpty()) }
-    var endDateText by rememberSaveable { mutableStateOf(uiState.endDate?.format(plannerDateFormat).orEmpty()) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    val fieldColors = plannerFieldColors()
 
-    LaunchedEffect(uiState.startDate, uiState.endDate) {
-        startDateText = uiState.startDate?.format(plannerDateFormat).orEmpty()
-        endDateText = uiState.endDate?.format(plannerDateFormat).orEmpty()
-    }
-
-    var preferenceDialog by remember {
-        mutableStateOf<PreferenceKind?>(null)
-    }
-
-    var expanded by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = Color.White,
-        unfocusedContainerColor = Color.White,
-        disabledContainerColor = Color.White,
-        focusedTextColor = EkataTextPrimary,
-        unfocusedTextColor = EkataTextPrimary,
-        focusedPlaceholderColor = EkataTextSecondary,
-        unfocusedPlaceholderColor = EkataTextSecondary,
-        focusedBorderColor = EkataBlue,
-        unfocusedBorderColor = Color(0xFFD9E0EA),
-        focusedLabelColor = EkataBlue,
-        unfocusedLabelColor = EkataTextSecondary,
-        cursorColor = EkataBlue
-    )
-
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(EkataBackground)
-    ) {
-
+    Box(modifier.fillMaxSize().background(EkataBackground)) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(bottom = 105.dp)
+                .imePadding()
+                .padding(bottom = 124.dp),
         ) {
+            PlannerHeader(
+                onNotificationClick = onNotificationClick,
+                onSettingsClick = onSettingsClick,
+                hasUnreadNotifications = hasUnreadNotifications,
+            )
 
-            // ---------------------------------------------------------
-            // HERO HEADER
-            // ---------------------------------------------------------
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp)
-                    .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth().widthIn(max = 600.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .padding(horizontal = 20.dp, vertical = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ai_planner_header),
-                    contentDescription = "AI Planner travel illustration",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    alignment = Alignment.CenterStart
-                )
-
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .padding(start = 22.dp, end = 12.dp)
-                        .widthIn(max = 232.dp)
-                ) {
-                    Text(
-                        text = "✨ AI Planner",
-                        color = Color(0xFF15202B),
-                        fontSize = 30.sp,
-                        lineHeight = 36.sp,
-                        fontWeight = FontWeight.Bold
+                Column {
+                    OutlinedTextField(
+                        value = uiState.destination,
+                        onValueChange = onDestinationChange,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 62.dp),
+                        placeholder = { Text(stringResource(R.string.planner_destination_label)) },
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        trailingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+                        singleLine = true,
+                        shape = PlannerFieldShape,
+                        colors = fieldColors,
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tell us your preferences\nand let EkataYan Create\nthe perfect trip for you.",
-                        color = Color(0xFF26323D),
-                        fontSize = 17.sp,
-                        lineHeight = 23.sp,
-                        fontWeight = FontWeight.Medium
+                        text = stringResource(R.string.planner_destination_example),
+                        color = EkataTextSecondary,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(start = 2.dp, top = 6.dp),
                     )
-                }
 
-                HeaderActions(
-                    onNotificationClick = onNotificationClick,
-                    onSettingsClick = onSettingsClick,
-                    hasUnreadNotifications = hasUnreadNotifications,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = HeaderActionsTopPadding, end = 14.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // ---------------------------------------------------------
-            // DESTINATION
-            // ---------------------------------------------------------
-
-            PlannerField(
-                label = "Where to go?",
-                value = uiState.destination,
-                placeholder = "Search destination",
-                icon = Icons.Default.Search,
-                trailingIcon = Icons.Default.LocationOn,
-                onChange = onDestinationChange,
-                colors = fieldColors
-            )
-
-            Text(
-                text = "Example: Ella, Sri Lanka",
-                color = EkataTextSecondary,
-                fontSize = 11.sp,
-                modifier = Modifier.padding(
-                    start = 20.dp,
-                    top = 5.dp,
-                    bottom = 12.dp
-                )
-            )
-
-            // ---------------------------------------------------------
-            // DATES
-            // ---------------------------------------------------------
-
-            TravelDatesFields(
-                startDateText = startDateText,
-                endDateText = endDateText,
-                onStartDateTextChange = { value ->
-                    startDateText = value
-                    if (value.isBlank()) onStartDateCleared()
-                    else parsePlannerDate(value)?.let(onStartDateSelected)
-                },
-                onEndDateTextChange = { value ->
-                    endDateText = value
-                    if (value.isBlank()) onEndDateCleared()
-                    else parsePlannerDate(value)?.let(onEndDateSelected)
-                },
-                onStartClick = { pickerForStart = true; showPicker = true },
-                onEndClick = { pickerForStart = false; showPicker = true },
-                colors = fieldColors,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ---------------------------------------------------------
-            // BUDGET
-            // ---------------------------------------------------------
-
-            PlannerField(
-                label = "Budget (LKR)",
-                value = uiState.budget,
-                placeholder = "Enter your budget",
-                icon = null,
-                onChange = onBudgetChange,
-                colors = fieldColors,
-                keyboard = KeyboardType.Number,
-                prefix = "LKR "
-            )
-
-            Text(
-                text = "Example: LKR 50,000",
-                color = EkataTextSecondary,
-                fontSize = 11.sp,
-                modifier = Modifier.padding(
-                    start = 20.dp,
-                    top = 5.dp,
-                    bottom = 18.dp
-                )
-            )
-
-            // ---------------------------------------------------------
-            // MORE PREFERENCES
-            // ---------------------------------------------------------
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable {
-                        expanded = !expanded
-                    }
-                    .padding(horizontal = 20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                Text(
-                    text = "More Preferences (Optional)",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = EkataTextPrimary,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Icon(
-                    imageVector = Icons.Default.ExpandMore,
-                    contentDescription = "Expand preferences",
-                    tint = EkataTextSecondary
-                )
-            }
-
-            if (expanded) {
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Column(
-                    modifier = Modifier.padding(horizontal = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-
-                    PreferenceRow(
-                        label = "Number of Travelers",
-                        value = uiState.travelers
-                    ) {
-                        preferenceDialog = PreferenceKind.TRAVELERS
+                    uiState.additionalDestinations.forEachIndexed { index, destination ->
+                        Text(
+                            text = stringResource(R.string.planner_additional_place),
+                            color = EkataTextPrimary,
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(top = 14.dp, bottom = 8.dp),
+                        )
+                        OutlinedTextField(
+                            value = destination,
+                            onValueChange = { onAdditionalDestinationChange(index, it) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 62.dp),
+                            placeholder = { Text(stringResource(R.string.planner_additional_place)) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            trailingIcon = {
+                                IconButton(
+                                    onClick = { onRemoveAdditionalDestination(index) },
+                                    modifier = Modifier.size(48.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = stringResource(R.string.planner_remove_place),
+                                        tint = EkataTextSecondary,
+                                    )
+                                }
+                            },
+                            singleLine = true,
+                            shape = PlannerFieldShape,
+                            colors = fieldColors,
+                        )
                     }
 
-                    PreferenceRow(
-                        label = "Accommodation Preference",
-                        value = uiState.accommodation
+                    TextButton(
+                        onClick = onAddDestination,
+                        modifier = Modifier.padding(top = 10.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.textButtonColors(
+                            containerColor = EkataLightBlue,
+                            contentColor = EkataTextPrimary,
+                        ),
                     ) {
-                        preferenceDialog = PreferenceKind.ACCOMMODATION
-                    }
-
-                    PreferenceRow(
-                        label = "Transport Preference",
-                        value = uiState.transport
-                    ) {
-                        preferenceDialog = PreferenceKind.TRANSPORT
-                    }
-
-                    PreferenceRow(
-                        label = "Trip Type",
-                        value = uiState.tripType
-                    ) {
-                        preferenceDialog = PreferenceKind.TRIP_TYPE
-                    }
-
-                    PreferenceRow(
-                        label = "Interests",
-                        value = uiState.interests
-                    ) {
-                        preferenceDialog = PreferenceKind.INTERESTS
+                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(R.string.planner_add_place),
+                            fontWeight = FontWeight.SemiBold,
+                        )
                     }
                 }
-            }
-
-            // ---------------------------------------------------------
-            // ERROR
-            // ---------------------------------------------------------
-
-            uiState.error?.let { errorMessage ->
-
-                Text(
-                    text = errorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp,
-                    modifier = Modifier.padding(
-                        horizontal = 20.dp,
-                        vertical = 12.dp
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ---------------------------------------------------------
-            // ASK AI BUTTON
-            // ---------------------------------------------------------
-
-            Button(
-                onClick = {
-                    val startDate = parsePlannerDate(startDateText)
-                    val endDate = parsePlannerDate(endDateText)
-                    when {
-                        startDateText.isNotBlank() && startDate == null ->
-                            onDateValidationError("Enter a valid start date (e.g. 25 Sep 2026).")
-                        endDateText.isNotBlank() && endDate == null ->
-                            onDateValidationError("Enter a valid end date (e.g. 25 Sep 2026).")
-                        startDate != null && endDate != null && endDate.isBefore(startDate) ->
-                            onDateValidationError("End date cannot be before the start date.")
-                        else -> onAskAiClick()
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .height(62.dp),
-                shape = RoundedCornerShape(18.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = EkataBlue
-                ),
-                enabled = !uiState.isGenerating,
-            ) {
-
-                if (uiState.isGenerating) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
-                else Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null)
-
-                Spacer(modifier = Modifier.width(10.dp))
 
                 Column {
-
                     Text(
-                        text = if (uiState.isGenerating) "Generating…" else "Ask AI",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        text = stringResource(R.string.planner_traveller_question),
+                        color = EkataTextPrimary,
+                        style = MaterialTheme.typography.titleMedium,
                     )
-
-                    Text(
-                        text = "Generate my perfect itinerary",
-                        fontSize = 11.sp,
-                        color = Color.White.copy(alpha = 0.82f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Icon(
-                    imageVector = Icons.Default.ArrowForward,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-
-            uiState.itinerary?.let { itinerary ->
-                Spacer(Modifier.height(20.dp))
-                Card(Modifier.fillMaxWidth().padding(horizontal = 20.dp), shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
-                    Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("Your itinerary", style = MaterialTheme.typography.titleLarge, color = EkataTextPrimary, fontWeight = FontWeight.Bold)
-                        Text(itinerary.summary, color = EkataTextSecondary)
-                        itinerary.days.forEach { day ->
-                            HorizontalDivider()
-                            Text("Day ${day.day} · ${day.date}", style = MaterialTheme.typography.titleMedium, color = EkataBlue, fontWeight = FontWeight.SemiBold)
-                            day.activities.forEach { activity ->
-                                Column(Modifier.padding(vertical = 4.dp)) {
-                                    Text("${activity.time.take(5)}  ${activity.title}", fontWeight = FontWeight.SemiBold, color = EkataTextPrimary)
-                                    Text(activity.location, style = MaterialTheme.typography.labelMedium, color = EkataTextSecondary)
-                                    Text(activity.description, style = MaterialTheme.typography.bodyMedium, color = EkataTextSecondary)
-                                    Text("Estimated: ${itinerary.currency} ${activity.estimatedCost}", style = MaterialTheme.typography.labelMedium, color = EkataBlue)
-                                }
+                    Spacer(Modifier.height(10.dp))
+                    ExposedDropdownMenuBox(
+                        expanded = travellerMenuExpanded,
+                        onExpandedChange = { travellerMenuExpanded = !travellerMenuExpanded },
+                    ) {
+                        OutlinedTextField(
+                            value = uiState.travellerType?.displayName().orEmpty(),
+                            onValueChange = {},
+                            modifier = Modifier.fillMaxWidth().menuAnchor(
+                                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                enabled = true,
+                            ),
+                            placeholder = { Text(stringResource(R.string.planner_select_option)) },
+                            leadingIcon = { Icon(Icons.Default.Groups, contentDescription = null) },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = travellerMenuExpanded)
+                            },
+                            readOnly = true,
+                            singleLine = true,
+                            shape = PlannerFieldShape,
+                            colors = fieldColors,
+                        )
+                        ExposedDropdownMenu(
+                            expanded = travellerMenuExpanded,
+                            onDismissRequest = { travellerMenuExpanded = false },
+                            modifier = Modifier.background(Color.White)
+                                .border(1.dp, PlannerPopupBorder, PlannerPopupShape),
+                            shape = PlannerPopupShape,
+                            containerColor = Color.White,
+                        ) {
+                            TravellerType.entries.forEach { type ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(type.displayName(), color = EkataTextPrimary)
+                                    },
+                                    onClick = {
+                                        onTravellerTypeSelected(type)
+                                        travellerMenuExpanded = false
+                                    },
+                                )
                             }
-                        }
-                        if (itinerary.travelTips.isNotEmpty()) {
-                            HorizontalDivider()
-                            Text("Travel tips", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                            itinerary.travelTips.forEach { Text("• $it", color = EkataTextSecondary) }
                         }
                     }
                 }
+
+                if (uiState.requiresCustomPeopleCount) {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.planner_number_people),
+                            color = EkataTextPrimary,
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = uiState.customPeopleCount,
+                            onValueChange = onPeopleCountChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text(stringResource(R.string.planner_number_people_hint)) },
+                            leadingIcon = { Icon(Icons.Default.Groups, contentDescription = null) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            shape = PlannerFieldShape,
+                            colors = fieldColors,
+                        )
+                    }
+                }
+
+                Column {
+                    Text(
+                        text = stringResource(R.string.planner_travel_dates),
+                        color = EkataTextPrimary,
+                        style = MaterialTheme.typography.titleLarge,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    PlannerDateField(
+                        label = stringResource(R.string.planner_start_date),
+                        value = uiState.startDate?.format(plannerDateFormat),
+                        onClick = {
+                            pickerForStart = true
+                            showDatePicker = true
+                        },
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    PlannerDateField(
+                        label = stringResource(R.string.planner_end_date),
+                        value = uiState.endDate?.format(plannerDateFormat),
+                        onClick = {
+                            pickerForStart = false
+                            showDatePicker = true
+                        },
+                    )
+                }
+
+                uiState.error?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+
+                Button(
+                    onClick = onAskAiClick,
+                    modifier = Modifier.fillMaxWidth().height(78.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = EkataLightBlue,
+                        contentColor = Color(0xFF0C2461),
+                    ),
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(24.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(R.string.planner_ask_ai),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                        Text(
+                            text = stringResource(R.string.planner_ask_ai_subtitle),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 2.dp),
+                        )
+                    }
+                }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
         }
-
-        // -------------------------------------------------------------
-        // EXISTING BOTTOM NAVIGATION
-        // -------------------------------------------------------------
 
         AppBottomNavigation(
             selectedItem = AppBottomNavItem.PLANNER,
@@ -447,532 +357,188 @@ fun PlannerScreen(
             onPlannerClick = {},
             onExpensesClick = onExpensesClick,
             onProfileClick = onProfileClick,
-            modifier = Modifier.align(Alignment.BottomCenter)
+            modifier = Modifier.align(Alignment.BottomCenter),
+            compact = true,
         )
     }
 
-    // =================================================================
-    // DATE PICKER
-    // =================================================================
-
-    if (showPicker) {
-
-        val currentDate = if (pickerForStart) uiState.startDate else uiState.endDate
-        val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = currentDate?.toPickerMillis()
+    if (showDatePicker) {
+        PlannerDatePickerDialog(
+            initialDate = if (pickerForStart) uiState.startDate else uiState.endDate,
+            onDismiss = { showDatePicker = false },
+            onDateSelected = { selectedDate ->
+                if (!pickerForStart && uiState.startDate?.let(selectedDate::isBefore) == true) {
+                    onDateValidationError("End date cannot be before the start date.")
+                } else {
+                    if (pickerForStart) onStartDateSelected(selectedDate) else onEndDateSelected(selectedDate)
+                    showDatePicker = false
+                }
+            },
         )
+    }
+}
 
-        MaterialTheme(
-            colorScheme = lightColorScheme(
-                primary = EkataBlue,
-                surface = Color.White,
-                onSurface = EkataTextPrimary
-            )
+@Composable
+private fun PlannerHeader(
+    onNotificationClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    hasUnreadNotifications: Boolean,
+) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val headerHeight = (maxWidth * 0.67f).coerceIn(232.dp, 280.dp)
+        Box(
+            modifier = Modifier.fillMaxWidth().height(headerHeight)
+                .clip(RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)),
         ) {
-            DatePickerDialog(
-                onDismissRequest = {
-                    showPicker = false
-                },
-
-                confirmButton = {
-
-                TextButton(
-                    onClick = {
-                        datePickerState.selectedDateMillis?.let { selectedMillis ->
-                            val selectedDate = dateFromPickerMillis(selectedMillis)
-                            if (!pickerForStart && uiState.startDate != null && selectedDate.isBefore(uiState.startDate)) {
-                                onDateValidationError("End date cannot be before the start date.")
-                            } else {
-                                if (pickerForStart) {
-                                    onStartDateSelected(selectedDate)
-                                    startDateText = selectedDate.format(plannerDateFormat)
-                                } else {
-                                    onEndDateSelected(selectedDate)
-                                    endDateText = selectedDate.format(plannerDateFormat)
-                                }
-                                showPicker = false
-                            }
-                        }
-                    }
-                ) {
-                    Text("OK")
-                }
-            },
-
-                dismissButton = {
-
-                TextButton(
-                    onClick = {
-                        showPicker = false
-                    }
-                ) {
-                    Text("Cancel")
-                }
-            }
+            Image(
+                painter = painterResource(R.drawable.ai_planner_header),
+                contentDescription = stringResource(R.string.planner_header_image_description),
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.CenterStart,
+            )
+            Column(
+                modifier = Modifier.align(Alignment.CenterStart)
+                    .padding(start = 22.dp, end = 110.dp)
+                    .widthIn(max = 245.dp),
             ) {
-                DatePicker(datePickerState)
+                Text(
+                    text = stringResource(R.string.planner_header_title),
+                    color = Color(0xFF10213C),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = stringResource(R.string.planner_header_description),
+                    color = Color(0xFF34445A),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
             }
+            HeaderActions(
+                onNotificationClick = onNotificationClick,
+                onSettingsClick = onSettingsClick,
+                hasUnreadNotifications = hasUnreadNotifications,
+                modifier = Modifier.align(Alignment.TopEnd)
+                    .padding(top = HeaderActionsTopPadding, end = 14.dp),
+            )
         }
     }
+}
 
-    // =================================================================
-    // PREFERENCE DIALOG
-    // =================================================================
-
-    preferenceDialog?.let { kind ->
-
-        val options = when (kind) {
-
-            PreferenceKind.TRAVELERS -> listOf(
-                "1 traveler",
-                "2 travelers",
-                "3 travelers",
-                "4+ travelers"
+@Composable
+private fun PlannerDateField(label: String, value: String?, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().heightIn(min = 62.dp),
+        shape = PlannerFieldShape,
+        color = Color.White,
+        contentColor = EkataTextPrimary,
+        border = BorderStroke(1.dp, PlannerFieldBorder),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = value ?: label,
+                color = if (value == null) EkataTextSecondary else EkataTextPrimary,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
-
-            PreferenceKind.ACCOMMODATION -> listOf(
-                "Hotels",
-                "Guest Houses",
-                "Villa",
-                "Camping",
-                "Resorts"
-            )
-
-            PreferenceKind.TRANSPORT -> listOf(
-                "Public Bus",
-                "Train",
-                "Highway",
-                "Rental Vehicles",
-                "Private Driver"
-            )
-
-            PreferenceKind.TRIP_TYPE -> listOf(
-                "A balanced Trip",
-                "Romantic Trip",
-                "Solo Trip",
-                "Group Trip",
-                "Relaxing Getaway",
-                "Family",
-                "Cultural Escape"
-            )
-
-            PreferenceKind.INTERESTS -> listOf(
-                "Nature Trip",
-                "Culture Trip",
-                "Beaches",
-                "Food & cafés",
-                "Adventure",
-                "Hiking",
-                "Wildlife"
-            )
-
-            else -> emptyList()
         }
+    }
+}
 
-        val dialogTitle = when (kind) {
-
-            PreferenceKind.TRAVELERS ->
-                "Choose number of travelers"
-
-            PreferenceKind.ACCOMMODATION ->
-                "Choose accommodation"
-
-            PreferenceKind.TRANSPORT ->
-                "Choose transport"
-
-            PreferenceKind.TRIP_TYPE ->
-                "Choose trip type"
-
-            PreferenceKind.INTERESTS ->
-                "Choose interests"
-
-            else ->
-                "Choose preference"
-        }
-
-        var customValue by rememberSaveable(kind) { mutableStateOf("") }
-
-        AlertDialog(
-            onDismissRequest = {
-                preferenceDialog = null
-            },
-
-            shape = RoundedCornerShape(24.dp),
-            containerColor = Color.White,
-            tonalElevation = 0.dp,
-            modifier = Modifier.border(
-                BorderStroke(1.dp, Color(0xFFE3E8EF)),
-                RoundedCornerShape(24.dp)
-            ),
-
-            title = {
-                Text(dialogTitle)
-            },
-
-            text = {
-
-                Column {
-
-                    options.forEach { option ->
-
-                        Text(
-                            text = option,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-
-                                    onPreferenceSelected(
-                                        kind,
-                                        option
-                                    )
-
-                                    preferenceDialog = null
-                                }
-                                .padding(vertical = 13.dp),
-                            color = EkataTextPrimary
-                        )
-                    }
-
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        color = Color(0xFFE3E8EF)
-                    )
-
-                    Text(
-                        text = "Other preference",
-                        color = EkataTextPrimary,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    OutlinedTextField(
-                        value = customValue,
-                        onValueChange = { customValue = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Type your own preference") },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color.White,
-                            focusedBorderColor = EkataBlue,
-                            unfocusedBorderColor = Color(0xFFD9E0EA),
-                            focusedTextColor = EkataTextPrimary,
-                            unfocusedTextColor = EkataTextPrimary,
-                            cursorColor = EkataBlue
-                        )
-                    )
-                }
-            },
-
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlannerDatePickerDialog(
+    initialDate: LocalDate?,
+    onDismiss: () -> Unit,
+    onDateSelected: (LocalDate) -> Unit,
+) {
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = initialDate?.toPickerMillis())
+    MaterialTheme(
+        colorScheme = lightColorScheme(
+            primary = EkataBlue,
+            surface = PlannerDatePickerBackground,
+            onSurface = EkataTextPrimary,
+        ),
+    ) {
+        DatePickerDialog(
+            onDismissRequest = onDismiss,
             confirmButton = {
                 TextButton(
                     onClick = {
-                        val value = customValue.trim()
-                        if (value.isNotEmpty()) {
-                            onPreferenceSelected(kind, value)
-                            preferenceDialog = null
+                        datePickerState.selectedDateMillis?.let {
+                            onDateSelected(dateFromPickerMillis(it))
                         }
                     },
-                    enabled = customValue.isNotBlank()
                 ) {
-                    Text("Save")
+                    Text(stringResource(R.string.planner_date_ok), color = EkataTextPrimary)
                 }
             },
-
             dismissButton = {
-                TextButton(onClick = { preferenceDialog = null }) {
-                    Text("Cancel")
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.planner_date_cancel), color = EkataTextPrimary)
                 }
             },
-
-        )
-    }
-}
-
-// =====================================================================
-// PLANNER TEXT FIELD
-// =====================================================================
-
-@Composable
-private fun PlannerField(
-    label: String,
-    value: String,
-    placeholder: String,
-    icon: ImageVector?,
-    onChange: (String) -> Unit,
-    colors: TextFieldColors,
-    keyboard: KeyboardType = KeyboardType.Text,
-    prefix: String? = null,
-    trailingIcon: ImageVector? = null
-) {
-
-    OutlinedTextField(
-        value = value,
-        onValueChange = onChange,
-
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp),
-
-        label = {
-            Text(label)
-        },
-
-        placeholder = {
-            Text(placeholder)
-        },
-
-        leadingIcon = icon?.let { imageVector ->
-
-            {
-                Icon(
-                    imageVector = imageVector,
-                    contentDescription = null
-                )
-            }
-        },
-
-        prefix = prefix?.let { text ->
-
-            {
-                Text(
-                    text = text,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-        },
-
-        trailingIcon = trailingIcon?.let { imageVector ->
-            {
-                Icon(imageVector = imageVector, contentDescription = null)
-            }
-        },
-
-        singleLine = true,
-
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboard
-        ),
-
-        shape = RoundedCornerShape(14.dp),
-
-        colors = colors
-    )
-}
-
-// =====================================================================
-// DATE FIELD
-// =====================================================================
-
-@Composable
-private fun TravelDatesFields(
-    startDateText: String,
-    endDateText: String,
-    onStartDateTextChange: (String) -> Unit,
-    onEndDateTextChange: (String) -> Unit,
-    onStartClick: () -> Unit,
-    onEndClick: () -> Unit,
-    colors: TextFieldColors,
-    modifier: Modifier
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = "Travel Dates",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = EkataTextPrimary
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        PlannerDateField(
-            label = "Start Date",
-            value = startDateText,
-            placeholder = "Select start date",
-            onValueChange = onStartDateTextChange,
-            onClick = onStartClick,
-            colors = colors
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        PlannerDateField(
-            label = "End Date",
-            value = endDateText,
-            placeholder = "Select end date",
-            onValueChange = onEndDateTextChange,
-            onClick = onEndClick,
-            colors = colors
-        )
-    }
-    /*
-    val value = if (startDate != null && endDate != null) {
-        "${startDate.format(plannerDateFormat)} – ${endDate.format(plannerDateFormat)}"
-    } else {
-        ""
-    }
-
-    Box(modifier = modifier.clickable(onClick = onClick)) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Travel Dates") },
-            placeholder = { Text("Select your travel dates") },
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.CalendarMonth,
-                    contentDescription = "Choose travel dates"
-                )
-            },
-            readOnly = true,
-            singleLine = true,
-            shape = RoundedCornerShape(14.dp),
-            colors = colors
-        )
-    }
-    */
-}
-
-@Composable
-private fun PlannerDateField(
-    label: String,
-    value: String,
-    placeholder: String,
-    onValueChange: (String) -> Unit,
-    onClick: () -> Unit,
-    colors: TextFieldColors
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier.fillMaxWidth(),
-        label = { Text(label) },
-        placeholder = { Text(placeholder) },
-        trailingIcon = {
-            IconButton(onClick = onClick) {
-                Icon(
-                    imageVector = Icons.Default.CalendarMonth,
-                    contentDescription = "Choose $label"
-                )
-            }
-        },
-        singleLine = true,
-        shape = RoundedCornerShape(14.dp),
-        colors = colors
-    )
-}
-
-private fun parsePlannerDate(value: String): LocalDate? = try {
-    LocalDate.parse(value.trim(), plannerDateFormat)
-} catch (_: DateTimeParseException) {
-    null
-}
-
-@Composable
-private fun DateRangeSelectionLabel(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        color = Color(0xFFF7F9FC),
-        border = BorderStroke(1.dp, Color(0xFFE3E8EF))
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp)) {
-            Text(
-                text = label,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = EkataBlue
-            )
-            Text(
-                text = value,
-                fontSize = 12.sp,
-                color = if (value.startsWith("Select")) {
-                    EkataTextSecondary
-                } else {
-                    EkataTextPrimary
-                }
-            )
-        }
-    }
-}
-
-// =====================================================================
-// PREFERENCE ROW
-// =====================================================================
-
-@Composable
-private fun PreferenceRow(
-    label: String,
-    value: String,
-    onClick: () -> Unit
-) {
-
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(13.dp),
-        color = Color.White,
-        border = BorderStroke(
-            1.dp,
-            Color(0xFFE3E8EF)
-        )
-    ) {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(
-                    horizontal = 14.dp,
-                    vertical = 12.dp
-                ),
-            verticalAlignment = Alignment.CenterVertically
+            shape = RoundedCornerShape(24.dp),
+            colors = DatePickerDefaults.colors(containerColor = PlannerDatePickerBackground),
         ) {
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-
-                Text(
-                    text = label,
-                    fontSize = 11.sp,
-                    color = EkataTextSecondary
-                )
-
-                Text(
-                    text = value,
-                    fontSize = 14.sp,
-                    color = EkataTextPrimary,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-
-            Icon(
-                imageVector = Icons.Default.ExpandMore,
-                contentDescription = null,
-                tint = EkataTextSecondary
+            DatePicker(
+                state = datePickerState,
+                colors = DatePickerDefaults.colors(
+                    containerColor = PlannerDatePickerBackground,
+                    titleContentColor = EkataTextPrimary,
+                    headlineContentColor = EkataTextPrimary,
+                    weekdayContentColor = EkataTextPrimary,
+                    subheadContentColor = EkataTextPrimary,
+                    navigationContentColor = EkataTextPrimary,
+                    yearContentColor = EkataTextPrimary,
+                    currentYearContentColor = EkataBlue,
+                    selectedYearContentColor = Color.White,
+                    selectedYearContainerColor = EkataBlue,
+                    dayContentColor = EkataTextPrimary,
+                    selectedDayContentColor = Color.White,
+                    selectedDayContainerColor = EkataBlue,
+                    todayContentColor = EkataBlue,
+                    todayDateBorderColor = EkataBlue,
+                ),
             )
         }
     }
 }
 
-// =====================================================================
-// DATE HELPERS
-// =====================================================================
+@Composable
+private fun plannerFieldColors(): TextFieldColors = OutlinedTextFieldDefaults.colors(
+    focusedContainerColor = Color.White,
+    unfocusedContainerColor = Color.White,
+    disabledContainerColor = Color.White,
+    focusedTextColor = EkataTextPrimary,
+    unfocusedTextColor = EkataTextPrimary,
+    focusedPlaceholderColor = EkataTextSecondary,
+    unfocusedPlaceholderColor = EkataTextSecondary,
+    focusedBorderColor = EkataBlue,
+    unfocusedBorderColor = PlannerFieldBorder,
+    cursorColor = EkataBlue,
+)
 
-private fun LocalDate.toPickerMillis(): Long {
-
-    return atStartOfDay()
-        .toInstant(ZoneOffset.UTC)
-        .toEpochMilli()
+@Composable
+private fun TravellerType.displayName(): String = when (this) {
+    TravellerType.SOLO -> stringResource(R.string.planner_solo)
+    TravellerType.COUPLE -> stringResource(R.string.planner_couple)
+    TravellerType.FAMILY -> stringResource(R.string.planner_family)
+    TravellerType.FRIENDS -> stringResource(R.string.planner_friends)
 }
 
-private fun dateFromPickerMillis(value: Long): LocalDate {
+private fun LocalDate.toPickerMillis(): Long =
+    atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
 
-    return Instant
-        .ofEpochMilli(value)
-        .atZone(ZoneOffset.UTC)
-        .toLocalDate()
-}
+private fun dateFromPickerMillis(value: Long): LocalDate =
+    Instant.ofEpochMilli(value).atZone(ZoneOffset.UTC).toLocalDate()

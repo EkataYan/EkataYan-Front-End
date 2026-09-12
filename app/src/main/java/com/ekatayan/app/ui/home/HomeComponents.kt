@@ -31,17 +31,19 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.Flight
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Thunderstorm
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -77,12 +79,12 @@ import com.ekatayan.app.core.designsystem.theme.EkataRadius
 import com.ekatayan.app.core.designsystem.theme.EkataSpacing
 import com.ekatayan.app.core.designsystem.theme.EkataSuccess
 import com.ekatayan.app.core.designsystem.theme.EkataWarning
-import com.ekatayan.app.data.model.PopularDestination
-import com.ekatayan.app.data.model.RecommendedDestination
 import com.ekatayan.app.data.model.UpcomingTrip
 import com.ekatayan.app.data.model.User
 import com.ekatayan.app.data.model.WeatherInfo
 import com.ekatayan.app.data.model.WeatherType
+import com.ekatayan.app.data.model.WishlistGroup
+import com.ekatayan.app.data.model.WishlistItem
 
 @Composable
 fun HeroSection(
@@ -94,42 +96,46 @@ fun HeroSection(
     onSearchQueryChange: (String) -> Unit,
     onSearchSubmit: () -> Unit,
 ) {
-    Box(Modifier.fillMaxWidth().height(286.dp)) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val heroHeight = (maxWidth * 0.78f).coerceIn(270.dp, 310.dp)
+        val imageHeight = heroHeight - EkataSpacing.xl
         val heroShape = RoundedCornerShape(bottomStart = EkataRadius.extraLarge, bottomEnd = EkataRadius.extraLarge)
-        Image(
-            painter = painterResource(R.drawable.home_header),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxWidth().height(254.dp).clip(heroShape),
-        )
-        Box(
-            Modifier.fillMaxWidth().height(254.dp).clip(heroShape).background(
-                Brush.verticalGradient(
-                    listOf(EkataImageScrim.copy(alpha = 0.22f), Color.Transparent, EkataImageScrim.copy(alpha = 0.38f)),
+        Box(Modifier.fillMaxWidth().height(heroHeight)) {
+            Image(
+                painter = painterResource(R.drawable.home_header_beach),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth().height(imageHeight).clip(heroShape),
+            )
+            Box(
+                Modifier.fillMaxWidth().height(imageHeight).clip(heroShape).background(
+                    Brush.verticalGradient(
+                        listOf(EkataImageScrim.copy(alpha = 0.3f), Color.Transparent, EkataImageScrim.copy(alpha = 0.4f)),
+                    ),
                 ),
-            ),
-        )
-        Column(
-            Modifier.align(Alignment.TopStart).padding(start = EkataSpacing.md, top = 64.dp, end = 104.dp),
-            verticalArrangement = Arrangement.spacedBy(EkataSpacing.xxs),
-        ) {
-            EkataImageTitle(stringResource(R.string.home_welcome, user.name))
-            EkataImageSupportingText(stringResource(R.string.home_prompt))
+            )
+            Column(
+                Modifier.align(Alignment.TopStart).padding(start = EkataSpacing.md, top = 64.dp, end = 104.dp),
+                verticalArrangement = Arrangement.spacedBy(EkataSpacing.xxs),
+            ) {
+                EkataImageTitle(stringResource(R.string.home_welcome, user.name))
+                EkataImageSupportingText(stringResource(R.string.home_prompt))
+            }
+            HeaderActions(
+                onNotificationClick = onNotificationClick,
+                hasUnreadNotifications = hasUnreadNotifications,
+                onSettingsClick = onSettingsClick,
+                modifier = Modifier.align(Alignment.TopEnd).padding(top = HeaderActionsTopPadding, end = EkataSpacing.sm)
+                    .clip(CircleShape).background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
+                    .padding(horizontal = EkataSpacing.xxs),
+            )
+            HomeSearchBar(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                onSearchSubmit = onSearchSubmit,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = EkataSpacing.md),
+            )
         }
-        HeaderActions(
-            onNotificationClick = onNotificationClick,
-            hasUnreadNotifications = hasUnreadNotifications,
-            onSettingsClick = onSettingsClick,
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = HeaderActionsTopPadding, end = EkataSpacing.sm)
-                .clip(CircleShape).background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
-                .padding(horizontal = EkataSpacing.xxs),
-        )
-        HomeSearchBar(
-            query = searchQuery,
-            onQueryChange = onSearchQueryChange,
-            onSearchSubmit = onSearchSubmit,
-            modifier = Modifier.align(Alignment.BottomCenter).padding(horizontal = EkataSpacing.md),
-        )
     }
 }
 
@@ -163,20 +169,23 @@ fun HomeSearchBar(query: String, onQueryChange: (String) -> Unit, onSearchSubmit
 
 @Composable
 fun QuickActions(onMapsClick: () -> Unit, onWishlistClick: () -> Unit, onBookingClick: () -> Unit, onGroupHubClick: () -> Unit, onPartnershipClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().padding(
-            start = EkataSpacing.md,
-            end = EkataSpacing.md,
-            top = EkataSpacing.lg,
-            bottom = EkataSpacing.sm,
-        ),
-        horizontalArrangement = Arrangement.spacedBy(EkataSpacing.xxs),
-    ) {
-        QuickActionItem(stringResource(R.string.home_maps), R.drawable.home_shortcut_maps, onMapsClick, Modifier.weight(1f))
-        QuickActionItem(stringResource(R.string.home_wishlist), R.drawable.home_shortcut_wishlist, onWishlistClick, Modifier.weight(1f))
-        QuickActionItem(stringResource(R.string.home_booking), R.drawable.home_shortcut_booking, onBookingClick, Modifier.weight(1f))
-        QuickActionItem(stringResource(R.string.home_group_hub), R.drawable.home_shortcut_group_hub, onGroupHubClick, Modifier.weight(1f))
-        QuickActionItem(stringResource(R.string.bp_partnership), R.drawable.home_shortcut_partnership, onPartnershipClick, Modifier.weight(1f))
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val compact = maxWidth < 360.dp
+        Row(
+            Modifier.fillMaxWidth().padding(
+                start = if (compact) EkataSpacing.xs else EkataSpacing.md,
+                end = if (compact) EkataSpacing.xs else EkataSpacing.md,
+                top = EkataSpacing.lg,
+                bottom = EkataSpacing.sm,
+            ),
+            horizontalArrangement = Arrangement.spacedBy(if (compact) EkataSpacing.none else EkataSpacing.xxs),
+        ) {
+            QuickActionItem(stringResource(R.string.home_maps), R.drawable.home_shortcut_maps, onMapsClick, Modifier.weight(1f))
+            QuickActionItem(stringResource(R.string.home_wishlist), R.drawable.home_shortcut_wishlist, onWishlistClick, Modifier.weight(1f))
+            QuickActionItem(stringResource(R.string.home_booking), R.drawable.home_shortcut_booking, onBookingClick, Modifier.weight(1f))
+            QuickActionItem(stringResource(R.string.home_group_hub), R.drawable.home_shortcut_group_hub, onGroupHubClick, Modifier.weight(1f))
+            QuickActionItem(stringResource(R.string.bp_partnership), R.drawable.home_shortcut_partnership, onPartnershipClick, Modifier.weight(1f))
+        }
     }
 }
 
@@ -191,7 +200,12 @@ fun QuickActionItem(
 }
 
 @Composable
-fun RecommendedSection(destinations: List<RecommendedDestination>, onDestinationClick: (Int) -> Unit) {
+fun RecommendedSection(
+    destinations: List<WishlistItem>,
+    wishlistGroups: List<WishlistGroup>,
+    onDestinationClick: (Int) -> Unit,
+    onWishlistClick: (WishlistItem) -> Unit,
+) {
     if (destinations.isEmpty()) {
         EkataEmptyState(
             title = stringResource(R.string.home_no_recommendations_title),
@@ -207,15 +221,30 @@ fun RecommendedSection(destinations: List<RecommendedDestination>, onDestination
         pageSpacing = EkataSpacing.sm,
         modifier = Modifier.fillMaxWidth(),
     ) { page ->
-        RecommendedDestinationCard(destinations[page], page, destinations.size, pagerState.currentPage) {
-            onDestinationClick(destinations[page].id)
-        }
+        val destination = destinations[page]
+        RecommendedDestinationCard(
+            destination = destination,
+            page = page,
+            count = destinations.size,
+            selectedPage = pagerState.currentPage,
+            isSaved = wishlistGroups.containsDestination(destination.id),
+            onWishlistClick = { onWishlistClick(destination) },
+            onClick = { onDestinationClick(destination.id) },
+        )
     }
 }
 
 @Composable
 @Suppress("UNUSED_PARAMETER")
-fun RecommendedDestinationCard(destination: RecommendedDestination, page: Int, count: Int, selectedPage: Int, onClick: () -> Unit) {
+fun RecommendedDestinationCard(
+    destination: WishlistItem,
+    page: Int,
+    count: Int,
+    selectedPage: Int,
+    isSaved: Boolean,
+    onWishlistClick: () -> Unit,
+    onClick: () -> Unit,
+) {
     EkataImageCard(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().aspectRatio(1.72f),
@@ -237,6 +266,11 @@ fun RecommendedDestinationCard(destination: RecommendedDestination, page: Int, c
             Text(destination.description, color = EkataOnImage.copy(alpha = 0.9f), style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         PageIndicator(count, selectedPage, Modifier.align(Alignment.BottomEnd).padding(EkataSpacing.md))
+        WishlistHeartButton(
+            isSaved = isSaved,
+            onClick = onWishlistClick,
+            modifier = Modifier.align(Alignment.TopEnd).padding(EkataSpacing.sm),
+        )
     }
 }
 
@@ -255,7 +289,7 @@ fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClic
             bottom = EkataSpacing.sm,
         ),
     ) {
-        if (maxWidth < 360.dp) {
+        if (maxWidth < 328.dp) {
             Column(verticalArrangement = Arrangement.spacedBy(EkataSpacing.sm)) {
                 UpcomingTripCard(trip, onUpcomingTripClick, Modifier.fillMaxWidth().height(HomeWidgetHeight))
                 WeatherCard(weather, Modifier.fillMaxWidth().height(HomeWidgetHeight), weatherLoading, weatherError)
@@ -285,7 +319,6 @@ fun UpcomingTripCard(trip: UpcomingTrip?, onClick: () -> Unit, modifier: Modifie
     ) {
         Column(Modifier.fillMaxSize().padding(EkataSpacing.sm)) {
             HomeWidgetHeader(
-                icon = Icons.Default.Flight,
                 title = stringResource(R.string.home_upcoming_trip),
                 subtitle = stringResource(R.string.home_upcoming_trip_subtitle),
             )
@@ -331,7 +364,6 @@ fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier, isLoading:
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.78f), Color.Transparent, EkataImageScrim.copy(alpha = 0.28f)))))
             Column(Modifier.fillMaxSize().padding(EkataSpacing.sm)) {
                 HomeWidgetHeader(
-                    icon = Icons.Default.Cloud,
                     title = weather?.let { stringResource(R.string.home_weather_in, it.location) } ?: stringResource(R.string.home_weather),
                     subtitle = stringResource(R.string.home_weather_subtitle),
                     onImage = true,
@@ -380,18 +412,8 @@ private fun WeatherMetricDivider() {
 }
 
 @Composable
-private fun HomeWidgetHeader(icon: ImageVector, title: String, subtitle: String, onImage: Boolean = false) {
+private fun HomeWidgetHeader(title: String, subtitle: String, onImage: Boolean = false) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier.size(40.dp).background(
-                if (onImage) EkataOnImage.copy(alpha = 0.2f) else MaterialTheme.colorScheme.primaryContainer,
-                MaterialTheme.shapes.medium,
-            ),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, null, tint = if (onImage) EkataOnImage else MaterialTheme.colorScheme.primary, modifier = Modifier.size(EkataIconSize.medium))
-        }
-        Spacer(Modifier.width(EkataSpacing.xs))
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleSmall, color = if (onImage) EkataOnImage else MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Text(subtitle, style = MaterialTheme.typography.labelSmall, color = if (onImage) EkataOnImage.copy(alpha = 0.78f) else MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -428,7 +450,12 @@ private fun HomeInfoImage(@DrawableRes imageRes: Int) {
 }
 
 @Composable
-fun PopularDestinationsSection(destinations: List<PopularDestination>, onDestinationClick: (Int) -> Unit) {
+fun PopularDestinationsSection(
+    destinations: List<WishlistItem>,
+    wishlistGroups: List<WishlistGroup>,
+    onDestinationClick: (Int) -> Unit,
+    onWishlistClick: (WishlistItem) -> Unit,
+) {
     if (destinations.isEmpty()) {
         EkataEmptyState(
             title = stringResource(R.string.home_no_popular_title),
@@ -438,12 +465,24 @@ fun PopularDestinationsSection(destinations: List<PopularDestination>, onDestina
         return
     }
     LazyRow(contentPadding = PaddingValues(horizontal = EkataSpacing.md), horizontalArrangement = Arrangement.spacedBy(EkataSpacing.sm)) {
-        items(destinations, key = { it.id }) { destination -> DestinationImageCard(destination) { onDestinationClick(destination.id) } }
+        items(destinations, key = { it.id }) { destination ->
+            DestinationImageCard(
+                destination = destination,
+                isSaved = wishlistGroups.containsDestination(destination.id),
+                onWishlistClick = { onWishlistClick(destination) },
+                onClick = { onDestinationClick(destination.id) },
+            )
+        }
     }
 }
 
 @Composable
-fun DestinationImageCard(destination: PopularDestination, onClick: () -> Unit) {
+fun DestinationImageCard(
+    destination: WishlistItem,
+    isSaved: Boolean,
+    onWishlistClick: () -> Unit,
+    onClick: () -> Unit,
+) {
     EkataImageCard(
         onClick = onClick,
         modifier = Modifier.width(164.dp).height(132.dp),
@@ -451,5 +490,36 @@ fun DestinationImageCard(destination: PopularDestination, onClick: () -> Unit) {
         Image(painterResource(destination.imageRes), destination.name, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color.Transparent, EkataImageScrim.copy(alpha = 0.76f)))))
         Text(destination.name, color = EkataOnImage, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.align(Alignment.BottomStart).padding(EkataSpacing.sm))
+        WishlistHeartButton(
+            isSaved = isSaved,
+            onClick = onWishlistClick,
+            modifier = Modifier.align(Alignment.TopEnd).padding(EkataSpacing.xs),
+        )
     }
 }
+
+@Composable
+fun WishlistHeartButton(
+    isSaved: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.size(40.dp),
+        shape = CircleShape,
+        color = Color.White.copy(alpha = 0.94f),
+        shadowElevation = EkataElevation.low,
+    ) {
+        IconButton(onClick = onClick) {
+            Icon(
+                imageVector = if (isSaved) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                contentDescription = stringResource(if (isSaved) R.string.wishlist_saved else R.string.wishlist_not_saved),
+                tint = if (isSaved) Color(0xFFFF3D67) else Color(0xFF4E5968),
+                modifier = Modifier.size(EkataIconSize.medium),
+            )
+        }
+    }
+}
+
+private fun List<WishlistGroup>.containsDestination(destinationId: Int): Boolean =
+    any { group -> group.items.any { item -> item.id == destinationId } }

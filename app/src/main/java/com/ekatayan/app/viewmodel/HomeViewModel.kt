@@ -1,16 +1,19 @@
 package com.ekatayan.app.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.ekatayan.app.data.model.PopularDestination
-import com.ekatayan.app.data.model.RecommendedDestination
+import androidx.lifecycle.viewModelScope
+import android.content.Context
 import com.ekatayan.app.data.model.UpcomingTrip
 import com.ekatayan.app.data.model.User
 import com.ekatayan.app.data.model.WeatherInfo
+import com.ekatayan.app.data.model.WishlistItem
 import com.ekatayan.app.data.repository.HomeRepository
-import com.ekatayan.app.data.repository.ProfileRepository
-import com.ekatayan.app.data.repository.WeatherRepository
-import com.ekatayan.app.data.remote.UserSessionProvider
-import androidx.lifecycle.viewModelScope
+import com.ekatayan.app.data.repository.TripsRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.Locale
+import kotlinx.coroutines.launch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,10 +25,10 @@ import kotlinx.coroutines.CancellationException
 
 data class HomeUiState(
     val user: User,
-    val recommendedDestinations: List<RecommendedDestination>,
+    val recommendedDestinations: List<WishlistItem>,
     val upcomingTrip: UpcomingTrip?,
     val weather: WeatherInfo?,
-    val popularDestinations: List<PopularDestination>,
+    val popularDestinations: List<WishlistItem>,
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
@@ -36,9 +39,8 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
-    private val session: UserSessionProvider,
-    private val profileRepository: ProfileRepository,
-    private val weatherRepository: WeatherRepository,
+    private val tripsRepository: TripsRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -56,26 +58,17 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            session.userName.collect { name ->
-                if (!name.isNullOrBlank()) _uiState.update { it.copy(user = it.user.copy(name = name)) }
-            }
-        }
-        refreshWeather()
-    }
-
-    fun refreshWeather() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isWeatherLoading = true, weatherError = null) }
-            try {
-                val city = profileRepository.profile.value?.location?.takeIf(String::isNotBlank)
-                    ?: profileRepository.getProfile().location.takeIf(String::isNotBlank)
-                    ?: throw IllegalStateException("Add a home city to your profile to see weather.")
-                val weather = weatherRepository.forecast(city)
-                _uiState.update { it.copy(weather = weather, isWeatherLoading = false) }
-            } catch (error: CancellationException) {
-                throw error
-            } catch (error: Exception) {
-                _uiState.update { it.copy(weather = null, isWeatherLoading = false, weatherError = error.message ?: "Weather is unavailable.") }
+            tripsRepository.trips.collect { trips ->
+                val next = trips.filter { !it.endDate.isBefore(java.time.LocalDate.now()) }.minByOrNull { it.startDate }
+                _uiState.update { state -> state.copy(upcomingTrip = next?.let { trip ->
+                    UpcomingTrip(
+                        trip.id,
+                        trip.customLocation ?: context.getString(trip.locationRes),
+                        trip.startDate.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)),
+                        "${ChronoUnit.DAYS.between(trip.startDate, trip.endDate) + 1} Days",
+                        trip.imageRes,
+                    )
+                }) }
             }
         }
     }

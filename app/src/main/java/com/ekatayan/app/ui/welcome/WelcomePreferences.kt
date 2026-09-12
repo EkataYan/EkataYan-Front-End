@@ -1,21 +1,22 @@
 package com.ekatayan.app.ui.welcome
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import com.ekatayan.app.data.local.preferences.frontendPreferencesDataStore
+import kotlinx.coroutines.flow.first
 
 class WelcomePreferences(context: Context) {
-    private val preferences = context.applicationContext.getSharedPreferences(
-        PREFERENCES_NAME,
-        Context.MODE_PRIVATE,
-    )
+    private val appContext = context.applicationContext
 
-    fun hasCompletedWelcome(): Boolean = preferences.getBoolean(KEY_WELCOME_COMPLETED, false)
+    suspend fun hasCompletedWelcome(): Boolean =
+        appContext.frontendPreferencesDataStore.data.first()[WELCOME_COMPLETED] ?: false
 
-    fun markWelcomeCompleted() {
-        preferences.edit().putBoolean(KEY_WELCOME_COMPLETED, true).apply()
+    suspend fun markWelcomeCompleted() {
+        appContext.frontendPreferencesDataStore.edit { it[WELCOME_COMPLETED] = true }
     }
 
     private companion object {
-        const val PREFERENCES_NAME = "ekatayan_onboarding"
-        const val KEY_WELCOME_COMPLETED = "welcome_completed"
+        val WELCOME_COMPLETED = booleanPreferencesKey("welcome_completed")
     }
 }
