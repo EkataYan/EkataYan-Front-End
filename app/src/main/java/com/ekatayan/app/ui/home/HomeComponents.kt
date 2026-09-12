@@ -41,6 +41,7 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -279,7 +280,7 @@ fun PageIndicator(count: Int, selectedPage: Int, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClick: () -> Unit) {
+fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClick: () -> Unit, weatherLoading: Boolean = false, weatherError: String? = null) {
     BoxWithConstraints(
         Modifier.fillMaxWidth().padding(
             start = EkataSpacing.md,
@@ -291,7 +292,7 @@ fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClic
         if (maxWidth < 328.dp) {
             Column(verticalArrangement = Arrangement.spacedBy(EkataSpacing.sm)) {
                 UpcomingTripCard(trip, onUpcomingTripClick, Modifier.fillMaxWidth().height(HomeWidgetHeight))
-                WeatherCard(weather, Modifier.fillMaxWidth().height(HomeWidgetHeight))
+                WeatherCard(weather, Modifier.fillMaxWidth().height(HomeWidgetHeight), weatherLoading, weatherError)
             }
         } else {
             Row(
@@ -299,7 +300,7 @@ fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClic
                 horizontalArrangement = Arrangement.spacedBy(EkataSpacing.sm),
             ) {
                 UpcomingTripCard(trip, onUpcomingTripClick, Modifier.weight(1f).height(HomeWidgetHeight))
-                WeatherCard(weather, Modifier.weight(1f).height(HomeWidgetHeight))
+                WeatherCard(weather, Modifier.weight(1f).height(HomeWidgetHeight), weatherLoading, weatherError)
             }
         }
     }
@@ -354,7 +355,7 @@ fun UpcomingTripCard(trip: UpcomingTrip?, onClick: () -> Unit, modifier: Modifie
 }
 
 @Composable
-fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier) {
+fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier, isLoading: Boolean = false, errorMessage: String? = null) {
     Card(modifier = modifier, shape = MaterialTheme.shapes.large, elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low)) {
         Box(Modifier.fillMaxSize()) {
             weather?.imageRes?.let {
@@ -367,8 +368,10 @@ fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier) {
                     subtitle = stringResource(R.string.home_weather_subtitle),
                     onImage = true,
                 )
-                if (weather == null) {
-                    Text(stringResource(R.string.home_weather_unavailable), style = MaterialTheme.typography.bodyMedium, color = EkataOnImage, modifier = Modifier.padding(top = EkataSpacing.lg))
+                if (isLoading) {
+                    CircularProgressIndicator(color = EkataOnImage, modifier = Modifier.padding(top = EkataSpacing.lg).size(28.dp))
+                } else if (weather == null) {
+                    Text(errorMessage ?: stringResource(R.string.home_weather_unavailable), style = MaterialTheme.typography.bodyMedium, color = EkataOnImage, modifier = Modifier.padding(top = EkataSpacing.lg))
                 } else {
                     Row(Modifier.padding(top = EkataSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.home_temperature, weather.temperature), style = MaterialTheme.typography.displaySmall, color = EkataOnImage)
@@ -381,9 +384,9 @@ fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier) {
                         Row(Modifier.padding(horizontal = EkataSpacing.xxs, vertical = EkataSpacing.xs), verticalAlignment = Alignment.CenterVertically) {
                             WeatherMetric(Icons.Default.WaterDrop, stringResource(R.string.home_humidity_value, weather.humidity), stringResource(R.string.home_humidity_label), MaterialTheme.colorScheme.primary, Modifier.weight(1f))
                             WeatherMetricDivider()
-                            WeatherMetric(Icons.Default.Air, stringResource(R.string.home_wind_value), stringResource(R.string.home_wind_label), EkataSuccess, Modifier.weight(1f))
+                            WeatherMetric(Icons.Default.Air, weather.windKph?.let { "${it.toInt()} km/h" } ?: "—", stringResource(R.string.home_wind_label), EkataSuccess, Modifier.weight(1f))
                             WeatherMetricDivider()
-                            WeatherMetric(Icons.Default.WbTwilight, stringResource(R.string.home_sunrise_value), stringResource(R.string.home_sunrise_label), EkataWarning, Modifier.weight(1f))
+                            WeatherMetric(Icons.Default.WbTwilight, weather.sunrise ?: "—", stringResource(R.string.home_sunrise_label), EkataWarning, Modifier.weight(1f))
                         }
                     }
                 }

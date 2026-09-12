@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 data class HomeUiState(
     val user: User,
@@ -30,6 +32,8 @@ data class HomeUiState(
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val isWeatherLoading: Boolean = false,
+    val weatherError: String? = null,
 )
 
 @HiltViewModel
@@ -41,10 +45,12 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(
         HomeUiState(
-            user = homeRepository.getUser(),
+            user = homeRepository.getUser().let { user ->
+                user.copy(name = session.currentUserName().orEmpty().ifBlank { user.name })
+            },
             recommendedDestinations = homeRepository.getRecommendedDestinations(),
             upcomingTrip = homeRepository.getUpcomingTrip(),
-            weather = homeRepository.getWeather(),
+            weather = null,
             popularDestinations = homeRepository.getPopularDestinations(),
         )
     )

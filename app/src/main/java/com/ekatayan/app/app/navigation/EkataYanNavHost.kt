@@ -33,6 +33,8 @@ import com.ekatayan.app.ui.planner.PLANNER_ROUTE
 import com.ekatayan.app.ui.planner.plannerScreen
 import com.ekatayan.app.viewmodel.PlannerUiState
 import com.ekatayan.app.ui.profile.PROFILE_ROUTE
+import com.ekatayan.app.ui.profile.EDIT_PROFILE_ROUTE
+import com.ekatayan.app.ui.profile.editProfileScreen
 import com.ekatayan.app.ui.profile.profileScreen
 import com.ekatayan.app.ui.signup.SIGN_UP_ROUTE
 import com.ekatayan.app.ui.signup.signUpScreen
@@ -177,9 +179,14 @@ fun EkataYanNavHost(
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
+            onWishlistClick = { navController.navigate(WISHLIST_ROUTE) },
+            onGroupsClick = { navController.navigate(GROUP_HUB_ROUTE) },
             onSettingsClick = navController::navigateToSettings,
-            onNotificationClick = navController::navigateToNotifications,
-            notificationsUiState = notificationsViewModel.uiState,
+            onEditProfileClick = { navController.navigate(EDIT_PROFILE_ROUTE) },
+        )
+        editProfileScreen(
+            onBackClick = navController::navigateUp,
+            onSaved = navController::navigateUp,
         )
         settingsScreen(
             onLogoutClick = {},

@@ -161,7 +161,7 @@ private fun HomeScreenPreview() {
         user = localDataSource.getUser(),
         recommendedDestinations = localDataSource.getRecommendedDestinations(),
         upcomingTrip = localDataSource.getUpcomingTrip(),
-        weather = localDataSource.getWeather(),
+        weather = null,
         popularDestinations = localDataSource.getPopularDestinations(),
     )
     EkataYanTheme(darkTheme = false) {

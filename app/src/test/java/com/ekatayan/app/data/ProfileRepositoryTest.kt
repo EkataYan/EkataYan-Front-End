@@ -30,7 +30,7 @@ class ProfileRepositoryTest {
         val api = Retrofit.Builder().baseUrl(server.url("/"))
             .client(OkHttpClient.Builder().addInterceptor(ProfileAuthInterceptor(session)).build())
             .addConverterFactory(GsonConverterFactory.create()).build().create(ProfileApiService::class.java)
-        repository = ProfileRepository(Lazy { api })
+        repository = ProfileRepository(Lazy { api }, session)
     }
 
     @After fun teardown() { server.shutdown() }
@@ -45,6 +45,7 @@ class ProfileRepositoryTest {
         assertEquals("/api/users/me", request.path)
         assertEquals("Bearer first-test-session", request.getHeader("Authorization"))
         assertEquals("Traveller", profile.name)
+        assertEquals("Traveller", session.currentUserName())
         assertEquals("Kandy", profile.location)
         assertEquals("Hiking", profile.bio)
         assertEquals(listOf("nature"), profile.interests)
@@ -77,6 +78,24 @@ class ProfileRepositoryTest {
         session.setSession("test-session", "refresh", Long.MAX_VALUE)
         server.enqueue(MockResponse().setBody("""{"success":false,"data":null}"""))
         assertFailure(ProfileFailure.INVALID_RESPONSE)
+    }
+
+    @Test fun updatesProfileAndCachesReturnedDisplayName() = runTest {
+        session.setSession("test-session", "refresh", Long.MAX_VALUE, "user@example.com", "Old Name")
+        val json = """{"success":true,"data":{"id":"test-user","email":"user@example.com","display_name":"New Name","bio":"Bio","home_city":"Colombo","language":"en","interests":["hiking"],"avatar_path":null,"phone":"+94771234567"}}"""
+        server.enqueue(MockResponse().setBody(json))
+
+        val updated = repository.updateProfile(
+            com.ekatayan.app.data.model.ProfileDetails("New Name", "Colombo", "user@example.com", "+94771234567", bio = "Bio", language = "en", interests = listOf("hiking")),
+        )
+
+        val request = server.takeRequest()
+        assertEquals("PATCH", request.method)
+        assertEquals("/api/users/me", request.path)
+        assertFalse(request.body.readUtf8().contains("email"))
+        assertEquals("New Name", updated.name)
+        assertEquals("New Name", session.currentUserName())
+        assertEquals("user@example.com", session.currentUserEmail())
     }
 
     private suspend fun assertFailure(expected: ProfileFailure) {

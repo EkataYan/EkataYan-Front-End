@@ -3,11 +3,9 @@ package com.ekatayan.app.ui.profile
 import com.ekatayan.app.viewmodel.ProfileViewModel
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.compose.runtime.getValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.ekatayan.app.viewmodel.NotificationsUiState
-import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun ProfileRoute(
@@ -16,23 +14,24 @@ fun ProfileRoute(
     onTripsClick: () -> Unit,
     onPlannerClick: () -> Unit,
     onExpensesClick: () -> Unit,
+    onWishlistClick: () -> Unit,
+    onGroupsClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onNotificationClick: () -> Unit,
-    notificationsUiState: StateFlow<NotificationsUiState>,
+    onEditProfileClick: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
-    val notificationState by notificationsUiState.collectAsStateWithLifecycle()
     val profileState by viewModel.uiState.collectAsStateWithLifecycle()
     ProfileScreen(
         state = profileState,
-        onRetry = viewModel::loadProfile,
+        onRefreshErrorShown = viewModel::onRefreshErrorShown,
         onBackClick = onBackClick,
         onHomeClick = onHomeClick,
         onTripsClick = onTripsClick,
         onPlannerClick = onPlannerClick,
         onExpensesClick = onExpensesClick,
+        onWishlistClick = onWishlistClick,
+        onGroupsClick = onGroupsClick,
+        onEditProfileClick = onEditProfileClick,
         onSettingsClick = onSettingsClick,
-        onNotificationClick = onNotificationClick,
-        hasUnreadNotifications = notificationState.hasUnreadNotifications,
     )
 }

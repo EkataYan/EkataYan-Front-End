@@ -71,11 +71,15 @@
     <string name="trips_delete_message">Are you sure you want to delete this trip?</string>
     <string name="trips_delete_action">Delete</string>
 
-    <string name="trips_title">My Trips</string>
+    <string name="trips_title">Trips</string>
     <string name="trips_add">Add Trip</string>
     <string name="trips_previous_month">Previous month</string>
     <string name="trips_next_month">Next month</string>
+    <string name="trips_calendar_selected">Selected</string>
+    <string name="trips_calendar_trip_dates">Trip dates</string>
+    <string name="trips_calendar_today">Today</string>
     <string name="trips_timeline">Trip Timeline</string>
+    <string name="trips_timeline_subtitle">Your journeys at a glance</string>
     <string name="trips_open_trip">Open trip</string>
 
     ```xml
@@ -124,6 +128,29 @@
 
     <string name="settings_profile_image">Profile image</string>
     <string name="settings_logout">Log Out</string>
+    <string name="settings_account_information">Account Information</string>
+    <string name="settings_account_information_subtitle">Manage your account details</string>
+    <string name="settings_app_preferences">App preferences</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_subtitle">Manage trip, group and app notifications</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_subtitle">Light and dark theme preferences</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_subtitle">Choose your preferred language</string>
+    <string name="settings_travel_privacy">Travel &amp; privacy</string>
+    <string name="settings_location_permissions">Location &amp; Permissions</string>
+    <string name="settings_location_permissions_subtitle">Manage location and app permissions</string>
+    <string name="settings_privacy">Privacy</string>
+    <string name="settings_privacy_subtitle">Control your privacy preferences</string>
+    <string name="settings_data_storage">Data &amp; Storage</string>
+    <string name="settings_data_storage_subtitle">Manage cached and downloaded app data</string>
+    <string name="settings_help_support">Help &amp; Support</string>
+    <string name="settings_help_support_subtitle">Get help using EkataYan</string>
+    <string name="settings_about_ekatayan">About EkataYan</string>
+    <string name="settings_about_ekatayan_subtitle">App information and version</string>
+    <string name="settings_terms_privacy">Terms &amp; Privacy Policy</string>
+    <string name="settings_terms_privacy_subtitle">View legal information</string>
+    <string name="settings_account_actions">Account actions</string>
     ```
     ```xml
     <string name="notifications_title">Notifications</string>

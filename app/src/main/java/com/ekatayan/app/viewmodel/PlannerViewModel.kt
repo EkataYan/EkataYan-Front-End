@@ -3,9 +3,15 @@ package com.ekatayan.app.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ekatayan.app.data.model.Itinerary
+import com.ekatayan.app.data.repository.ItineraryPlanInput
+import com.ekatayan.app.data.repository.ItineraryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 enum class TravellerType(val fixedPartySize: Int?) {
     SOLO(1),
@@ -37,7 +43,7 @@ data class PlannerUiState(
 }
 
 @HiltViewModel
-class PlannerViewModel @Inject constructor() : ViewModel() {
+class PlannerViewModel @Inject constructor(private val repository: ItineraryRepository) : ViewModel() {
     private val mutableUiState = mutableStateOf(PlannerUiState())
     val uiState: State<PlannerUiState> = mutableUiState
 
@@ -128,5 +134,29 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
             error = error,
         )
         return error == null
+    }
+
+    fun generate() {
+        if (!validate()) return
+        val state = uiState.value
+        mutableUiState.value = state.copy(isGenerating = true, error = null, itinerary = null)
+        viewModelScope.launch {
+            try {
+                val itinerary = repository.generate(ItineraryPlanInput(
+                    destination = state.destination.trim(), startDate = requireNotNull(state.startDate),
+                    endDate = requireNotNull(state.endDate), budget = state.budget,
+                    travelers = Regex("\\d+").find(state.travelers)?.value?.toIntOrNull()?.coerceIn(1, 100) ?: 1,
+                    accommodation = state.accommodation, transport = state.transport,
+                    travelStyle = state.tripType,
+                    interests = state.interests.split(',', '&').map(String::trim).filter(String::isNotEmpty),
+                ))
+                mutableUiState.value = mutableUiState.value.copy(isGenerating = false, itinerary = itinerary)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                mutableUiState.value = mutableUiState.value.copy(isGenerating = false,
+                    error = error.message ?: "Itinerary generation is temporarily unavailable.")
+            }
+        }
     }
 }

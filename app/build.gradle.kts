@@ -10,7 +10,7 @@ plugins {
 val localConfiguration = Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
 }
-val productionBackendUrl = "https://ekata-yan-463f8.containers.snapdeploy.app/"
+val productionBackendUrl = "https://ekatayan-back-end-production.up.railway.app/"
 val backendUrl = providers.gradleProperty("BACKEND_BASE_URL")
     .orElse(provider { localConfiguration.getProperty("BACKEND_BASE_URL", productionBackendUrl) })
     .map { it.ifBlank { productionBackendUrl } }
