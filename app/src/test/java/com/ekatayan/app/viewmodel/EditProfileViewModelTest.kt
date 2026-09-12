@@ -9,7 +9,10 @@ import com.ekatayan.app.data.remote.dto.ProfileDto
 import com.ekatayan.app.data.remote.dto.UpdateProfileRequest
 import com.ekatayan.app.data.repository.AuthRepository
 import com.ekatayan.app.data.repository.ProfileRepository
+import com.ekatayan.app.data.local.CachedProfile
+import com.ekatayan.app.data.local.MemoryProfileCacheStore
 import dagger.Lazy
+import java.io.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -33,13 +36,20 @@ class EditProfileViewModelTest {
             val session = UserSessionProvider(EditProfileMemorySessionStore()).apply {
                 setSession("access", "refresh", Long.MAX_VALUE, "traveler@example.com", "Old Name")
             }
+            val cache = MemoryProfileCacheStore().apply {
+                save("traveler@example.com", CachedProfile(com.ekatayan.app.data.model.ProfileDetails(
+                    name = "Old Name", location = "Kandy", email = "traveler@example.com",
+                    phone = "+94770000000", bio = "Explorer", language = "en",
+                    interests = listOf("nature", "food"),
+                )))
+            }
             val viewModel = EditProfileViewModel(
-                repository = ProfileRepository(Lazy { api }, session),
+                repository = ProfileRepository(Lazy { api }, session, cache),
                 authRepository = EditProfileAuthRepository(session),
             )
 
-            advanceUntilIdle()
             assertFalse(viewModel.uiState.value.isLoading)
+            assertEquals(0, api.getCalls)
             assertEquals("Old Name", viewModel.uiState.value.name)
             assertEquals("traveler@example.com", viewModel.uiState.value.email)
             assertFalse(viewModel.uiState.value.isDirty)
@@ -61,7 +71,8 @@ class EditProfileViewModelTest {
 
             assertEquals(1, api.updateCalls)
             assertEquals("New Name", api.lastUpdate?.displayName)
-            assertEquals(listOf("nature", "food"), api.lastUpdate?.interests)
+            assertNull(api.lastUpdate?.interests)
+            assertNull(api.lastUpdate?.bio)
             assertTrue(viewModel.uiState.value.saved)
             assertFalse(viewModel.uiState.value.isDirty)
             assertEquals("New Name", session.currentUserName())
@@ -70,21 +81,63 @@ class EditProfileViewModelTest {
             Dispatchers.resetMain()
         }
     }
+
+    @Test
+    fun failedSyncKeepsLocalProfileAndCanRetry() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val api = EditProfileFakeApi().apply { failUpdates = true }
+            val session = UserSessionProvider(EditProfileMemorySessionStore()).apply {
+                setSession("access", "refresh", Long.MAX_VALUE, "traveler@example.com", "Old Name")
+            }
+            val cache = MemoryProfileCacheStore().apply {
+                save("traveler@example.com", CachedProfile(com.ekatayan.app.data.model.ProfileDetails(
+                    name = "Old Name", location = "Kandy", email = "traveler@example.com", language = "en",
+                )))
+            }
+            val repository = ProfileRepository(Lazy { api }, session, cache)
+            val viewModel = EditProfileViewModel(repository, EditProfileAuthRepository(session))
+
+            viewModel.updateName("Saved Locally")
+            viewModel.save()
+            advanceUntilIdle()
+
+            assertTrue(viewModel.uiState.value.syncFailed)
+            assertTrue(viewModel.uiState.value.isDirty)
+            assertEquals("Saved Locally", repository.currentProfile()?.name)
+            assertTrue(repository.hasPendingChanges())
+
+            repository.getProfile()
+            assertEquals("Saved Locally", repository.currentProfile()?.name)
+            assertTrue(repository.hasPendingChanges())
+
+            api.failUpdates = false
+            viewModel.save()
+            advanceUntilIdle()
+            assertTrue(viewModel.uiState.value.saved)
+            assertFalse(repository.hasPendingChanges())
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
 }
 
 private class EditProfileFakeApi : ProfileApiService {
+    var getCalls = 0
     var updateCalls = 0
+    var failUpdates = false
     var lastUpdate: UpdateProfileRequest? = null
 
-    override suspend fun getProfile() = ApiResponse(
-        success = true,
-        data = profile("Old Name", "+94770000000"),
-    )
+    override suspend fun getProfile(): ApiResponse<ProfileDto> {
+        getCalls++
+        return ApiResponse(success = true, data = profile("Old Name", "+94770000000"))
+    }
 
     override suspend fun updateProfile(request: UpdateProfileRequest): ApiResponse<ProfileDto> {
         updateCalls++
         lastUpdate = request
-        return ApiResponse(true, profile(request.displayName, request.phone))
+        if (failUpdates) throw IOException("offline")
+        return ApiResponse(true, profile(request.displayName ?: "Old Name", request.phone ?: "+94770000000"))
     }
 
     private fun profile(name: String, phone: String) = ProfileDto(

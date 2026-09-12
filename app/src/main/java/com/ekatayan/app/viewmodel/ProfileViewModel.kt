@@ -28,7 +28,15 @@ class ProfileViewModel @Inject constructor(
     private val repository: ProfileRepository,
     private val authRepository: AuthRepository,
 ) : ViewModel() {
-    private val mutableState = MutableStateFlow(ProfileUiState())
+    private val initialProfile = repository.currentProfile()
+    private val mutableState = MutableStateFlow(
+        ProfileUiState(
+            profile = initialProfile,
+            name = initialProfile?.name.orEmpty().ifBlank { authRepository.currentUserName().orEmpty() },
+            email = initialProfile?.email.orEmpty().ifBlank { authRepository.currentUserEmail().orEmpty() },
+            isLoading = false,
+        ),
+    )
     val uiState = mutableState.asStateFlow()
     private var loadJob: Job? = null
 
@@ -51,7 +59,7 @@ class ProfileViewModel @Inject constructor(
         if (loadJob?.isActive == true) return
         loadJob = viewModelScope.launch {
             mutableState.value = mutableState.value.withLocalIdentity(
-                isLoading = mutableState.value.profile == null,
+                isLoading = false,
                 error = null,
             )
             try {
@@ -88,6 +96,7 @@ class ProfileViewModel @Inject constructor(
 
     fun logout() {
         authRepository.clearSession()
+        repository.activateCurrentUser()
     }
 
     private fun ProfileUiState.withLocalIdentity(

@@ -10,7 +10,6 @@ import com.ekatayan.app.data.repository.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -34,12 +33,13 @@ data class EditProfileUiState(
     val interests: String = "",
     val phone: String = "",
     val avatarPath: String? = null,
-    val isLoading: Boolean = true,
+    val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val isDirty: Boolean = false,
     val error: ProfileFailure? = null,
     val validationError: EditProfileValidationError? = null,
     val saved: Boolean = false,
+    val syncFailed: Boolean = false,
 )
 
 @HiltViewModel
@@ -52,11 +52,15 @@ class EditProfileViewModel @Inject constructor(
     )
     val uiState = mutableState.asStateFlow()
     private var originalProfile: ProfileDetails? = null
-    private var loadJob: Job? = null
 
     init {
-        repository.profile.value?.let(::showProfile)
-        load()
+        val local = repository.currentProfile() ?: ProfileDetails(
+            name = authRepository.currentUserName().orEmpty(),
+            location = "",
+            email = authRepository.currentUserEmail().orEmpty(),
+            language = "en",
+        )
+        showProfile(local, repository.hasPendingChanges())
     }
 
     fun updateName(value: String) = edit { copy(name = value) }
@@ -66,7 +70,7 @@ class EditProfileViewModel @Inject constructor(
     fun updateInterests(value: String) = edit { copy(interests = value) }
     fun updatePhone(value: String) = edit { copy(phone = value) }
 
-    fun retry() = load()
+    fun retry() = save()
 
     fun save() {
         val current = mutableState.value
@@ -78,13 +82,15 @@ class EditProfileViewModel @Inject constructor(
         }
 
         val update = current.toProfileDetails()
-        if (update.editableContentEquals(originalProfile)) {
+        if (update.editableContentEquals(originalProfile) && !repository.hasPendingChanges()) {
             mutableState.value = current.copy(isDirty = false, validationError = null)
             return
         }
 
         viewModelScope.launch {
-            mutableState.value = current.copy(isSaving = true, error = null, validationError = null)
+            mutableState.value = current.copy(
+                isSaving = true, error = null, validationError = null, syncFailed = false,
+            )
             try {
                 val updated = repository.updateProfile(update)
                 originalProfile = updated
@@ -99,35 +105,22 @@ class EditProfileViewModel @Inject constructor(
                     isSaving = false,
                     isDirty = false,
                     saved = true,
+                    syncFailed = false,
                 )
             } catch (e: CancellationException) {
                 throw e
             } catch (e: ProfileLoadException) {
-                mutableState.value = mutableState.value.copy(isSaving = false, error = e.failure)
+                mutableState.value = mutableState.value.copy(
+                    isSaving = false,
+                    isDirty = true,
+                    error = e.failure,
+                    syncFailed = true,
+                )
             }
         }
     }
 
-    private fun load() {
-        if (loadJob?.isActive == true) return
-        loadJob = viewModelScope.launch {
-            val hasCachedProfile = originalProfile != null
-            mutableState.value = mutableState.value.copy(
-                isLoading = !hasCachedProfile,
-                error = null,
-            )
-            try {
-                val profile = repository.getProfile()
-                if (!mutableState.value.isDirty) showProfile(profile)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: ProfileLoadException) {
-                mutableState.value = mutableState.value.copy(isLoading = false, error = e.failure)
-            }
-        }
-    }
-
-    private fun showProfile(profile: ProfileDetails) {
+    private fun showProfile(profile: ProfileDetails, pendingSync: Boolean = false) {
         originalProfile = profile
         mutableState.value = EditProfileUiState(
             name = profile.name.ifBlank { authRepository.currentUserName().orEmpty() },
@@ -139,6 +132,8 @@ class EditProfileViewModel @Inject constructor(
             phone = profile.phone,
             avatarPath = profile.avatarPath,
             isLoading = false,
+            isDirty = pendingSync,
+            syncFailed = pendingSync,
         )
     }
 
@@ -147,6 +142,7 @@ class EditProfileViewModel @Inject constructor(
             error = null,
             validationError = null,
             saved = false,
+            syncFailed = false,
         )
         mutableState.value = edited.copy(isDirty = !edited.toProfileDetails().editableContentEquals(originalProfile))
     }

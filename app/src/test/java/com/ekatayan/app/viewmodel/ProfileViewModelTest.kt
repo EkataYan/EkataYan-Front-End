@@ -54,10 +54,10 @@ class ProfileViewModelTest {
                 override fun clearSession() = Unit
             }
             val vm = ProfileViewModel(ProfileRepository(Lazy { api }, session), auth)
-            assertTrue(vm.uiState.value.isLoading)
+            assertFalse(vm.uiState.value.isLoading)
             advanceUntilIdle()
             assertEquals(ProfileFailure.AUTHENTICATION, vm.uiState.value.error)
-            assertNull(vm.uiState.value.profile)
+            assertEquals("Local Traveler", vm.uiState.value.profile?.name)
             assertFalse(vm.uiState.value.isLoading)
             signedIn = true
             vm.loadProfile()
