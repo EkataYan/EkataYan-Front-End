@@ -10,7 +10,7 @@ import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import com.ekatayan.app.BuildConfig
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import java.security.MessageDigest
@@ -55,17 +55,9 @@ class AndroidGoogleCredentialProvider @Inject constructor() : GoogleCredentialPr
         val manager = CredentialManager.create(context)
         val foregroundContext = MutableContextWrapper(context)
         val result = try {
-            request(manager, foregroundContext, serverClientId, hashedNonce, authorizedOnly = true)
+            request(manager, foregroundContext, serverClientId, hashedNonce)
         } catch (_: NoCredentialException) {
-            try {
-                request(manager, foregroundContext, serverClientId, hashedNonce, authorizedOnly = false)
-            } catch (_: NoCredentialException) {
-                throw GoogleCredentialException(GoogleCredentialException.Reason.NO_CREDENTIAL)
-            } catch (e: GetCredentialCancellationException) {
-                throw GoogleCredentialException(GoogleCredentialException.Reason.CANCELED)
-            } catch (e: GetCredentialException) {
-                throw GoogleCredentialException(GoogleCredentialException.Reason.UNKNOWN)
-            }
+            throw GoogleCredentialException(GoogleCredentialException.Reason.NO_CREDENTIAL)
         } catch (e: GetCredentialCancellationException) {
             throw GoogleCredentialException(GoogleCredentialException.Reason.CANCELED)
         } catch (e: GetCredentialException) {
@@ -98,15 +90,11 @@ class AndroidGoogleCredentialProvider @Inject constructor() : GoogleCredentialPr
         context: Context,
         serverClientId: String,
         hashedNonce: String,
-        authorizedOnly: Boolean,
     ) = manager.getCredential(
         context = context,
         request = GetCredentialRequest.Builder()
             .addCredentialOption(
-                GetGoogleIdOption.Builder()
-                    .setServerClientId(serverClientId)
-                    .setFilterByAuthorizedAccounts(authorizedOnly)
-                    .setAutoSelectEnabled(authorizedOnly)
+                GetSignInWithGoogleOption.Builder(serverClientId)
                     .setNonce(hashedNonce)
                     .build(),
             )

@@ -15,6 +15,7 @@ import com.ekatayan.app.data.auth.GoogleCredentialProvider
 import com.ekatayan.app.data.auth.UnavailableGoogleCredentialProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 

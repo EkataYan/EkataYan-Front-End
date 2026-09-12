@@ -14,6 +14,7 @@ import com.ekatayan.app.data.auth.GoogleCredentialProvider
 import com.ekatayan.app.data.auth.UnavailableGoogleCredentialProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
@@ -99,11 +100,8 @@ class LoginViewModel @Inject constructor(
     private fun restoreSession() {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
-            if (authRepository.restoreSession()) {
-                uiState = uiState.copy(isLoading = false, loginSucceeded = true)
-            } else {
-                uiState = uiState.copy(isLoading = false)
-            }
+            val sessionRestored = authRepository.restoreSession()
+            uiState = uiState.copy(isLoading = false, loginSucceeded = sessionRestored)
         }
     }
 

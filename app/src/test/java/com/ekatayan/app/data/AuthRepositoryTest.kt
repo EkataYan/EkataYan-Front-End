@@ -5,6 +5,7 @@ import com.ekatayan.app.data.remote.StoredSession
 import com.ekatayan.app.data.remote.UserSessionProvider
 import com.ekatayan.app.data.remote.api.RefreshTokenRequest
 import com.ekatayan.app.data.remote.api.GoogleIdTokenRequest
+import com.ekatayan.app.data.remote.api.GoogleUserMetadataRequest
 import com.ekatayan.app.data.remote.api.SupabaseAuthApiService
 import com.ekatayan.app.data.remote.dto.PasswordSignInRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignUpMetadata
@@ -21,6 +22,25 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class AuthRepositoryTest {
+    @Test fun googleIdTokenRequestUsesSupabaseNativeSignInContract() {
+        val json = Gson().toJson(
+            GoogleIdTokenRequest(
+                idToken = "google-id-token",
+                nonce = "raw-nonce",
+                data = GoogleUserMetadataRequest(
+                    fullName = "Google Traveler",
+                    avatarUrl = "https://example.com/avatar",
+                ),
+            ),
+        )
+
+        assertTrue(json.contains("\"provider\":\"google\""))
+        assertTrue(json.contains("\"id_token\":\"google-id-token\""))
+        assertTrue(json.contains("\"nonce\":\"raw-nonce\""))
+        assertTrue(json.contains("\"full_name\":\"Google Traveler\""))
+        assertTrue(json.contains("\"avatar_url\":\"https://example.com/avatar\""))
+    }
+
     @Test fun signUpRequestUsesProfileProvisioningMetadataContract() {
         val json = Gson().toJson(
             PasswordSignUpRequest(
