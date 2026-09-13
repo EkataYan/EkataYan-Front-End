@@ -20,10 +20,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +43,7 @@ import com.ekatayan.app.core.designsystem.theme.*
 import com.ekatayan.app.data.model.NotificationCategory
 import com.ekatayan.app.data.model.NotificationFilter
 import com.ekatayan.app.data.model.NotificationItem
+import com.ekatayan.app.data.model.TripInvitation
 import com.ekatayan.app.viewmodel.NotificationsUiState
 
 private val UnreadDot = Color(0xFF2DBE72)
@@ -49,6 +54,9 @@ fun NotificationsScreen(
     selectedBottomNavItem: AppBottomNavItem,
     onFilterSelected: (NotificationFilter) -> Unit,
     onNotificationClick: (Int) -> Unit,
+    onAcceptInvite:(String)->Unit,
+    onDeclineInvite:(String)->Unit,
+    onRetryInvites:()->Unit,
     onHomeClick: () -> Unit,
     onTripsClick: () -> Unit,
     onPlannerClick: () -> Unit,
@@ -89,8 +97,41 @@ fun NotificationsScreen(
                 )
             }
             item { NotificationFilters(uiState.selectedFilter, onFilterSelected) }
+            if(uiState.selectedFilter in setOf(NotificationFilter.ALL,NotificationFilter.TRIPS)) {
+                if(uiState.loadingInvitations) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+                if(uiState.invitationError!=null) item { TextButton(onClick=onRetryInvites){Text("Couldn't load invitations. Retry")} }
+                items(uiState.invitations,key={"invite-${it.id}"}) { invite ->
+                    InvitationCard(invite, uiState.respondingInvites[invite.id], onAcceptInvite, onDeclineInvite)
+                }
+            }
             items(uiState.filteredNotifications, key = NotificationItem::id) { notification ->
                 NotificationCard(notification = notification, onClick = { onNotificationClick(notification.id) })
+            }
+        }
+    }
+}
+
+@Composable
+private fun InvitationCard(invite: TripInvitation, action: String?, accept: (String) -> Unit, decline: (String) -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(EkataStroke.thin, MaterialTheme.colorScheme.outline),
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text("TRIP INVITATION", style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            Text("${invite.inviterName} invited you to join", modifier = Modifier.padding(top = 8.dp))
+            Text(invite.tripName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("${invite.startDate} - ${invite.endDate}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(onClick = { decline(invite.id) }, modifier = Modifier.weight(1f), enabled = action == null) {
+                    Text(if (action == "declining") "Declining..." else "Decline")
+                }
+                Button(onClick = { accept(invite.id) }, modifier = Modifier.weight(1f), enabled = action == null) {
+                    Text(if (action == "joining") "Joining..." else "Join Trip")
+                }
             }
         }
     }

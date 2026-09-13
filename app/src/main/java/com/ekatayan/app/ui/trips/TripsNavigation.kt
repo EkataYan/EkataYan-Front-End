@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 const val TRIPS_ROUTE = "trips"
 const val CREATE_TRIP_ROUTE = "trips/create"
-const val TRIP_DETAILS_ROUTE = "trips/details/{tripId}"
+const val TRIP_DETAILS_ROUTE = "trips/details/{tripKey}"
+const val TRIP_MEMBERS_ROUTE = "trips/{tripId}/members"
+const val ADD_TRIP_MEMBER_ROUTE = "trips/{tripId}/members/add"
 
 fun NavGraphBuilder.tripsScreen(
     onHomeClick: () -> Unit,
@@ -45,9 +47,14 @@ fun NavGraphBuilder.createTripScreen(onBackClick: () -> Unit) {
     }
 }
 
-fun NavGraphBuilder.tripDetailsScreen(onBackClick: () -> Unit) {
+fun NavGraphBuilder.tripDetailsScreen(onBackClick: () -> Unit, onMembersClick: (String) -> Unit) {
     composable(TRIP_DETAILS_ROUTE) { entry ->
-        val tripId = entry.arguments?.getString("tripId")?.toIntOrNull()
-        TripDetailsRoute(tripId = tripId, onBackClick = onBackClick)
+        val tripKey = entry.arguments?.getString("tripKey")
+        TripDetailsRoute(tripKey = tripKey, onBackClick = onBackClick, onMembersClick = onMembersClick)
     }
+}
+
+fun NavGraphBuilder.tripMemberScreens(onBackClick:()->Unit,onAdd:(String)->Unit) {
+    composable(TRIP_MEMBERS_ROUTE) { entry -> TripMembersRoute(false,onBackClick,{ entry.arguments?.getString("tripId")?.let(onAdd) }) }
+    composable(ADD_TRIP_MEMBER_ROUTE) { TripMembersRoute(true,onBackClick,{}) }
 }

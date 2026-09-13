@@ -21,3 +21,8 @@ data class NotificationItem(
     val iconBackground: Color,
     val isUnread: Boolean,
 )
+
+@Immutable data class TripInvitation(
+    val id:String,val tripId:String,val tripName:String,val startDate:String,val endDate:String,
+    val inviterName:String,val inviterUsername:String,val inviterAvatarUrl:String?,val createdAt:String,
+)

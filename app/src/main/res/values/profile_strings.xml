@@ -78,6 +78,10 @@
     <string name="profile_refresh_error">Couldn’t refresh profile</string>
     <string name="edit_profile_title">Edit Profile</string>
     <string name="edit_profile_name">Full name</string>
+    <string name="edit_profile_username">Username</string>
+    <string name="edit_profile_username_hint">3–20 lowercase letters, numbers, or underscores</string>
+    <string name="edit_profile_username_invalid">Use 3–20 lowercase letters, numbers, or underscores</string>
+    <string name="edit_profile_username_taken">That username is already taken</string>
     <string name="edit_profile_bio">Bio</string>
     <string name="edit_profile_city">Home city</string>
     <string name="edit_profile_language">Language</string>

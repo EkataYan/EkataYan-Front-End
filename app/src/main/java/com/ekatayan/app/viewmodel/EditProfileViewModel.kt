@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 enum class EditProfileValidationError {
     NAME_REQUIRED,
     NAME_TOO_LONG,
+    USERNAME_INVALID,
     BIO_TOO_LONG,
     CITY_TOO_LONG,
     LANGUAGE_INVALID,
@@ -26,6 +27,7 @@ enum class EditProfileValidationError {
 
 data class EditProfileUiState(
     val name: String = "",
+    val username: String = "",
     val email: String = "",
     val bio: String = "",
     val homeCity: String = "",
@@ -66,6 +68,7 @@ class EditProfileViewModel @Inject constructor(
     }
 
     fun updateName(value: String) = edit { copy(name = value) }
+    fun updateUsername(value: String) = edit { copy(username = value.lowercase().filter { it.isLetterOrDigit() || it == '_' }.take(20)) }
     fun updateBio(value: String) = edit { copy(bio = value) }
     fun updateHomeCity(value: String) = edit { copy(homeCity = value) }
     fun updateLanguage(value: String) = edit { copy(language = value) }
@@ -135,6 +138,7 @@ class EditProfileViewModel @Inject constructor(
                 originalProfile = updated
                 mutableState.value = mutableState.value.copy(
                     name = updated.name,
+                    username = updated.username,
                     bio = updated.bio,
                     homeCity = updated.location,
                     language = updated.language,
@@ -165,6 +169,7 @@ class EditProfileViewModel @Inject constructor(
         originalProfile = profile
         mutableState.value = EditProfileUiState(
             name = profile.name.ifBlank { authRepository.currentUserName().orEmpty() },
+            username = profile.username,
             email = authRepository.currentUserEmail().orEmpty().ifBlank { profile.email },
             bio = profile.bio,
             homeCity = profile.location,
@@ -195,6 +200,8 @@ class EditProfileViewModel @Inject constructor(
         return when {
             state.name.trim().isEmpty() -> EditProfileValidationError.NAME_REQUIRED
             state.name.trim().length > 160 -> EditProfileValidationError.NAME_TOO_LONG
+            state.username.isBlank() && !originalProfile?.username.isNullOrBlank() -> EditProfileValidationError.USERNAME_INVALID
+            state.username.isNotBlank() && !USERNAME_PATTERN.matches(state.username.trim()) -> EditProfileValidationError.USERNAME_INVALID
             state.bio.trim().length > 1_000 -> EditProfileValidationError.BIO_TOO_LONG
             state.homeCity.trim().length > 160 -> EditProfileValidationError.CITY_TOO_LONG
             state.language.trim() !in SUPPORTED_LANGUAGES -> EditProfileValidationError.LANGUAGE_INVALID
@@ -207,6 +214,7 @@ class EditProfileViewModel @Inject constructor(
     private fun EditProfileUiState.toProfileDetails() = ProfileDetails(
         name = name.trim(),
         location = homeCity.trim(),
+        username = username.trim().lowercase(),
         email = email,
         phone = phone.trim(),
         bio = bio.trim(),
@@ -221,11 +229,12 @@ class EditProfileViewModel @Inject constructor(
         .filter(String::isNotEmpty)
 
     private fun ProfileDetails.editableContentEquals(other: ProfileDetails?) = other != null &&
-        name == other.name && location == other.location && phone == other.phone && bio == other.bio &&
+        name == other.name && username == other.username && location == other.location && phone == other.phone && bio == other.bio &&
         language == other.language && interests == other.interests
 
     private companion object {
         val SUPPORTED_LANGUAGES = setOf("en", "si", "ta")
         val PHONE_PATTERN = Regex("\\+?[0-9 ()-]{7,32}")
+        val USERNAME_PATTERN = Regex("[a-z0-9_]{3,20}")
     }
 }

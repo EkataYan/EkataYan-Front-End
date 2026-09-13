@@ -67,6 +67,7 @@ fun ProfileScreen(
             item {
                 ProfileIdentityHeader(
                     name = state.name.ifBlank { profile.name },
+                    username = profile.username,
                     email = state.email,
                     avatarLocalPath = profile.avatarLocalPath,
                     onEditProfileClick = onEditProfileClick,
@@ -140,6 +141,7 @@ private fun ProfileTopBar() {
 @Composable
 private fun ProfileIdentityHeader(
     name: String,
+    username: String,
     email: String,
     avatarLocalPath: String?,
     onEditProfileClick: () -> Unit,
@@ -163,6 +165,13 @@ private fun ProfileIdentityHeader(
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (username.isNotBlank()) Text(
+                    text = "@$username",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {

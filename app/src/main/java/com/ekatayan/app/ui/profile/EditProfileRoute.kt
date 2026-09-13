@@ -25,7 +25,7 @@ fun EditProfileRoute(onBackClick: () -> Unit, onSaved: () -> Unit, viewModel: Ed
     }
     EditProfileScreen(
         state = state, onBackClick = onBackClick, onRetry = viewModel::retry, onSave = viewModel::save,
-        onNameChange = viewModel::updateName, onBioChange = viewModel::updateBio,
+        onNameChange = viewModel::updateName, onUsernameChange = viewModel::updateUsername, onBioChange = viewModel::updateBio,
         onHomeCityChange = viewModel::updateHomeCity, onLanguageChange = viewModel::updateLanguage,
         onInterestsChange = viewModel::updateInterests, onPhoneChange = viewModel::updatePhone,
         onChangePhoto = {

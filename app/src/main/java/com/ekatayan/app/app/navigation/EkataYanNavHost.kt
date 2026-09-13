@@ -48,6 +48,7 @@ import com.ekatayan.app.ui.trips.CREATE_TRIP_ROUTE
 import com.ekatayan.app.ui.trips.TRIPS_ROUTE
 import com.ekatayan.app.ui.trips.createTripScreen
 import com.ekatayan.app.ui.trips.tripDetailsScreen
+import com.ekatayan.app.ui.trips.tripMemberScreens
 import com.ekatayan.app.ui.trips.tripsScreen
 import com.ekatayan.app.ui.wishlist.WISHLIST_ROUTE
 import com.ekatayan.app.viewmodel.WishlistViewModel
@@ -151,7 +152,7 @@ fun EkataYanNavHost(
                 navController.navigate(CREATE_TRIP_ROUTE)
             },
             onTripClick = { trip ->
-                navController.navigate("trips/details/${trip.id}")
+                navController.navigate("trips/details/${Uri.encode(trip.remoteId ?: trip.id.toString())}")
             },
             onNotificationClick = navController::navigateToNotifications,
             onSettingsClick = navController::navigateToSettings,
@@ -160,8 +161,10 @@ fun EkataYanNavHost(
         createTripScreen(onBackClick = navController::navigateUp)
 
         tripDetailsScreen(
-            onBackClick = navController::navigateUp
+            onBackClick = navController::navigateUp,
+            onMembersClick = { navController.navigate("trips/$it/members") },
         )
+        tripMemberScreens(navController::navigateUp) { navController.navigate("trips/$it/members/add") }
         expensesScreen(
             onHomeClick = { navController.navigate(HOME_ROUTE) },
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
