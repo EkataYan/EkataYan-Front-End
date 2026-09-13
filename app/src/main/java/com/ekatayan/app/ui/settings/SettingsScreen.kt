@@ -40,6 +40,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -64,7 +66,16 @@ private val SettingsIconContainerSize = 40.dp
 fun SettingsScreen(
     uiState: SettingsPreferences,
     onPushNotificationsChanged: (Boolean) -> Unit,
-    onDarkModeChanged: (Boolean) -> Unit,
+    onAccountClick: () -> Unit,
+    onPasswordClick: () -> Unit,
+    onAppearanceClick: () -> Unit,
+    onLanguageClick: () -> Unit,
+    onPermissionsClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
+    onStorageClick: () -> Unit,
+    onHelpClick: () -> Unit,
+    onAboutClick: () -> Unit,
+    onLegalClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onHomeClick: () -> Unit,
     onTripsClick: () -> Unit,
@@ -73,6 +84,9 @@ fun SettingsScreen(
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var confirmLogout by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val notificationPermissionMissing = android.os.Build.VERSION.SDK_INT >= 33 && androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
@@ -106,12 +120,14 @@ fun SettingsScreen(
                         icon = Icons.Outlined.AccountCircle,
                         titleRes = R.string.settings_account_information,
                         subtitleRes = R.string.settings_account_information_subtitle,
+                        onClick = onAccountClick,
                     )
                     SettingsDivider()
                     SettingsRow(
                         icon = Icons.Outlined.Lock,
                         titleRes = R.string.settings_change_password,
                         subtitleRes = R.string.settings_change_password_subtitle,
+                        onClick = onPasswordClick,
                     )
                 }
             }
@@ -126,19 +142,27 @@ fun SettingsScreen(
                         checked = uiState.pushNotificationsEnabled,
                         onCheckedChange = onPushNotificationsChanged,
                     )
+                    if (notificationPermissionMissing) {
+                        androidx.compose.material3.TextButton(
+                            onClick = { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)) },
+                            modifier = Modifier.padding(start = 60.dp),
+                        ) { Text("Device notifications are unavailable — Open settings") }
+                    }
                     SettingsDivider()
                     SettingsRow(
                         icon = Icons.Outlined.DarkMode,
                         titleRes = R.string.settings_appearance,
                         subtitleRes = R.string.settings_appearance_subtitle,
-                        checked = uiState.darkModeEnabled,
-                        onCheckedChange = onDarkModeChanged,
+                        subtitle = when(uiState.themeMode){"dark"->"Dark";"light"->"Light";else->"System default"},
+                        onClick = onAppearanceClick,
                     )
                     SettingsDivider()
                     SettingsRow(
                         icon = Icons.Outlined.Language,
                         titleRes = R.string.settings_language,
                         subtitleRes = R.string.settings_language_subtitle,
+                        subtitle = when(uiState.selectedLanguage){"si"->"සිංහල";"ta"->"தமிழ்";else->"English"},
+                        onClick = onLanguageClick,
                     )
                 }
             }
@@ -150,18 +174,22 @@ fun SettingsScreen(
                         icon = Icons.Outlined.LocationOn,
                         titleRes = R.string.settings_location_permissions,
                         subtitleRes = R.string.settings_location_permissions_subtitle,
+                        subtitle = if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED || androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) "Allowed" else "Off",
+                        onClick = onPermissionsClick,
                     )
                     SettingsDivider()
                     SettingsRow(
                         icon = Icons.Outlined.AdminPanelSettings,
                         titleRes = R.string.settings_privacy,
                         subtitleRes = R.string.settings_privacy_subtitle,
+                        onClick = onPrivacyClick,
                     )
                     SettingsDivider()
                     SettingsRow(
                         icon = Icons.Outlined.FolderOpen,
                         titleRes = R.string.settings_data_storage,
                         subtitleRes = R.string.settings_data_storage_subtitle,
+                        onClick = onStorageClick,
                     )
                 }
             }
@@ -173,18 +201,21 @@ fun SettingsScreen(
                         icon = Icons.AutoMirrored.Outlined.HelpOutline,
                         titleRes = R.string.settings_help_support,
                         subtitleRes = R.string.settings_help_support_subtitle,
+                        onClick = onHelpClick,
                     )
                     SettingsDivider()
                     SettingsRow(
                         icon = Icons.Outlined.Info,
                         titleRes = R.string.settings_about_ekatayan,
                         subtitleRes = R.string.settings_about_ekatayan_subtitle,
+                        onClick = onAboutClick,
                     )
                     SettingsDivider()
                     SettingsRow(
                         icon = Icons.Outlined.Description,
                         titleRes = R.string.settings_terms_privacy,
                         subtitleRes = R.string.settings_terms_privacy_subtitle,
+                        onClick = onLegalClick,
                     )
                 }
             }
@@ -195,12 +226,14 @@ fun SettingsScreen(
                     SettingsActionRow(
                         icon = Icons.AutoMirrored.Outlined.Logout,
                         titleRes = R.string.settings_logout,
-                        onClick = onLogoutClick,
+                        onClick = { confirmLogout = true },
                     )
                 }
             }
+            item { Text("EkataYan v${com.ekatayan.app.BuildConfig.VERSION_NAME}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.fillMaxWidth().padding(top=EkataSpacing.lg),textAlign=androidx.compose.ui.text.style.TextAlign.Center) }
         }
     }
+    if(confirmLogout) androidx.compose.material3.AlertDialog(onDismissRequest={confirmLogout=false},title={Text("Log out of EkataYan?")},text={Text("You'll need to sign in again to access your account.")},confirmButton={androidx.compose.material3.TextButton(onClick={confirmLogout=false;onLogoutClick()}){Text("Log Out")}},dismissButton={androidx.compose.material3.TextButton(onClick={confirmLogout=false}){Text("Cancel")}})
 }
 
 @Composable
@@ -239,6 +272,7 @@ private fun SettingsRow(
     icon: ImageVector,
     @StringRes titleRes: Int,
     @StringRes subtitleRes: Int,
+    subtitle: String? = null,
     modifier: Modifier = Modifier,
     checked: Boolean? = null,
     onCheckedChange: ((Boolean) -> Unit)? = null,
@@ -261,7 +295,7 @@ private fun SettingsRow(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = stringResource(subtitleRes),
+                text = subtitle ?: stringResource(subtitleRes),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

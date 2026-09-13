@@ -47,6 +47,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -281,7 +282,7 @@ fun PageIndicator(count: Int, selectedPage: Int, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClick: () -> Unit, weatherLoading: Boolean = false, weatherError: String? = null) {
+fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClick: () -> Unit, weatherLoading: Boolean = false, weatherError: String? = null, onWeatherAction: (() -> Unit)? = null) {
     BoxWithConstraints(
         Modifier.fillMaxWidth().padding(
             start = EkataSpacing.md,
@@ -293,7 +294,7 @@ fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClic
         if (maxWidth < 328.dp) {
             Column(verticalArrangement = Arrangement.spacedBy(EkataSpacing.sm)) {
                 UpcomingTripCard(trip, onUpcomingTripClick, Modifier.fillMaxWidth().height(HomeWidgetHeight))
-                WeatherCard(weather, Modifier.fillMaxWidth().height(HomeWidgetHeight), weatherLoading, weatherError)
+                WeatherCard(weather, Modifier.fillMaxWidth().height(HomeWidgetHeight), weatherLoading, weatherError, onWeatherAction)
             }
         } else {
             Row(
@@ -301,7 +302,7 @@ fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClic
                 horizontalArrangement = Arrangement.spacedBy(EkataSpacing.sm),
             ) {
                 UpcomingTripCard(trip, onUpcomingTripClick, Modifier.weight(1f).height(HomeWidgetHeight))
-                WeatherCard(weather, Modifier.weight(1f).height(HomeWidgetHeight), weatherLoading, weatherError)
+                WeatherCard(weather, Modifier.weight(1f).height(HomeWidgetHeight), weatherLoading, weatherError, onWeatherAction)
             }
         }
     }
@@ -356,7 +357,7 @@ fun UpcomingTripCard(trip: UpcomingTrip?, onClick: () -> Unit, modifier: Modifie
 }
 
 @Composable
-fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier, isLoading: Boolean = false, errorMessage: String? = null) {
+fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier, isLoading: Boolean = false, errorMessage: String? = null, onAction: (() -> Unit)? = null) {
     val backgroundRes = remember(weather?.weatherType) { weatherBackgroundRes(weather?.weatherType) }
     Card(modifier = modifier, shape = MaterialTheme.shapes.large, elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low)) {
         Box(Modifier.fillMaxSize()) {
@@ -378,6 +379,7 @@ fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier, isLoading:
                     CircularProgressIndicator(color = EkataOnImage, modifier = Modifier.padding(top = EkataSpacing.lg).size(28.dp))
                 } else if (weather == null) {
                     Text(errorMessage ?: stringResource(R.string.home_weather_unavailable), style = MaterialTheme.typography.bodyMedium, color = EkataOnImage, modifier = Modifier.padding(top = EkataSpacing.lg))
+                    if (onAction != null) TextButton(onClick = onAction) { Text("Enable / Retry", color = EkataOnImage) }
                 } else {
                     Row(Modifier.padding(top = EkataSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.home_temperature, weather.temperature), style = MaterialTheme.typography.displaySmall, color = EkataOnImage)

@@ -12,13 +12,15 @@ import javax.inject.Inject
 
 @Immutable
 data class SettingsPreferences(
+    val loaded: Boolean = false,
     val userName: String = "Zendaya Holland",
     val userEmail: String = "Zendaya@gmail.com",
     @param:DrawableRes val profileImageResId: Int? = null,
-    val selectedLanguage: String = "English (US)",
+    val selectedLanguage: String = "en",
     val selectedCurrency: String = "LKR - Sri Lankan Rupees",
     val pushNotificationsEnabled: Boolean = true,
-    val darkModeEnabled: Boolean = false,
+    val themeMode: String = "system",
+    val locationPermissionPromptShown: Boolean = false,
     val appVersion: String = "App Version 1.0.0",
 )
 

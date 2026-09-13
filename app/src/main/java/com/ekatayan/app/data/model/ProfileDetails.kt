@@ -15,4 +15,5 @@ data class ProfileDetails(
     val avatarPath: String? = null,
     val avatarLocalPath: String? = null,
     val username: String = "",
+    val isDiscoverable: Boolean = true,
 )

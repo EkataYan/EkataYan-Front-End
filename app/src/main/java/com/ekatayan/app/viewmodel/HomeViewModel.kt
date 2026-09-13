@@ -8,7 +8,10 @@ import com.ekatayan.app.data.model.User
 import com.ekatayan.app.data.model.WeatherInfo
 import com.ekatayan.app.data.model.WishlistItem
 import com.ekatayan.app.data.repository.HomeRepository
-import com.ekatayan.app.data.repository.ProfileRepository
+import com.ekatayan.app.data.repository.LocationRepository
+import com.ekatayan.app.data.repository.LocationPermissionDeniedException
+import com.ekatayan.app.data.repository.DeviceLocationUnavailableException
+import com.ekatayan.app.data.repository.SystemLocationDisabledException
 import com.ekatayan.app.data.repository.TripsRepository
 import com.ekatayan.app.data.repository.WeatherRepository
 import com.ekatayan.app.data.remote.UserSessionProvider
@@ -36,17 +39,22 @@ data class HomeUiState(
     val errorMessage: String? = null,
     val isWeatherLoading: Boolean = false,
     val weatherError: String? = null,
+    val weatherErrorKind: WeatherErrorKind? = null,
+    val weatherUpdatedAtMillis: Long? = null,
 )
+
+enum class WeatherErrorKind { PERMISSION, LOCATION_DISABLED, LOCATION, SERVER }
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val homeRepository: HomeRepository,
     private val tripsRepository: TripsRepository,
     private val session: UserSessionProvider,
-    private val profileRepository: ProfileRepository,
+    private val locationRepository: LocationRepository,
     private val weatherRepository: WeatherRepository,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
+    private var weatherJob: kotlinx.coroutines.Job? = null
 
     private val _uiState = MutableStateFlow(
         HomeUiState(
@@ -85,25 +93,45 @@ class HomeViewModel @Inject constructor(
     }
 
     fun refreshWeather() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isWeatherLoading = true, weatherError = null) }
+        if (weatherJob?.isActive == true) return
+        weatherJob = viewModelScope.launch {
+            _uiState.update { it.copy(isWeatherLoading = true, weatherError = null, weatherErrorKind = null) }
             try {
-                val city = profileRepository.profile.value?.location?.takeIf(String::isNotBlank)
-                    ?: profileRepository.getProfile().location.takeIf(String::isNotBlank)
-                    ?: throw IllegalStateException("Add a home city to your profile to see weather.")
-                val weather = weatherRepository.forecast(city)
-                _uiState.update { it.copy(weather = weather, isWeatherLoading = false) }
+                val location = locationRepository.currentOrLastLocation()
+                val weather = weatherRepository.forecast(location.latitude, location.longitude)
+                _uiState.update { it.copy(weather = weather, isWeatherLoading = false, weatherError = null, weatherErrorKind = null, weatherUpdatedAtMillis = System.currentTimeMillis()) }
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
                 _uiState.update {
                     it.copy(
-                        weather = null,
+                        weather = if (error is LocationPermissionDeniedException) null else it.weather,
                         isWeatherLoading = false,
-                        weatherError = error.message ?: "Weather is unavailable.",
+                        weatherError = when(error) {
+                            is LocationPermissionDeniedException -> "Enable location to see local weather"
+                            is SystemLocationDisabledException -> "Turn on device Location to see local weather."
+                            is DeviceLocationUnavailableException -> "Couldn't determine your location."
+                            else -> "Weather is temporarily unavailable."
+                        },
+                        weatherErrorKind = when(error) {
+                            is LocationPermissionDeniedException -> WeatherErrorKind.PERMISSION
+                            is SystemLocationDisabledException -> WeatherErrorKind.LOCATION_DISABLED
+                            is DeviceLocationUnavailableException -> WeatherErrorKind.LOCATION
+                            else -> WeatherErrorKind.SERVER
+                        },
                     )
                 }
             }
+        }
+    }
+
+    fun onLocationPermissionChanged() = refreshWeather()
+
+    fun onHomeResumed() {
+        val state = _uiState.value
+        val needsLocationRetry = state.weather == null || state.weatherErrorKind == WeatherErrorKind.LOCATION_DISABLED || state.weatherErrorKind == WeatherErrorKind.LOCATION
+        if (needsLocationRetry && locationRepository.hasForegroundPermission() && locationRepository.isSystemLocationEnabled()) {
+            refreshWeather()
         }
     }
 

@@ -241,6 +241,7 @@ class ProfileRepository @Inject constructor(
         if (before.location != after.location) add(HOME_CITY)
         if (before.language != after.language) add(LANGUAGE)
         if (before.interests != after.interests) add(INTERESTS)
+        if (before.isDiscoverable != after.isDiscoverable) add(DISCOVERABLE)
     }
 
     private fun ProfileDetails.toPatch(fields: Set<String>) = UpdateProfileRequest(
@@ -251,6 +252,7 @@ class ProfileRepository @Inject constructor(
         language = language.takeIf { LANGUAGE in fields },
         interests = interests.takeIf { INTERESTS in fields },
         phone = phone.takeIf { PHONE in fields },
+        isDiscoverable = isDiscoverable.takeIf { DISCOVERABLE in fields },
     )
 
     private fun ProfileDto.toDetails(fallback: ProfileDetails?): ProfileDetails {
@@ -259,6 +261,7 @@ class ProfileRepository @Inject constructor(
             name = displayName ?: fallback?.name.orEmpty(),
             location = homeCity ?: fallback?.location.orEmpty(),
             username = username ?: fallback?.username.orEmpty(),
+            isDiscoverable = isDiscoverable ?: fallback?.isDiscoverable ?: true,
             email = email ?: fallback?.email ?: session.currentUserEmail().orEmpty(),
             phone = phone ?: fallback?.phone.orEmpty(),
             bio = bio ?: fallback?.bio.orEmpty(),
@@ -281,6 +284,7 @@ class ProfileRepository @Inject constructor(
             location = local.location.takeIf { HOME_CITY in pending } ?: cloud.location,
             language = local.language.takeIf { LANGUAGE in pending } ?: cloud.language,
             interests = local.interests.takeIf { INTERESTS in pending } ?: cloud.interests,
+            isDiscoverable = local.isDiscoverable.takeIf { DISCOVERABLE in pending } ?: cloud.isDiscoverable,
             avatarPath = local.avatarPath.takeIf { AVATAR in pending } ?: cloud.avatarPath,
             avatarLocalPath = local.avatarLocalPath.takeIf { AVATAR in pending } ?: cloud.avatarLocalPath,
         )
@@ -306,7 +310,8 @@ class ProfileRepository @Inject constructor(
         const val LANGUAGE = "language"
         const val INTERESTS = "interests"
         const val AVATAR = "avatar"
-        val PROFILE_FIELDS = setOf(DISPLAY_NAME, USERNAME, PHONE, BIO, HOME_CITY, LANGUAGE, INTERESTS)
+        const val DISCOVERABLE = "is_discoverable"
+        val PROFILE_FIELDS = setOf(DISPLAY_NAME, USERNAME, PHONE, BIO, HOME_CITY, LANGUAGE, INTERESTS, DISCOVERABLE)
         val logger: Logger = Logger.getLogger("EkataYanProfile")
     }
 }

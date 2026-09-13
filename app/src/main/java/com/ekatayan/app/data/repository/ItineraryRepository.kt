@@ -13,7 +13,7 @@ data class ItineraryPlanInput(
     val suggestAdditionalPlaces: Boolean = false,
 )
 
-class ItineraryRepository @Inject constructor(private val api: EkataYanApiService) {
+class ItineraryRepository @Inject constructor(private val api: EkataYanApiService, private val settings: SettingsRepository = SettingsRepository()) {
     suspend fun preview(input: ItineraryPlanInput): Itinerary {
         val response = api.previewItinerary(input.toRequest())
         return response.data?.toDomain()
@@ -40,6 +40,7 @@ class ItineraryRepository @Inject constructor(private val api: EkataYanApiServic
         specialRequests = specialRequests?.takeIf(String::isNotBlank),
         allowAiDestinationSuggestions = letAiChooseDestinations,
         suggestAdditionalPlaces = suggestAdditionalPlaces,
+        preferredLanguage = settings.preferences.value.selectedLanguage,
     )
 
     fun AiItineraryResponseDto.toDomain() = Itinerary(

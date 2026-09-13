@@ -82,12 +82,14 @@ class LoginViewModelTest {
         assertEquals(AuthenticationFailure.INVALID_CREDENTIALS, viewModel.uiState.error)
     }
 
-    @Test fun restoredSessionEmitsNavigationWithoutSubmittingCredentials() = runTest {
+    @Test fun loginDoesNotRestoreSessionOrFlashAuthenticatedNavigation() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         try {
-            val viewModel = LoginViewModel(FakeAuthRepository(restored = true))
+            val repository = FakeAuthRepository(restored = true)
+            val viewModel = LoginViewModel(repository)
             advanceUntilIdle()
-            assertTrue(viewModel.uiState.loginSucceeded)
+            assertEquals(0, repository.restoreCalls)
+            assertFalse(viewModel.uiState.loginSucceeded)
         } finally { Dispatchers.resetMain() }
     }
 }
@@ -98,13 +100,14 @@ private class FakeAuthRepository(
     private val signInGate: CompletableDeferred<Unit>? = null,
 ) : AuthRepository {
     var signInCalls = 0
+    var restoreCalls = 0
     override suspend fun signIn(email: String, password: String) {
         signInCalls++
         failure?.let { throw AuthenticationException(it) }
         signInGate?.await()
     }
     override suspend fun signUp(name: String, email: String, phone: String, password: String) = error("Not used by LoginViewModel")
-    override suspend fun restoreSession() = restored
+    override suspend fun restoreSession(): Boolean { restoreCalls++; return restored }
     override suspend fun refreshSession() = false
     override fun clearSession() = Unit
 }

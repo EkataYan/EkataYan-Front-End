@@ -36,21 +36,24 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@Composable fun TripDetailsRoute(tripKey: String?, onBackClick: () -> Unit, onMembersClick: (String) -> Unit = {}, viewModel: TripsViewModel = hiltViewModel()) {
+@Composable fun TripDetailsRoute(tripKey: String?, onBackClick: () -> Unit, onMembersClick: (String) -> Unit = {}, onExpensesClick: (String) -> Unit = {}, viewModel: TripsViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState()
     val trip = state.trips.firstOrNull { it.remoteId == tripKey || it.id.toString() == tripKey }
     LaunchedEffect(trip?.remoteId) { trip?.let(viewModel::loadTripDetails) }
     val guide = if (trip?.source == "ai") null else trip?.let { viewModel.guideFor(it.customLocation ?: stringResource(it.locationRes)) }
-    TripDetailsScreen(trip, state.today, guide, state.aiDetails, state.detailsLoading, state.detailsError, { trip?.let(viewModel::loadTripDetails) }, onBackClick, onMembersClick)
+    TripDetailsScreen(trip, state.today, guide, state.aiDetails, state.detailsLoading, state.detailsError, { trip?.let(viewModel::loadTripDetails) }, onBackClick, onMembersClick, onExpensesClick)
 }
 
 @Composable fun TripDetailsScreen(trip: Trip?, today: LocalDate, guide: DestinationGuide?, aiDetails: SavedAiTripDetails? = null,
-    loading: Boolean = false, error: String? = null, onRetry: () -> Unit = {}, onBackClick: () -> Unit, onMembersClick: (String) -> Unit = {}) {
+    loading: Boolean = false, error: String? = null, onRetry: () -> Unit = {}, onBackClick: () -> Unit, onMembersClick: (String) -> Unit = {}, onExpensesClick: (String) -> Unit = {}) {
     Column(Modifier.fillMaxSize().background(EkataBackground).verticalScroll(rememberScrollState()).padding(20.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.create_trip_back)) }; Text(stringResource(R.string.trip_details_title), style = MaterialTheme.typography.headlineSmall) }
         if (trip == null) Text(stringResource(R.string.trip_details_missing), modifier = Modifier.padding(top = 24.dp)) else {
             Hero(trip, today)
-            trip.remoteId?.let { EkataSecondaryButton("Members", { onMembersClick(it) }, modifier = Modifier.fillMaxWidth().padding(top = 12.dp)) }
+            trip.remoteId?.let { id ->
+                EkataSecondaryButton("Members", { onMembersClick(id) }, modifier = Modifier.fillMaxWidth().padding(top = 12.dp))
+                EkataSecondaryButton("Expenses", { onExpensesClick(id) }, modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
+            }
             if (trip.source == "ai") when {
                 aiDetails != null -> {
                     if (loading) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 12.dp))

@@ -6,8 +6,15 @@ import com.ekatayan.app.data.remote.dto.SupabaseSessionDto
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.Query
+import retrofit2.http.PUT
+import retrofit2.http.Header
 
 interface SupabaseAuthApiService {
+    @PUT("auth/v1/user")
+    suspend fun updatePassword(
+        @Header("Authorization") authorization: String,
+        @Body request: PasswordUpdateRequest,
+    ): Map<String, Any?>
     @POST("auth/v1/token")
     suspend fun signInWithIdToken(
         @Query("grant_type") grantType: String = "id_token",
@@ -31,6 +38,8 @@ interface SupabaseAuthApiService {
         @Body request: RefreshTokenRequest,
     ): SupabaseSessionDto
 }
+
+data class PasswordUpdateRequest(val password: String)
 
 data class RefreshTokenRequest(val refresh_token: String)
 
