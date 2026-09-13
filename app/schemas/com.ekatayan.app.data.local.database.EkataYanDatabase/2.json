@@ -1,0 +1,1246 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "6d187e7669bbf54c88f52a3397c675f5",
+    "entities": [
+      {
+        "tableName": "local_seed",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`feature` TEXT NOT NULL, `initialized` INTEGER NOT NULL, PRIMARY KEY(`feature`))",
+        "fields": [
+          {
+            "fieldPath": "feature",
+            "columnName": "feature",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "initialized",
+            "columnName": "initialized",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "feature"
+          ]
+        }
+      },
+      {
+        "tableName": "wishlist_groups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `coverType` TEXT NOT NULL, `coverReference` TEXT, `createdOrder` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coverType",
+            "columnName": "coverType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "coverReference",
+            "columnName": "coverReference",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdOrder",
+            "columnName": "createdOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "wishlist_group_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupId` INTEGER NOT NULL, `destinationId` INTEGER NOT NULL, `itemOrder` INTEGER NOT NULL, PRIMARY KEY(`groupId`, `destinationId`), FOREIGN KEY(`groupId`) REFERENCES `wishlist_groups`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationId",
+            "columnName": "destinationId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "itemOrder",
+            "columnName": "itemOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "groupId",
+            "destinationId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_wishlist_group_items_groupId",
+            "unique": false,
+            "columnNames": [
+              "groupId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_wishlist_group_items_groupId` ON `${TABLE_NAME}` (`groupId`)"
+          },
+          {
+            "name": "index_wishlist_group_items_destinationId",
+            "unique": false,
+            "columnNames": [
+              "destinationId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_wishlist_group_items_destinationId` ON `${TABLE_NAME}` (`destinationId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "wishlist_groups",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "groupId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "trips",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `nameRes` INTEGER NOT NULL, `locationRes` INTEGER NOT NULL, `statusRes` INTEGER NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT NOT NULL, `imageRes` INTEGER NOT NULL, `customName` TEXT, `customLocation` TEXT, `budget` TEXT, `notes` TEXT, `imageUri` TEXT, `remoteId` TEXT, `source` TEXT NOT NULL, `summary` TEXT, `route` TEXT, `travellerType` TEXT, `travellerCount` INTEGER, `travelStyle` TEXT, `travelPace` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nameRes",
+            "columnName": "nameRes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "locationRes",
+            "columnName": "locationRes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusRes",
+            "columnName": "statusRes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startDate",
+            "columnName": "startDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endDate",
+            "columnName": "endDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageRes",
+            "columnName": "imageRes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "customName",
+            "columnName": "customName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "customLocation",
+            "columnName": "customLocation",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "budget",
+            "columnName": "budget",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "imageUri",
+            "columnName": "imageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "remoteId",
+            "columnName": "remoteId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "summary",
+            "columnName": "summary",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "route",
+            "columnName": "route",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "travellerType",
+            "columnName": "travellerType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "travellerCount",
+            "columnName": "travellerCount",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "travelStyle",
+            "columnName": "travelStyle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "travelPace",
+            "columnName": "travelPace",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "chat_users",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `role` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "chat_groups",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `imageRes` INTEGER, `imageUri` TEXT, `ownerId` TEXT NOT NULL, `isFavourite` INTEGER NOT NULL, `unreadCount` INTEGER NOT NULL, `theme` TEXT NOT NULL, `backgroundUri` TEXT, `groupOrder` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageRes",
+            "columnName": "imageRes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "imageUri",
+            "columnName": "imageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isFavourite",
+            "columnName": "isFavourite",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unreadCount",
+            "columnName": "unreadCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "theme",
+            "columnName": "theme",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "backgroundUri",
+            "columnName": "backgroundUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "groupOrder",
+            "columnName": "groupOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "chat_group_members",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`groupId` TEXT NOT NULL, `userId` TEXT NOT NULL, `memberOrder` INTEGER NOT NULL, PRIMARY KEY(`groupId`, `userId`), FOREIGN KEY(`groupId`) REFERENCES `chat_groups`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`userId`) REFERENCES `chat_users`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "userId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "memberOrder",
+            "columnName": "memberOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "groupId",
+            "userId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_chat_group_members_groupId",
+            "unique": false,
+            "columnNames": [
+              "groupId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_chat_group_members_groupId` ON `${TABLE_NAME}` (`groupId`)"
+          },
+          {
+            "name": "index_chat_group_members_userId",
+            "unique": false,
+            "columnNames": [
+              "userId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_chat_group_members_userId` ON `${TABLE_NAME}` (`userId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "chat_groups",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "groupId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "table": "chat_users",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "userId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "chat_messages",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `groupId` TEXT NOT NULL, `senderId` TEXT NOT NULL, `type` TEXT NOT NULL, `text` TEXT, `timestamp` TEXT NOT NULL, `attachmentUri` TEXT, `attachmentName` TEXT, `placeId` INTEGER, `replyToMessageId` TEXT, `voiceDurationSeconds` INTEGER, `messageOrder` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`groupId`) REFERENCES `chat_groups`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "groupId",
+            "columnName": "groupId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "senderId",
+            "columnName": "senderId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "attachmentUri",
+            "columnName": "attachmentUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "attachmentName",
+            "columnName": "attachmentName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "placeId",
+            "columnName": "placeId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "replyToMessageId",
+            "columnName": "replyToMessageId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "voiceDurationSeconds",
+            "columnName": "voiceDurationSeconds",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "messageOrder",
+            "columnName": "messageOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_chat_messages_groupId",
+            "unique": false,
+            "columnNames": [
+              "groupId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_chat_messages_groupId` ON `${TABLE_NAME}` (`groupId`)"
+          },
+          {
+            "name": "index_chat_messages_replyToMessageId",
+            "unique": false,
+            "columnNames": [
+              "replyToMessageId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_chat_messages_replyToMessageId` ON `${TABLE_NAME}` (`replyToMessageId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "chat_groups",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "groupId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "chat_reactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`messageId` TEXT NOT NULL, `reaction` TEXT NOT NULL, PRIMARY KEY(`messageId`, `reaction`), FOREIGN KEY(`messageId`) REFERENCES `chat_messages`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "messageId",
+            "columnName": "messageId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "reaction",
+            "columnName": "reaction",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "messageId",
+            "reaction"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_chat_reactions_messageId",
+            "unique": false,
+            "columnNames": [
+              "messageId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_chat_reactions_messageId` ON `${TABLE_NAME}` (`messageId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "chat_messages",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "messageId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "business_profiles",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `businessType` TEXT, `businessName` TEXT NOT NULL, `email` TEXT NOT NULL, `phone` TEXT NOT NULL, `address` TEXT NOT NULL, `locationLabel` TEXT NOT NULL, `description` TEXT NOT NULL, `imageUri` TEXT, `submitted` INTEGER NOT NULL, `city` TEXT NOT NULL, `district` TEXT NOT NULL, `country` TEXT NOT NULL, `ownerName` TEXT NOT NULL, `contactEmail` TEXT NOT NULL, `contactPhone` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "businessType",
+            "columnName": "businessType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "businessName",
+            "columnName": "businessName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "email",
+            "columnName": "email",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phone",
+            "columnName": "phone",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "locationLabel",
+            "columnName": "locationLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageUri",
+            "columnName": "imageUri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "submitted",
+            "columnName": "submitted",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "city",
+            "columnName": "city",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "district",
+            "columnName": "district",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "country",
+            "columnName": "country",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerName",
+            "columnName": "ownerName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contactEmail",
+            "columnName": "contactEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contactPhone",
+            "columnName": "contactPhone",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "business_images",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileId` TEXT NOT NULL, `uri` TEXT NOT NULL, `imageOrder` INTEGER NOT NULL, PRIMARY KEY(`profileId`, `uri`), FOREIGN KEY(`profileId`) REFERENCES `business_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "profileId",
+            "columnName": "profileId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uri",
+            "columnName": "uri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageOrder",
+            "columnName": "imageOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "profileId",
+            "uri"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_business_images_profileId",
+            "unique": false,
+            "columnNames": [
+              "profileId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_business_images_profileId` ON `${TABLE_NAME}` (`profileId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "business_profiles",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "profileId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "business_hours",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileId` TEXT NOT NULL, `day` TEXT NOT NULL, `open` INTEGER NOT NULL, `openingMinutes` INTEGER NOT NULL, `closingMinutes` INTEGER NOT NULL, PRIMARY KEY(`profileId`, `day`), FOREIGN KEY(`profileId`) REFERENCES `business_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "profileId",
+            "columnName": "profileId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "day",
+            "columnName": "day",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "open",
+            "columnName": "open",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "openingMinutes",
+            "columnName": "openingMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "closingMinutes",
+            "columnName": "closingMinutes",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "profileId",
+            "day"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_business_hours_profileId",
+            "unique": false,
+            "columnNames": [
+              "profileId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_business_hours_profileId` ON `${TABLE_NAME}` (`profileId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "business_profiles",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "profileId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "business_social_links",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`profileId` TEXT NOT NULL, `platform` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`profileId`, `platform`), FOREIGN KEY(`profileId`) REFERENCES `business_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "profileId",
+            "columnName": "profileId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "platform",
+            "columnName": "platform",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "profileId",
+            "platform"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_business_social_links_profileId",
+            "unique": false,
+            "columnNames": [
+              "profileId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_business_social_links_profileId` ON `${TABLE_NAME}` (`profileId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "business_profiles",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "profileId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "business_documents",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`type` TEXT NOT NULL, `uri` TEXT NOT NULL, `filename` TEXT NOT NULL, PRIMARY KEY(`type`))",
+        "fields": [
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uri",
+            "columnName": "uri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "filename",
+            "columnName": "filename",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "type"
+          ]
+        }
+      },
+      {
+        "tableName": "business_listings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `category` TEXT NOT NULL, `description` TEXT NOT NULL, `price` REAL NOT NULL, `priceUnit` TEXT NOT NULL, `status` TEXT NOT NULL, `location` TEXT NOT NULL, `imageRes` INTEGER, `details` TEXT NOT NULL, `views` INTEGER NOT NULL, `inquiries` INTEGER NOT NULL, `available` INTEGER NOT NULL, `availableFrom` TEXT NOT NULL, `availableUntil` TEXT NOT NULL, `timeSlots` TEXT NOT NULL, `listingOrder` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceUnit",
+            "columnName": "priceUnit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "location",
+            "columnName": "location",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageRes",
+            "columnName": "imageRes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "details",
+            "columnName": "details",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "views",
+            "columnName": "views",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inquiries",
+            "columnName": "inquiries",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "available",
+            "columnName": "available",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "availableFrom",
+            "columnName": "availableFrom",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "availableUntil",
+            "columnName": "availableUntil",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "timeSlots",
+            "columnName": "timeSlots",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listingOrder",
+            "columnName": "listingOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "business_listing_images",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`listingId` TEXT NOT NULL, `uri` TEXT NOT NULL, `imageOrder` INTEGER NOT NULL, PRIMARY KEY(`listingId`, `uri`), FOREIGN KEY(`listingId`) REFERENCES `business_listings`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "listingId",
+            "columnName": "listingId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "uri",
+            "columnName": "uri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "imageOrder",
+            "columnName": "imageOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "listingId",
+            "uri"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_business_listing_images_listingId",
+            "unique": false,
+            "columnNames": [
+              "listingId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_business_listing_images_listingId` ON `${TABLE_NAME}` (`listingId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "business_listings",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "listingId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "business_listing_fields",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`listingId` TEXT NOT NULL, `field` TEXT NOT NULL, `value` TEXT NOT NULL, PRIMARY KEY(`listingId`, `field`), FOREIGN KEY(`listingId`) REFERENCES `business_listings`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "listingId",
+            "columnName": "listingId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "field",
+            "columnName": "field",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "listingId",
+            "field"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_business_listing_fields_listingId",
+            "unique": false,
+            "columnNames": [
+              "listingId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_business_listing_fields_listingId` ON `${TABLE_NAME}` (`listingId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "business_listings",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "listingId"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "partner_bookings",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `travellerName` TEXT NOT NULL, `listingName` TEXT NOT NULL, `dateLabel` TEXT NOT NULL, `amount` REAL NOT NULL, `message` TEXT NOT NULL, `status` TEXT NOT NULL, `bookedOn` TEXT NOT NULL, `quantity` INTEGER NOT NULL, `bookingOrder` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "travellerName",
+            "columnName": "travellerName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "listingName",
+            "columnName": "listingName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dateLabel",
+            "columnName": "dateLabel",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "message",
+            "columnName": "message",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bookedOn",
+            "columnName": "bookedOn",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quantity",
+            "columnName": "quantity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bookingOrder",
+            "columnName": "bookingOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "business_partner_session",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `loginEmail` TEXT NOT NULL, `loggedIn` INTEGER NOT NULL, `demoLoaded` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "loginEmail",
+            "columnName": "loginEmail",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "loggedIn",
+            "columnName": "loggedIn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "demoLoaded",
+            "columnName": "demoLoaded",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6d187e7669bbf54c88f52a3397c675f5')"
+    ]
+  }
+}

@@ -375,7 +375,7 @@ fun TripTimelineCard(trip: Trip, onClick: () -> Unit, today: LocalDate = LocalDa
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = EkataElevation.low),
     ) {
-        Row(Modifier.height(112.dp).padding(EkataSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.height(if (trip.source == "ai") 140.dp else 112.dp).padding(EkataSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
             Image(
                 painterResource(trip.imageRes),
                 trip.customName ?: if (trip.nameRes != 0) stringResource(trip.nameRes) else "",
@@ -394,6 +394,11 @@ fun TripTimelineCard(trip: Trip, onClick: () -> Unit, today: LocalDate = LocalDa
                     Text(trip.customLocation ?: stringResource(trip.locationRes), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 Spacer(Modifier.height(7.dp))
+                if (trip.source == "ai") {
+                    Text("${trip.startDate.until(trip.endDate).days + 1} days • ${trip.travellerCount ?: 1} travellers", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    Text(listOfNotNull(trip.travelStyle, trip.travelPace).joinToString(" • "), color = EkataBlue, style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                    Spacer(Modifier.height(4.dp))
+                }
                 TripStatus(trip.statusFor(today))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

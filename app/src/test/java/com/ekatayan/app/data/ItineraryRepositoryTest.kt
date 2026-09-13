@@ -28,20 +28,19 @@ class ItineraryRepositoryTest {
 
     @After fun tearDown() = server.shutdown()
 
-    @Test fun retryAfterProviderFailureReusesCreatedTrip() = runTest {
-        server.enqueue(json("""{"success":true,"data":{"id":"trip-1","name":"Kandy itinerary","destinations":["Kandy"],"start_date":"2026-10-01","end_date":"2026-10-01","budget":"10000.00","currency":"LKR","travelers":2,"interests":["Culture"],"preferred_activities":[],"travel_style":"Balanced","accommodation_preference":"Any","transportation_preference":"Public","additional_requirements":"","created_by":"user-1"}}"""))
-        server.enqueue(json("""{"success":false,"error":{"code":"AI_UNAVAILABLE","message":"Try again."}}"""))
-        server.enqueue(json("""{"success":true,"data":{"id":"plan-1","trip_id":"trip-1","overview":"Kandy day","currency":"LKR","recommendations":[],"itinerary_days":[{"day_number":1,"trip_date":"2026-10-01","locations":["Kandy"],"notes":"","itinerary_activities":[{"title":"Temple","location":"Kandy","suggested_time":"09:00:00","description":"Visit","estimated_cost":"2000.00","transport":"Walk","notes":""}]}]}}"""))
-        val input = ItineraryPlanInput("Kandy", LocalDate.parse("2026-10-01"), LocalDate.parse("2026-10-01"), "10000", 2, "Any", "Public", "Balanced", listOf("Culture"))
+    @Test fun previewUsesCurrentTypedPlannerContract() = runTest {
+        server.enqueue(json("""{"success":true,"data":{"trip":{"title":"Kandy Escape","summary":"A relaxed Kandy day.","route":["Kandy"],"start_date":"2026-10-01","end_date":"2026-10-01","duration_days":1,"traveller_type":"Couple","traveller_count":2,"travel_style":"Comfort","travel_pace":"Balanced"},"days":[{"day_number":1,"date":"2026-10-01","destination":"Kandy","title":"Kandy highlights","summary":"A realistic day.","activities":[{"id":"kandy-1","name":"Temple visit","category":"Culture","location":{"name":"Temple of the Tooth","latitude":null,"longitude":null},"start_time":"09:00","end_time":"10:30","duration_minutes":90,"description":"Visit the temple.","estimated_cost_lkr":4000,"transport_from_previous":"Tuk-tuk","travel_time_minutes":15}],"day_estimated_cost_lkr":{"min":12000,"max":18000}}],"cost_estimate":{"currency":"LKR","accommodation":{"min":8000,"max":12000},"transport":{"min":2000,"max":3000},"food":{"min":3000,"max":5000},"activities":{"min":4000,"max":5000},"total":{"min":17000,"max":25000},"disclaimer":"AI-generated estimate only. Actual prices may vary."},"recommendations":[]}}"""))
+        val input = ItineraryPlanInput(listOf("Kandy"), "Couple", LocalDate.parse("2026-10-01"),
+            LocalDate.parse("2026-10-01"), 2, "Hotel", listOf("Tuk-tuk"), "Comfort",
+            listOf("Culture"), "Balanced", null)
 
-        runCatching { repository.generate(input) }
-        val result = repository.generate(input)
+        val result = repository.preview(input)
+        val request = server.takeRequest()
 
-        assertEquals("plan-1", result.id)
-        assertEquals("/api/trips", server.takeRequest().path)
-        assertEquals("/api/itineraries/generate", server.takeRequest().path)
-        assertEquals("/api/itineraries/generate", server.takeRequest().path)
-        assertEquals(0, server.requestCount - 3)
+        assertEquals("Kandy Escape", result.trip.title)
+        assertEquals(25000L, result.costEstimate.total.max)
+        assertEquals("/api/itineraries/preview", request.path)
+        assert(request.body.readUtf8().contains("\"allow_ai_destination_suggestions\":false"))
     }
 
     private fun json(body: String) = MockResponse().setResponseCode(200)

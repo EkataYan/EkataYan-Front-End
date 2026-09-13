@@ -43,6 +43,14 @@ data class TripEntity(
     val budget: String?,
     val notes: String?,
     val imageUri: String? = null,
+    val remoteId: String? = null,
+    val source: String = "manual",
+    val summary: String? = null,
+    val route: String? = null,
+    val travellerType: String? = null,
+    val travellerCount: Int? = null,
+    val travelStyle: String? = null,
+    val travelPace: String? = null,
 )
 
 @Entity(tableName = "chat_users", primaryKeys = ["id"])

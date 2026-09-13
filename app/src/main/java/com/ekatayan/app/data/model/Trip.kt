@@ -15,5 +15,13 @@ data class Trip(
     val budget: String? = null,
     val notes: String? = null,
     val imageUri: String? = null,
+    val remoteId: String? = null,
+    val source: String = "manual",
+    val summary: String? = null,
+    val route: List<String> = emptyList(),
+    val travellerType: String? = null,
+    val travellerCount: Int? = null,
+    val travelStyle: String? = null,
+    val travelPace: String? = null,
 )
 

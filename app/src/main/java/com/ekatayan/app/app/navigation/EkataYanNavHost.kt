@@ -31,7 +31,6 @@ import com.ekatayan.app.ui.notifications.notificationDetailScreen
 import com.ekatayan.app.ui.notifications.notificationsScreen
 import com.ekatayan.app.ui.planner.PLANNER_ROUTE
 import com.ekatayan.app.ui.planner.plannerScreen
-import com.ekatayan.app.viewmodel.PlannerUiState
 import com.ekatayan.app.ui.profile.PROFILE_ROUTE
 import com.ekatayan.app.ui.profile.EDIT_PROFILE_ROUTE
 import com.ekatayan.app.ui.profile.editProfileScreen
@@ -134,7 +133,6 @@ fun EkataYanNavHost(
             notificationsUiState = notificationsViewModel.uiState,
         )
         plannerScreen(
-            onCreateTrip = { planner -> navController.navigate(createTripRoute(planner)) },
             onHomeClick = { navController.navigate(HOME_ROUTE) },
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -240,14 +238,6 @@ fun EkataYanNavHost(
         )
     }
 }
-
-private val plannerRouteDateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
-
-private fun createTripRoute(planner: PlannerUiState): String =
-    "${CREATE_TRIP_ROUTE}?destination=${Uri.encode(planner.destination)}" +
-        "&start=${planner.startDate?.format(plannerRouteDateFormatter).orEmpty()}" +
-        "&end=${planner.endDate?.format(plannerRouteDateFormatter).orEmpty()}" +
-        "&budget=&preferences=${Uri.encode("Party size: ${planner.partySize}")}"
 
 private fun NavHostController.navigateToSignUp() {
     navigate(SIGN_UP_ROUTE) { launchSingleTop = true }
