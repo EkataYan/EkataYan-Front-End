@@ -7,12 +7,19 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 class WeatherRepository @Inject constructor(private val api: EkataYanApiService) {
+    suspend fun forecast(latitude: Double, longitude: Double): WeatherInfo =
+        api.weatherByCoordinates(latitude, longitude, LocalDate.now().toString()).toWeatherInfo()
+
     suspend fun forecast(location: String): WeatherInfo {
-        val response = api.weather(location.trim(), LocalDate.now().toString())
+        return api.weather(location.trim(), LocalDate.now().toString()).toWeatherInfo()
+    }
+
+    private fun com.ekatayan.app.data.remote.api.ApiEnvelope<com.ekatayan.app.data.remote.api.WeatherDto>.toWeatherInfo(): WeatherInfo {
+        val response = this
         val data = response.data
         if (!response.success || data == null) throw IllegalStateException(response.error?.message ?: "Weather is unavailable.")
         val type = weatherTypeFor(data.condition, data.icon)
-        return WeatherInfo(data.location, ((data.minCelsius + data.maxCelsius) / 2).toInt(), data.condition,
+        return WeatherInfo(data.location.ifBlank { "near you" }, ((data.minCelsius + data.maxCelsius) / 2).toInt(), data.condition,
             data.humidity ?: 0, type, data.windKph, data.sunrise, data.minCelsius, data.maxCelsius,
             data.rainChance)
     }

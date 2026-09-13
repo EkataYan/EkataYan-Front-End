@@ -37,10 +37,6 @@ class LoginViewModel @Inject constructor(
 
     private var signInJob: Job? = null
 
-    init {
-        restoreSession()
-    }
-
     fun onEmailChange(value: String) = update { copy(email = value, error = null) }
     fun onPasswordChange(value: String) = update { copy(password = value, error = null) }
     fun onPasswordVisibilityClick() = update {
@@ -96,14 +92,6 @@ class LoginViewModel @Inject constructor(
     }
 
     fun consumeLoginSuccess() = update { copy(loginSucceeded = false) }
-
-    private fun restoreSession() {
-        viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true)
-            val sessionRestored = authRepository.restoreSession()
-            uiState = uiState.copy(isLoading = false, loginSucceeded = sessionRestored)
-        }
-    }
 
     private inline fun update(transform: LoginUiState.() -> LoginUiState) {
         uiState = uiState.transform()

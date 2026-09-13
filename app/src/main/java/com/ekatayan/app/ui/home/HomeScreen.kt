@@ -47,6 +47,7 @@ fun HomeScreen(
     onRecommendedDestinationClick: (Int) -> Unit = {},
     onUpcomingTripClick: () -> Unit = {},
     onPopularDestinationClick: (Int) -> Unit = {},
+    onWeatherAction: () -> Unit = {},
     onWishlistGroupSelectionChange: (Int, WishlistItem, Boolean) -> Unit = { _, _, _ -> },
     onCreateWishlistWithPlace: (String, WishlistItem) -> Boolean = { _, _ -> false },
     onHomeClick: () -> Unit = {},
@@ -109,6 +110,7 @@ fun HomeScreen(
                         onUpcomingTripClick,
                         uiState.isWeatherLoading,
                         uiState.weatherError,
+                        onWeatherAction,
                     )
                 }
                 item {

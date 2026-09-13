@@ -2,6 +2,7 @@ package com.ekatayan.app.data.repository
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
 import com.ekatayan.app.data.local.preferences.frontendPreferencesDataStore
 import com.ekatayan.app.data.model.SettingsPreferences
@@ -30,8 +31,11 @@ class SettingsRepository private constructor(private val context: Context?, test
         if (!testMode && context != null) scope.launch {
             context.frontendPreferencesDataStore.data
                 .map { values -> SettingsPreferences(
+                    loaded = true,
                     pushNotificationsEnabled = values[PUSH_NOTIFICATIONS] ?: true,
-                    darkModeEnabled = values[DARK_MODE] ?: false,
+                    themeMode = values[THEME_MODE] ?: if (values[DARK_MODE] == true) "dark" else "system",
+                    selectedLanguage = values[LANGUAGE] ?: "en",
+                    locationPermissionPromptShown = values[LOCATION_PROMPT_SHOWN] ?: false,
                 ) }
                 .catch { emit(SettingsPreferences()) }
                 .collect { mutableState.value = it }
@@ -43,13 +47,28 @@ class SettingsRepository private constructor(private val context: Context?, test
         context?.let { scope.launch { it.frontendPreferencesDataStore.edit { values -> values[PUSH_NOTIFICATIONS] = enabled } } }
     }
 
-    fun setDarkModeEnabled(enabled: Boolean) {
-        mutableState.value = mutableState.value.copy(darkModeEnabled = enabled)
-        context?.let { scope.launch { it.frontendPreferencesDataStore.edit { values -> values[DARK_MODE] = enabled } } }
+    fun setThemeMode(mode: String) {
+        val safe = mode.takeIf { it in setOf("system", "light", "dark") } ?: "system"
+        mutableState.value = mutableState.value.copy(themeMode = safe)
+        context?.let { scope.launch { it.frontendPreferencesDataStore.edit { values -> values[THEME_MODE] = safe } } }
+    }
+
+    fun setLanguage(code: String) {
+        val safe = code.takeIf { it in setOf("en", "si", "ta") } ?: "en"
+        mutableState.value = mutableState.value.copy(selectedLanguage = safe)
+        context?.let { scope.launch { it.frontendPreferencesDataStore.edit { values -> values[LANGUAGE] = safe } } }
+    }
+
+    fun markLocationPermissionPromptShown() {
+        mutableState.value = mutableState.value.copy(locationPermissionPromptShown = true)
+        context?.let { scope.launch { it.frontendPreferencesDataStore.edit { values -> values[LOCATION_PROMPT_SHOWN] = true } } }
     }
 
     private companion object {
         val PUSH_NOTIFICATIONS = booleanPreferencesKey("push_notifications_enabled")
         val DARK_MODE = booleanPreferencesKey("dark_mode_enabled")
+        val THEME_MODE = stringPreferencesKey("theme_mode")
+        val LANGUAGE = stringPreferencesKey("language_code")
+        val LOCATION_PROMPT_SHOWN = booleanPreferencesKey("location_permission_prompt_shown")
     }
 }

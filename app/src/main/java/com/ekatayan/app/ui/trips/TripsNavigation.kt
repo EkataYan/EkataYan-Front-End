@@ -47,10 +47,10 @@ fun NavGraphBuilder.createTripScreen(onBackClick: () -> Unit) {
     }
 }
 
-fun NavGraphBuilder.tripDetailsScreen(onBackClick: () -> Unit, onMembersClick: (String) -> Unit) {
+fun NavGraphBuilder.tripDetailsScreen(onBackClick: () -> Unit, onMembersClick: (String) -> Unit, onExpensesClick: (String) -> Unit) {
     composable(TRIP_DETAILS_ROUTE) { entry ->
         val tripKey = entry.arguments?.getString("tripKey")
-        TripDetailsRoute(tripKey = tripKey, onBackClick = onBackClick, onMembersClick = onMembersClick)
+        TripDetailsRoute(tripKey = tripKey, onBackClick = onBackClick, onMembersClick = onMembersClick, onExpensesClick = onExpensesClick)
     }
 }
 

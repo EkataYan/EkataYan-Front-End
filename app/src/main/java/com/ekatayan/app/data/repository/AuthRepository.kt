@@ -4,6 +4,7 @@ package com.ekatayan.app.data.repository
 import com.ekatayan.app.data.remote.SupabaseConfigurationException
 import com.ekatayan.app.data.remote.UserSessionProvider
 import com.ekatayan.app.data.remote.api.SupabaseAuthApiService
+import com.ekatayan.app.data.remote.api.PasswordUpdateRequest
 import com.ekatayan.app.data.remote.api.GoogleIdTokenRequest
 import com.ekatayan.app.data.remote.api.GoogleUserMetadataRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignInRequest
@@ -38,6 +39,9 @@ interface AuthRepository {
     suspend fun signUp(name: String, email: String, phone: String, password: String): SignUpResult
     suspend fun restoreSession(): Boolean
     suspend fun refreshSession(): Boolean
+    suspend fun updatePassword(password: String) {
+        throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
+    }
     fun currentUserEmail(): String? = null
     fun currentUserName(): String? = null
     fun clearSession()
@@ -47,6 +51,14 @@ class SupabaseAuthRepository @Inject constructor(
     private val api: Lazy<SupabaseAuthApiService>,
     private val session: UserSessionProvider,
 ) : AuthRepository {
+    override suspend fun updatePassword(password: String) {
+        val token = session.currentAccessToken() ?: throw AuthenticationException(AuthenticationFailure.INVALID_CREDENTIALS)
+        try {
+            api.get().updatePassword("Bearer $token", PasswordUpdateRequest(password))
+        } catch (e: CancellationException) { throw e
+        } catch (e: IOException) { throw AuthenticationException(AuthenticationFailure.NETWORK)
+        } catch (e: Exception) { throw AuthenticationException(AuthenticationFailure.SERVER) }
+    }
     override suspend fun signIn(email: String, password: String) {
         try {
             store(api.get().signInWithPassword(request = PasswordSignInRequest(email, password)), authenticatedEmail = email)

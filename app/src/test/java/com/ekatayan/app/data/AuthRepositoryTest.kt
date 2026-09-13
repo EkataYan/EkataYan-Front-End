@@ -162,6 +162,7 @@ private class AuthMemorySessionStore : SessionStore {
 private class FakeSupabaseAuthApi(
     private val signUpResponse: SupabaseSessionDto = session(),
 ) : SupabaseAuthApiService {
+    override suspend fun updatePassword(authorization: String, request: com.ekatayan.app.data.remote.api.PasswordUpdateRequest): Map<String, Any?> = emptyMap()
     var request: PasswordSignInRequest? = null
     var signUpRequest: PasswordSignUpRequest? = null
     var googleRequest: GoogleIdTokenRequest? = null

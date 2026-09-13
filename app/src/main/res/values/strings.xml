@@ -134,7 +134,7 @@
     <string name="settings_account_information_subtitle">Manage your account details</string>
     <string name="settings_app_preferences">App preferences</string>
     <string name="settings_notifications">Notifications</string>
-    <string name="settings_notifications_subtitle">Manage trip, group and app notifications</string>
+    <string name="settings_notifications_subtitle">Allow notifications on your device</string>
     <string name="settings_appearance">Appearance</string>
     <string name="settings_appearance_subtitle">Light and dark theme preferences</string>
     <string name="settings_language">Language</string>

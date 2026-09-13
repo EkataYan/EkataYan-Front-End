@@ -22,6 +22,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -61,7 +62,9 @@ fun AuthBackdrop() {
             painter = painterResource(R.drawable.signup_background),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize(),
+            // This layer is measured only from the stable auth root. IME handling belongs
+            // exclusively to the sibling form container in LoginScreen/SignUpScreen.
+            modifier = Modifier.matchParentSize(),
         )
         AuthLanguageSelector(
             modifier = Modifier
@@ -185,7 +188,12 @@ fun AuthTextField(
 }
 
 @Composable
-fun AuthActionButton(text: String, onClick: () -> Unit, enabled: Boolean = true) {
+fun AuthActionButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    isLoading: Boolean = false,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -193,15 +201,24 @@ fun AuthActionButton(text: String, onClick: () -> Unit, enabled: Boolean = true)
             .shadow(2.dp, RoundedCornerShape(9.dp))
             .clip(RoundedCornerShape(9.dp))
             .background(AuthActionBlue)
-            .clickable(enabled = enabled, onClick = onClick),
+            .clickable(enabled = enabled && !isLoading, onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = text,
-            color = Color.White,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-        )
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(20.dp),
+                color = Color.White,
+                trackColor = Color.White.copy(alpha = 0.28f),
+                strokeWidth = 2.dp,
+            )
+        } else {
+            Text(
+                text = text,
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 

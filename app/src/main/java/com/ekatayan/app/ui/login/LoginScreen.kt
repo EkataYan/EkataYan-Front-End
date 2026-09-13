@@ -22,7 +22,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -185,12 +184,8 @@ private fun LoginForm(
                 text = stringResource(R.string.login_action),
                 onClick = onLogInClick,
                 enabled = !uiState.isLoading,
+                isLoading = uiState.isLoading,
             )
-        }
-        if (uiState.isLoading) {
-            Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(Modifier.height(20.dp), strokeWidth = 2.dp)
-            }
         }
     }
 }

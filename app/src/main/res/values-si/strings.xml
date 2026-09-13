@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">EkataYan</string>
+    <string name="settings_title">සැකසීම්</string>
+    <string name="settings_account">ගිණුම</string>
+    <string name="settings_account_information">ගිණුම් තොරතුරු</string>
+    <string name="settings_account_information_subtitle">ඔබගේ ගිණුම් විස්තර කළමනාකරණය කරන්න</string>
+    <string name="settings_change_password">මුරපදය වෙනස් කරන්න</string>
+    <string name="settings_change_password_subtitle">ඔබගේ ගිණුම් මුරපදය යාවත්කාලීන කරන්න</string>
+    <string name="settings_app_preferences">යෙදුම් මනාප</string>
+    <string name="settings_notifications">දැනුම්දීම්</string>
+    <string name="settings_notifications_subtitle">ඔබගේ උපාංගයේ දැනුම්දීම් ඉඩ දෙන්න</string>
+    <string name="settings_appearance">පෙනුම</string>
+    <string name="settings_appearance_subtitle">තේමාව තෝරන්න</string>
+    <string name="settings_language">භාෂාව</string>
+    <string name="settings_language_subtitle">ඔබ කැමති භාෂාව තෝරන්න</string>
+    <string name="settings_travel_privacy">සංචාර සහ පෞද්ගලිකත්වය</string>
+    <string name="settings_location_permissions">ස්ථානය සහ අවසර</string>
+    <string name="settings_location_permissions_subtitle">ස්ථාන අවසර කළමනාකරණය කරන්න</string>
+    <string name="settings_privacy">පෞද්ගලිකත්වය</string>
+    <string name="settings_privacy_subtitle">ඔබගේ පෞද්ගලිකත්ව මනාප පාලනය කරන්න</string>
+    <string name="settings_data_storage">දත්ත සහ ගබඩාව</string>
+    <string name="settings_data_storage_subtitle">තාවකාලික යෙදුම් දත්ත කළමනාකරණය කරන්න</string>
+    <string name="settings_support">සහාය</string>
+    <string name="settings_help_support">උදව් සහ සහාය</string>
+    <string name="settings_help_support_subtitle">EkataYan භාවිතයට උදව් ලබාගන්න</string>
+    <string name="settings_about_ekatayan">EkataYan ගැන</string>
+    <string name="settings_about_ekatayan_subtitle">යෙදුම් තොරතුරු සහ අනුවාදය</string>
+    <string name="settings_terms_privacy">කොන්දේසි සහ පෞද්ගලිකත්ව ප්‍රතිපත්තිය</string>
+    <string name="settings_terms_privacy_subtitle">නීතිමය තොරතුරු බලන්න</string>
+    <string name="settings_account_actions">ගිණුම් ක්‍රියා</string>
+    <string name="settings_logout">පිටවන්න</string>
+</resources>

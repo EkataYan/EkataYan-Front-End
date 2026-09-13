@@ -2,8 +2,9 @@ package com.ekatayan.app.app
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,9 +18,11 @@ fun EkataYanApp() {
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            // This is the only owner of status-bar, cutout, and navigation-bar
-            // geometry. Destination selection and persisted state cannot bypass it.
-            .safeDrawingPadding(),
+            // Keep the shared app bounds stable when the IME opens. safeDrawingPadding()
+            // also includes the IME and used to resize every destination (including the
+            // authentication backdrop). Individual input screens own their IME padding.
+            .systemBarsPadding()
+            .displayCutoutPadding(),
     ) {
         EkataYanNavHost(
             navController = navController,

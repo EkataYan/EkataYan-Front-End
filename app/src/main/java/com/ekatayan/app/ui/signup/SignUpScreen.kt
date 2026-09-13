@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -216,6 +215,7 @@ private fun SignUpForm(
                 text = stringResource(R.string.signup_action),
                 onClick = onSignUpClick,
                 enabled = !uiState.isLoading,
+                isLoading = uiState.isLoading,
             )
         }
         val message = when {
@@ -245,11 +245,6 @@ private fun SignUpForm(
                 color = if (uiState.emailConfirmationRequired) Color(0xFF1565C0) else Color(0xFFB3261E),
                 fontSize = 11.sp,
             )
-        }
-        if (uiState.isLoading) {
-            Box(Modifier.fillMaxWidth().padding(top = 10.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(Modifier.height(20.dp), strokeWidth = 2.dp)
-            }
         }
     }
 }

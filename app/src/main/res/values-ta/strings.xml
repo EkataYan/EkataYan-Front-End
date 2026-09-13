@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">EkataYan</string>
+    <string name="settings_title">அமைப்புகள்</string>
+    <string name="settings_account">கணக்கு</string>
+    <string name="settings_account_information">கணக்கு தகவல்</string>
+    <string name="settings_account_information_subtitle">உங்கள் கணக்கு விவரங்களை நிர்வகிக்கவும்</string>
+    <string name="settings_change_password">கடவுச்சொல்லை மாற்று</string>
+    <string name="settings_change_password_subtitle">உங்கள் கணக்கு கடவுச்சொல்லைப் புதுப்பிக்கவும்</string>
+    <string name="settings_app_preferences">செயலி விருப்பங்கள்</string>
+    <string name="settings_notifications">அறிவிப்புகள்</string>
+    <string name="settings_notifications_subtitle">உங்கள் சாதனத்தில் அறிவிப்புகளை அனுமதிக்கவும்</string>
+    <string name="settings_appearance">தோற்றம்</string>
+    <string name="settings_appearance_subtitle">தீமைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="settings_language">மொழி</string>
+    <string name="settings_language_subtitle">உங்கள் விருப்ப மொழியைத் தேர்ந்தெடுக்கவும்</string>
+    <string name="settings_travel_privacy">பயணம் மற்றும் தனியுரிமை</string>
+    <string name="settings_location_permissions">இருப்பிடம் மற்றும் அனுமதிகள்</string>
+    <string name="settings_location_permissions_subtitle">இருப்பிட அனுமதிகளை நிர்வகிக்கவும்</string>
+    <string name="settings_privacy">தனியுரிமை</string>
+    <string name="settings_privacy_subtitle">உங்கள் தனியுரிமை விருப்பங்களைக் கட்டுப்படுத்தவும்</string>
+    <string name="settings_data_storage">தரவு மற்றும் சேமிப்பு</string>
+    <string name="settings_data_storage_subtitle">தற்காலிக செயலி தரவை நிர்வகிக்கவும்</string>
+    <string name="settings_support">ஆதரவு</string>
+    <string name="settings_help_support">உதவி மற்றும் ஆதரவு</string>
+    <string name="settings_help_support_subtitle">EkataYan பயன்பாட்டிற்கு உதவி பெறுங்கள்</string>
+    <string name="settings_about_ekatayan">EkataYan பற்றி</string>
+    <string name="settings_about_ekatayan_subtitle">செயலி தகவல் மற்றும் பதிப்பு</string>
+    <string name="settings_terms_privacy">விதிமுறைகள் மற்றும் தனியுரிமைக் கொள்கை</string>
+    <string name="settings_terms_privacy_subtitle">சட்டத் தகவலைக் காண்க</string>
+    <string name="settings_account_actions">கணக்கு செயல்கள்</string>
+    <string name="settings_logout">வெளியேறு</string>
+</resources>

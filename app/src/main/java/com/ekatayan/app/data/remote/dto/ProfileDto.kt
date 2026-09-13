@@ -22,6 +22,7 @@ data class UpdateProfileRequest(
     val language: String? = null,
     val interests: List<String>? = null,
     val phone: String? = null,
+    @SerializedName("is_discoverable") val isDiscoverable: Boolean? = null,
 )
 
 data class ProfileDto(
@@ -37,4 +38,5 @@ data class ProfileDto(
     val email: String? = null,
     val phone: String? = null,
     val username: String? = null,
+    @SerializedName("is_discoverable") val isDiscoverable: Boolean? = null,
 )
