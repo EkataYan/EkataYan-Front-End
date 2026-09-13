@@ -6,12 +6,14 @@ import com.ekatayan.app.utils.tripDateFormatter
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ekatayan.app.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 enum class CreateTripField { NAME, DESTINATION, START, END, BUDGET, NOTES }
 
@@ -90,6 +92,9 @@ class CreateTripViewModel @Inject constructor(
         update(state.copy(errorRes = error))
         if (error != null || start == null || end == null) return false
         repository.addTrip(state.name.trim(), state.destination.trim(), start, end, state.budget.trim(), state.notes.trim())
+        viewModelScope.launch {
+            runCatching { repository.createManualTrip(state.name.trim(), state.destination.trim(), start, end, state.budget.trim(), state.notes.trim()) }
+        }
         return true
     }
 }

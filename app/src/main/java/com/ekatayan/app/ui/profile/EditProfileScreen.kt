@@ -70,6 +70,7 @@ fun EditProfileScreen(
     onRetry: () -> Unit,
     onSave: () -> Unit,
     onNameChange: (String) -> Unit,
+    onUsernameChange: (String) -> Unit,
     onBioChange: (String) -> Unit,
     onHomeCityChange: (String) -> Unit,
     onLanguageChange: (String) -> Unit,
@@ -123,6 +124,7 @@ fun EditProfileScreen(
                     state = state,
                     onSave = onSave,
                     onNameChange = onNameChange,
+                    onUsernameChange = onUsernameChange,
                     onBioChange = onBioChange,
                     onHomeCityChange = onHomeCityChange,
                     onLanguageChange = onLanguageChange,
@@ -165,6 +167,7 @@ private fun EditProfileForm(
     state: EditProfileUiState,
     onSave: () -> Unit,
     onNameChange: (String) -> Unit,
+    onUsernameChange: (String) -> Unit,
     onBioChange: (String) -> Unit,
     onHomeCityChange: (String) -> Unit,
     onLanguageChange: (String) -> Unit,
@@ -206,6 +209,16 @@ private fun EditProfileForm(
                         ),
                         supportingText = validationMessage(state.validationError, EditProfileValidationError.NAME_REQUIRED, EditProfileValidationError.NAME_TOO_LONG),
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words, imeAction = ImeAction.Next),
+                    )
+                    EkataTextField(
+                        value = state.username,
+                        onValueChange = onUsernameChange,
+                        label = stringResource(R.string.edit_profile_username),
+                        leadingIcon = Icons.Outlined.AccountCircle,
+                        isError = state.validationError == EditProfileValidationError.USERNAME_INVALID,
+                        supportingText = validationMessage(state.validationError, EditProfileValidationError.USERNAME_INVALID)
+                            ?: stringResource(R.string.edit_profile_username_hint),
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, keyboardType = KeyboardType.Ascii, imeAction = ImeAction.Next),
                     )
                     EkataTextField(
                         value = state.phone,
@@ -345,6 +358,7 @@ private fun validationMessage(
     when (actual) {
         EditProfileValidationError.NAME_REQUIRED -> R.string.edit_profile_name_required
         EditProfileValidationError.NAME_TOO_LONG -> R.string.edit_profile_name_too_long
+        EditProfileValidationError.USERNAME_INVALID -> R.string.edit_profile_username_invalid
         EditProfileValidationError.BIO_TOO_LONG -> R.string.edit_profile_bio_too_long
         EditProfileValidationError.CITY_TOO_LONG -> R.string.edit_profile_city_too_long
         EditProfileValidationError.LANGUAGE_INVALID -> R.string.edit_profile_language_invalid
@@ -362,6 +376,7 @@ private fun profileErrorMessage(error: ProfileFailure): String = stringResource(
         ProfileFailure.INVALID_RESPONSE -> R.string.edit_profile_validation_error
         ProfileFailure.INVALID_IMAGE -> R.string.edit_profile_invalid_image
         ProfileFailure.FORBIDDEN -> R.string.edit_profile_forbidden_error
+        ProfileFailure.USERNAME_TAKEN -> R.string.edit_profile_username_taken
         else -> R.string.edit_profile_server_error
     },
 )

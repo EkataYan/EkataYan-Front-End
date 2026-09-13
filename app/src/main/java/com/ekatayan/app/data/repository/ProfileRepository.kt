@@ -24,7 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
-enum class ProfileFailure { AUTHENTICATION, NETWORK, NOT_FOUND, FORBIDDEN, SERVER, INVALID_RESPONSE, INVALID_IMAGE, CONFIGURATION }
+enum class ProfileFailure { AUTHENTICATION, NETWORK, NOT_FOUND, FORBIDDEN, USERNAME_TAKEN, SERVER, INVALID_RESPONSE, INVALID_IMAGE, CONFIGURATION }
 class ProfileLoadException(val failure: ProfileFailure) : Exception()
 
 @Singleton
@@ -235,6 +235,7 @@ class ProfileRepository @Inject constructor(
 
     private fun changedFields(before: ProfileDetails, after: ProfileDetails) = buildSet {
         if (before.name != after.name) add(DISPLAY_NAME)
+        if (before.username != after.username) add(USERNAME)
         if (before.phone != after.phone) add(PHONE)
         if (before.bio != after.bio) add(BIO)
         if (before.location != after.location) add(HOME_CITY)
@@ -243,6 +244,7 @@ class ProfileRepository @Inject constructor(
     }
 
     private fun ProfileDetails.toPatch(fields: Set<String>) = UpdateProfileRequest(
+        username = username.takeIf { USERNAME in fields },
         displayName = name.takeIf { DISPLAY_NAME in fields },
         bio = bio.takeIf { BIO in fields },
         homeCity = location.takeIf { HOME_CITY in fields },
@@ -256,6 +258,7 @@ class ProfileRepository @Inject constructor(
         return ProfileDetails(
             name = displayName ?: fallback?.name.orEmpty(),
             location = homeCity ?: fallback?.location.orEmpty(),
+            username = username ?: fallback?.username.orEmpty(),
             email = email ?: fallback?.email ?: session.currentUserEmail().orEmpty(),
             phone = phone ?: fallback?.phone.orEmpty(),
             bio = bio ?: fallback?.bio.orEmpty(),
@@ -272,6 +275,7 @@ class ProfileRepository @Inject constructor(
         val cloud = dto.toDetails(local)
         val merged = if (local == null || pending.isEmpty()) cloud else cloud.copy(
             name = local.name.takeIf { DISPLAY_NAME in pending } ?: cloud.name,
+            username = local.username.takeIf { USERNAME in pending } ?: cloud.username,
             phone = local.phone.takeIf { PHONE in pending } ?: cloud.phone,
             bio = local.bio.takeIf { BIO in pending } ?: cloud.bio,
             location = local.location.takeIf { HOME_CITY in pending } ?: cloud.location,
@@ -289,18 +293,20 @@ class ProfileRepository @Inject constructor(
         401 -> ProfileFailure.AUTHENTICATION
         403 -> ProfileFailure.FORBIDDEN
         404 -> ProfileFailure.NOT_FOUND
+        409 -> ProfileFailure.USERNAME_TAKEN
         else -> ProfileFailure.SERVER
     }
 
     private companion object {
         const val DISPLAY_NAME = "display_name"
+        const val USERNAME = "username"
         const val PHONE = "phone"
         const val BIO = "bio"
         const val HOME_CITY = "home_city"
         const val LANGUAGE = "language"
         const val INTERESTS = "interests"
         const val AVATAR = "avatar"
-        val PROFILE_FIELDS = setOf(DISPLAY_NAME, PHONE, BIO, HOME_CITY, LANGUAGE, INTERESTS)
+        val PROFILE_FIELDS = setOf(DISPLAY_NAME, USERNAME, PHONE, BIO, HOME_CITY, LANGUAGE, INTERESTS)
         val logger: Logger = Logger.getLogger("EkataYanProfile")
     }
 }

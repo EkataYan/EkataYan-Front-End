@@ -3,6 +3,8 @@ package com.ekatayan.app.viewmodel
 import com.ekatayan.app.data.model.Trip
 import com.ekatayan.app.data.repository.TripsRepository
 import com.ekatayan.app.data.repository.SavedAiTripDetails
+import com.ekatayan.app.data.repository.TripDetailsException
+import com.ekatayan.app.data.repository.TripDetailsFailure
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,6 +30,7 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
     val uiState: StateFlow<TripsUiState> = _uiState.asStateFlow()
 
     init {
+        viewModelScope.launch { runCatching { repository.refreshTrips() } }
         viewModelScope.launch {
             while (isActive) {
                 val today = LocalDate.now()
@@ -73,11 +76,11 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
 
     fun loadTripDetails(trip: Trip) {
         if (trip.source != "ai" || trip.remoteId == null) return
-        _uiState.update { it.copy(detailsLoading = true, detailsError = null, aiDetails = null) }
+        _uiState.update { it.copy(detailsLoading = true, detailsError = null) }
         viewModelScope.launch {
             runCatching { repository.loadAiTripDetails(trip) }
-                .onSuccess { details -> _uiState.update { it.copy(detailsLoading = false, aiDetails = details) } }
-                .onFailure { error -> _uiState.update { it.copy(detailsLoading = false, detailsError = error.message ?: "We couldn't load the itinerary.") } }
+                .onSuccess { details -> _uiState.update { it.copy(detailsLoading = false, aiDetails = details, detailsFailure = null) } }
+                .onFailure { error -> _uiState.update { it.copy(detailsLoading = false, detailsError = error.message ?: "The trip couldn't be loaded.", detailsFailure = (error as? TripDetailsException)?.failure ?: TripDetailsFailure.SERVER) } }
         }
     }
 }
@@ -89,6 +92,7 @@ data class TripsUiState(
     val selectedDate: LocalDate? = today,
     val detailsLoading: Boolean = false,
     val detailsError: String? = null,
+    val detailsFailure: TripDetailsFailure? = null,
     val aiDetails: SavedAiTripDetails? = null,
 )
 

@@ -37,6 +37,7 @@ class SharedPreferencesProfileCacheStore @Inject constructor(
         return CachedProfile(
             profile = ProfileDetails(
                 name = preferences.getString(NAME, "").orEmpty(),
+                username = preferences.getString(USERNAME, "").orEmpty(),
                 location = preferences.getString(HOME_CITY, "").orEmpty(),
                 email = preferences.getString(EMAIL, "").orEmpty(),
                 phone = preferences.getString(PHONE, "").orEmpty(),
@@ -55,6 +56,7 @@ class SharedPreferencesProfileCacheStore @Inject constructor(
         preferences.edit()
             .putString(OWNER, identity)
             .putString(NAME, profile.name)
+            .putString(USERNAME, profile.username)
             .putString(EMAIL, profile.email)
             .putString(PHONE, profile.phone)
             .putString(BIO, profile.bio)
@@ -74,6 +76,7 @@ class SharedPreferencesProfileCacheStore @Inject constructor(
     private companion object {
         const val OWNER = "owner"
         const val NAME = "display_name"
+        const val USERNAME = "username"
         const val EMAIL = "email"
         const val PHONE = "phone"
         const val BIO = "bio"

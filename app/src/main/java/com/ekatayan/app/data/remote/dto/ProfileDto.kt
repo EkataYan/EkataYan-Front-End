@@ -15,6 +15,7 @@ data class StoredProfileImageDto(
 )
 
 data class UpdateProfileRequest(
+    val username: String? = null,
     @SerializedName("display_name") val displayName: String? = null,
     val bio: String? = null,
     @SerializedName("home_city") val homeCity: String? = null,
@@ -35,4 +36,5 @@ data class ProfileDto(
     @SerializedName("updated_at") val updatedAt: String?,
     val email: String? = null,
     val phone: String? = null,
+    val username: String? = null,
 )
