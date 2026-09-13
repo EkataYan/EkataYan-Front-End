@@ -7,7 +7,7 @@
     <string name="planner_add_place">Add place</string>
     <string name="planner_additional_place">Additional place</string>
     <string name="planner_remove_place">Remove additional place</string>
-    <string name="planner_traveller_question">How many people will be attending?</string>
+    <string name="planner_traveller_question">Who’s travelling?</string>
     <string name="planner_select_option">Select an option</string>
     <string name="planner_solo">Solo</string>
     <string name="planner_couple">Couple</string>

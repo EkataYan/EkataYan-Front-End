@@ -23,7 +23,8 @@ object ProfileNetworkModule {
         require(url.username.isEmpty() && url.password.isEmpty() && url.query == null && url.fragment == null)
         require(BuildConfig.DEBUG || url.isHttps) { "Release backend must use HTTPS" }
         val client = OkHttpClient.Builder().addInterceptor(auth).followRedirects(false)
-            .followSslRedirects(false).callTimeout(30, TimeUnit.SECONDS).build()
+            .followSslRedirects(false).callTimeout(120, TimeUnit.SECONDS)
+            .readTimeout(120, TimeUnit.SECONDS).build()
         return Retrofit.Builder().baseUrl(url).client(client)
             .addConverterFactory(GsonConverterFactory.create()).build()
     }

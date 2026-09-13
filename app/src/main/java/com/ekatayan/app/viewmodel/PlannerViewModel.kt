@@ -12,7 +12,11 @@ enum class TravellerType(val fixedPartySize: Int?) {
     COUPLE(2),
     FAMILY(null),
     FRIENDS(null),
+    GROUP(null),
 }
+
+enum class PlannerTravelStyle { BUDGET, COMFORT, PREMIUM, AI_DECIDES }
+enum class TravelPace { RELAXED, BALANCED, PACKED }
 
 data class PlannerUiState(
     val destination: String = "",
@@ -21,19 +25,37 @@ data class PlannerUiState(
     val customPeopleCount: String = "",
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
+    val letAiChooseDestinations: Boolean = false,
+    val suggestAdditionalPlaces: Boolean = false,
+    val personalizationExpanded: Boolean = false,
+    val transportPreferences: Set<String> = emptySet(),
+    val accommodationPreference: String = "Let AI decide",
+    val travelStyle: PlannerTravelStyle = PlannerTravelStyle.AI_DECIDES,
+    val interests: Set<String> = emptySet(),
+    val pace: TravelPace = TravelPace.BALANCED,
+    val specialRequests: String = "",
     val error: String? = null,
 ) {
     val requiresCustomPeopleCount: Boolean
-        get() = travellerType == TravellerType.FAMILY || travellerType == TravellerType.FRIENDS
+        get() = travellerType in setOf(TravellerType.FAMILY, TravellerType.FRIENDS, TravellerType.GROUP)
+
+    val minimumPartySize: Int
+        get() = when (travellerType) {
+            TravellerType.FAMILY, TravellerType.FRIENDS -> 2
+            TravellerType.GROUP -> 3
+            else -> travellerType?.fixedPartySize ?: 1
+        }
 
     val partySize: Int?
         get() = when (travellerType) {
-            TravellerType.SOLO -> 1
-            TravellerType.COUPLE -> 2
-            TravellerType.FAMILY, TravellerType.FRIENDS ->
-                customPeopleCount.toIntOrNull()?.takeIf { it > 0 }
+            TravellerType.SOLO, TravellerType.COUPLE, TravellerType.FAMILY,
+            TravellerType.FRIENDS, TravellerType.GROUP -> customPeopleCount.toIntOrNull()
+                ?.takeIf { it >= minimumPartySize } ?: travellerType.fixedPartySize
             null -> null
         }
+
+    val destinations: List<String>
+        get() = (listOf(destination) + additionalDestinations).filterNot(String::isBlank)
 }
 
 @HiltViewModel
@@ -70,10 +92,28 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
         )
     }
 
+    fun moveDestination(index: Int, direction: Int) {
+        val route = uiState.value.destinations.toMutableList()
+        val target = index + direction
+        if (index !in route.indices || target !in route.indices) return
+        val value = route.removeAt(index)
+        route.add(target, value)
+        mutableUiState.value = uiState.value.copy(
+            destination = route.firstOrNull().orEmpty(),
+            additionalDestinations = route.drop(1),
+        )
+    }
+
     fun updateTravellerType(value: TravellerType) {
+        val startingCount = when (value) {
+            TravellerType.SOLO -> "1"
+            TravellerType.COUPLE -> "2"
+            TravellerType.FAMILY, TravellerType.FRIENDS -> "4"
+            TravellerType.GROUP -> "6"
+        }
         mutableUiState.value = uiState.value.copy(
             travellerType = value,
-            customPeopleCount = if (value.fixedPartySize != null) "" else uiState.value.customPeopleCount,
+            customPeopleCount = startingCount,
             error = null,
         )
     }
@@ -110,14 +150,24 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
         mutableUiState.value = uiState.value.copy(error = value)
     }
 
+    fun togglePersonalization() { mutableUiState.value = uiState.value.copy(personalizationExpanded = !uiState.value.personalizationExpanded) }
+    fun toggleAiDestinations() { mutableUiState.value = uiState.value.copy(letAiChooseDestinations = !uiState.value.letAiChooseDestinations, error = null) }
+    fun toggleSuggestedPlaces() { mutableUiState.value = uiState.value.copy(suggestAdditionalPlaces = !uiState.value.suggestAdditionalPlaces) }
+    fun toggleTransport(value: String) { mutableUiState.value = uiState.value.copy(transportPreferences = uiState.value.transportPreferences.toggle(value)) }
+    fun updateAccommodation(value: String) { mutableUiState.value = uiState.value.copy(accommodationPreference = value) }
+    fun updateTravelStyle(value: PlannerTravelStyle) { mutableUiState.value = uiState.value.copy(travelStyle = value) }
+    fun toggleInterest(value: String) { mutableUiState.value = uiState.value.copy(interests = uiState.value.interests.toggle(value)) }
+    fun updatePace(value: TravelPace) { mutableUiState.value = uiState.value.copy(pace = value) }
+    fun updateSpecialRequests(value: String) { mutableUiState.value = uiState.value.copy(specialRequests = value.take(2000)) }
+
     fun validate(): Boolean {
         val state = uiState.value
         val validAdditionalDestinations = state.additionalDestinations.filterNot(String::isBlank)
         val error = when {
-            state.destination.isBlank() -> "Tell us where you would like to go."
+            state.destinations.isEmpty() && !state.letAiChooseDestinations -> "Add a destination or let AI choose one."
             state.travellerType == null -> "Choose who will be travelling."
             state.requiresCustomPeopleCount && state.partySize == null ->
-                "Enter a valid number of people greater than zero."
+                "Enter at least ${state.minimumPartySize} travellers for ${state.travellerType?.displayLabel}."
             state.startDate == null -> "Choose a start date."
             state.endDate == null -> "Choose an end date."
             state.endDate.isBefore(state.startDate) -> "End date cannot be before the start date."
@@ -131,3 +181,5 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
     }
 
 }
+
+private fun Set<String>.toggle(value: String): Set<String> = if (value in this) this - value else this + value

@@ -33,21 +33,21 @@ class PlannerViewModelTest {
     }
 
     @Test
-    fun fixedTravellerTypesSetPartySizeAndClearCustomCount() {
+    fun fixedTravellerTypesSetDefaultEditableTravellerCount() {
         val viewModel = PlannerViewModel()
         viewModel.updateTravellerType(TravellerType.FRIENDS)
         viewModel.updateCustomPeopleCount("6")
 
         viewModel.updateTravellerType(TravellerType.SOLO)
         assertEquals(1, viewModel.uiState.value.partySize)
-        assertEquals("", viewModel.uiState.value.customPeopleCount)
+        assertEquals("1", viewModel.uiState.value.customPeopleCount)
         assertFalse(viewModel.uiState.value.requiresCustomPeopleCount)
 
         viewModel.updateTravellerType(TravellerType.FAMILY)
         viewModel.updateCustomPeopleCount("5")
         viewModel.updateTravellerType(TravellerType.COUPLE)
         assertEquals(2, viewModel.uiState.value.partySize)
-        assertEquals("", viewModel.uiState.value.customPeopleCount)
+        assertEquals("2", viewModel.uiState.value.customPeopleCount)
     }
 
     @Test

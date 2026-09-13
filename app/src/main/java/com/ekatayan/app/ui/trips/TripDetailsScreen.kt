@@ -1,60 +1,90 @@
 package com.ekatayan.app.ui.trips
 
-import com.ekatayan.app.data.model.DestinationGuide
-import com.ekatayan.app.data.model.Trip
-import com.ekatayan.app.utils.statusFor
-import com.ekatayan.app.viewmodel.TripsViewModel
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.theme.*
+import com.ekatayan.app.data.model.*
+import com.ekatayan.app.data.remote.api.PlannerPreviewRequest
+import com.ekatayan.app.data.repository.SavedAiTripDetails
+import com.ekatayan.app.utils.statusFor
+import com.ekatayan.app.viewmodel.TripsViewModel
+import java.text.NumberFormat
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@Composable
-fun TripDetailsRoute(tripId: Int?, onBackClick: () -> Unit, viewModel: TripsViewModel = hiltViewModel()) {
+@Composable fun TripDetailsRoute(tripId: Int?, onBackClick: () -> Unit, viewModel: TripsViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState(); val trip = state.trips.firstOrNull { it.id == tripId }
-    val guide = trip?.let { viewModel.guideFor(it.customLocation ?: stringResource(it.locationRes)) }
-    TripDetailsScreen(trip, state.today, guide, onBackClick)
+    LaunchedEffect(trip?.remoteId) { trip?.let(viewModel::loadTripDetails) }
+    val guide = if (trip?.source == "ai") null else trip?.let { viewModel.guideFor(it.customLocation ?: stringResource(it.locationRes)) }
+    TripDetailsScreen(trip, state.today, guide, state.aiDetails, state.detailsLoading, state.detailsError, { trip?.let(viewModel::loadTripDetails) }, onBackClick)
 }
 
-@Composable
-fun TripDetailsScreen(trip: Trip?, today: java.time.LocalDate, guide: DestinationGuide?, onBackClick: () -> Unit) {
+@Composable fun TripDetailsScreen(trip: Trip?, today: LocalDate, guide: DestinationGuide?, aiDetails: SavedAiTripDetails? = null,
+    loading: Boolean = false, error: String? = null, onRetry: () -> Unit = {}, onBackClick: () -> Unit) {
     Column(Modifier.fillMaxSize().background(EkataBackground).verticalScroll(rememberScrollState()).padding(20.dp)) {
-        Row { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.create_trip_back)) }; Text(stringResource(R.string.trip_details_title), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp)) }
-        if (trip == null) { Text(stringResource(R.string.trip_details_missing), modifier = Modifier.padding(top = 24.dp)) } else {
-            val tripName = if (trip.customName != null) trip.customName else stringResource(trip.nameRes)
-            val destination = if (trip.customLocation != null) trip.customLocation else stringResource(trip.locationRes)
-            Spacer(Modifier.height(18.dp)); Image(painterResource(trip.imageRes), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(22.dp)))
-            Spacer(Modifier.height(18.dp)); Text(tripName ?: stringResource(R.string.trip_details_title), style = MaterialTheme.typography.headlineMedium); Text(destination ?: "", color = EkataTextSecondary, style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(16.dp)); TripStatus(trip.statusFor(today)); Spacer(Modifier.height(16.dp))
-            Card(colors = CardDefaults.cardColors(containerColor = EkataCardBackground), shape = RoundedCornerShape(18.dp), modifier = Modifier.fillMaxWidth()) { Column(Modifier.padding(18.dp)) {
-                DetailLine(stringResource(R.string.trip_details_dates), tripDateRangeFull(trip)); DetailLine(stringResource(R.string.trip_details_budget), trip.budget ?: stringResource(R.string.trip_details_not_provided)); DetailLine(stringResource(R.string.trip_details_notes), trip.notes ?: stringResource(R.string.trip_details_no_notes))
-            } }
-            Spacer(Modifier.height(24.dp)); Text(stringResource(R.string.trip_details_recommendations), style = MaterialTheme.typography.titleLarge); Spacer(Modifier.height(6.dp))
-            Text(guide?.description.orEmpty(), color = EkataTextSecondary); Spacer(Modifier.height(10.dp))
-            guide?.places.orEmpty().forEach { place -> Text("•  $place", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(vertical = 5.dp)) }
+        Row(verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.create_trip_back)) }; Text(stringResource(R.string.trip_details_title), style = MaterialTheme.typography.headlineSmall) }
+        if (trip == null) Text(stringResource(R.string.trip_details_missing), modifier = Modifier.padding(top = 24.dp)) else {
+            Hero(trip, today)
+            if (trip.source == "ai") when { loading -> Box(Modifier.fillMaxWidth().padding(40.dp), contentAlignment = Alignment.Center) { CircularProgressIndicator() }; error != null -> ErrorCard(error, onRetry); aiDetails != null -> AiContent(trip, aiDetails); else -> ErrorCard("We couldn't load the itinerary.", onRetry) }
+            else ManualContent(trip, guide)
         }
     }
 }
 
-@Composable private fun DetailLine(label: String, value: String) { Column(Modifier.padding(vertical = 7.dp)) { Text(label, color = EkataTextSecondary, style = MaterialTheme.typography.labelMedium); Text(value, style = MaterialTheme.typography.bodyLarge) } }
-private fun tripDateRangeFull(trip: Trip): String { val format = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault()); return "${trip.startDate.format(format)} - ${trip.endDate.format(format)}" }
+@Composable private fun Hero(trip: Trip, today: LocalDate) {
+    val name = trip.customName ?: if (trip.nameRes != 0) stringResource(trip.nameRes) else stringResource(R.string.trip_details_title)
+    val route = trip.route.takeIf(List<String>::isNotEmpty)?.joinToString(" → ") ?: trip.customLocation ?: if (trip.locationRes != 0) stringResource(trip.locationRes) else ""
+    Spacer(Modifier.height(14.dp)); Image(painterResource(trip.imageRes), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(22.dp)))
+    Spacer(Modifier.height(18.dp)); Text(name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold); if (route.isNotBlank()) Text(route, color = EkataTextSecondary, style = MaterialTheme.typography.titleMedium)
+    Spacer(Modifier.height(12.dp)); TripStatus(trip.statusFor(today))
+    if (trip.source == "ai") { Spacer(Modifier.height(8.dp)); Text("${dateRange(trip)} • ${trip.startDate.until(trip.endDate).days + 1} days • ${listOfNotNull(trip.travellerType, trip.travellerCount?.let { "$it travellers" }).joinToString(" • ")}", color = EkataTextSecondary); Text(listOfNotNull(trip.travelStyle, trip.travelPace?.let { "$it pace" }).joinToString(" • "), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold) }
+}
+
+@Composable private fun AiContent(trip: Trip, details: SavedAiTripDetails) {
+    val itinerary = details.itinerary; val planner = details.planner
+    if (itinerary.trip.summary.isNotBlank()) { Spacer(Modifier.height(18.dp)); Text(itinerary.trip.summary, style = MaterialTheme.typography.bodyLarge) }
+    Section("TRIP OVERVIEW") { Line("Dates", dateRange(trip)); Line("Duration", "${itinerary.trip.durationDays} days"); Optional("Travellers", "${itinerary.trip.travellerType} • ${itinerary.trip.travellerCount} travellers"); Optional("Travel style", itinerary.trip.travelStyle); Optional("Pace", itinerary.trip.travelPace); Optional("Transport", planner?.transportPreferences?.joinToString(" • ")); Optional("Stay", planner?.accommodationPreference); Optional("Interests", planner?.interests?.joinToString(" • ")) }
+    if (itinerary.trip.route.isNotEmpty()) Section("YOUR ROUTE") { itinerary.trip.route.forEachIndexed { index, value -> Text(value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold); if (index < itinerary.trip.route.lastIndex) Text("↓", color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 8.dp, top = 2.dp, bottom = 2.dp)) } }
+    Spacer(Modifier.height(22.dp)); Text("DAY-BY-DAY ITINERARY", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+    itinerary.days.forEachIndexed { index, day -> Day(day, index == 0) }
+    Costs(itinerary.costEstimate, itinerary.trip.travellerCount); Preferences(planner, itinerary)
+    if (itinerary.recommendations.isNotEmpty()) Section("RECOMMENDATIONS") { itinerary.recommendations.forEach { Text("•  $it", modifier = Modifier.padding(vertical = 4.dp)) } }
+}
+
+@Composable private fun Day(day: ItineraryDay, open: Boolean) { var expanded by rememberSaveable(day.dayNumber) { mutableStateOf(open) }; Card(Modifier.fillMaxWidth().padding(top = 10.dp), shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = EkataCardBackground)) { Column { Row(Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) { Column(Modifier.weight(1f)) { Text("DAY ${day.dayNumber} — ${day.destination}", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge); Text(day.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold); Text(formatDate(day.date), color = EkataTextSecondary, style = MaterialTheme.typography.bodySmall) }; Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, null) }; if (expanded) Column(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) { Optional(null, day.summary); day.activities.forEach { Activity(it) } } } } }
+
+@Composable private fun Activity(activity: ItineraryActivity) { Row(Modifier.fillMaxWidth().padding(vertical = 9.dp)) { Text(activity.startTime, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, modifier = Modifier.width(58.dp)); Column(Modifier.weight(1f)) { Text(activity.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold); Optional(null, activity.location.name); Optional(null, listOfNotNull(activity.transportFromPrevious.takeIf(String::isNotBlank), activity.travelTimeMinutes.takeIf { it > 0 }?.let { "$it min" }).joinToString(" • ")); if (activity.durationMinutes > 0) Text("${activity.durationMinutes} min", color = EkataTextSecondary, style = MaterialTheme.typography.bodySmall); Optional(null, activity.description) } } }
+
+@Composable private fun Costs(cost: CostEstimate, travellers: Int) { if (cost.total.max <= 0) return; Section("ESTIMATED TRIP COST") { Text("Estimated total", color = EkataTextSecondary); Text(money(cost.total), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("For $travellers traveller${if (travellers == 1) "" else "s"}", color = EkataTextSecondary); listOf("Accommodation" to cost.accommodation, "Transport" to cost.transport, "Food" to cost.food, "Activities" to cost.activities).filter { it.second.max > 0 }.forEach { Line(it.first, money(it.second)) }; Text(cost.disclaimer.ifBlank { "AI-generated estimate. Actual prices may vary." }, color = EkataTextSecondary, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp)) } }
+@Composable private fun Preferences(planner: PlannerPreviewRequest?, itinerary: Itinerary) { if (planner == null) return; Section("TRIP PREFERENCES") { Optional("Travel style", itinerary.trip.travelStyle); Optional("Pace", itinerary.trip.travelPace); Optional("Transport", planner.transportPreferences.joinToString(" • ")); Optional("Accommodation", planner.accommodationPreference); Optional("Interests", planner.interests.joinToString(" • ")); Optional("Special requests", planner.specialRequests) } }
+@Composable private fun ManualContent(trip: Trip, guide: DestinationGuide?) { Section("") { Line(stringResource(R.string.trip_details_dates), dateRange(trip)); Line(stringResource(R.string.trip_details_budget), trip.budget ?: stringResource(R.string.trip_details_not_provided)); Line(stringResource(R.string.trip_details_notes), trip.notes ?: stringResource(R.string.trip_details_no_notes)) }; Spacer(Modifier.height(20.dp)); Text(stringResource(R.string.trip_details_recommendations), style = MaterialTheme.typography.titleLarge); Text(guide?.description.orEmpty(), color = EkataTextSecondary); guide?.places.orEmpty().forEach { Text("•  $it", modifier = Modifier.padding(vertical = 5.dp)) } }
+@Composable private fun Section(title: String, content: @Composable ColumnScope.() -> Unit) { Spacer(Modifier.height(18.dp)); if (title.isNotBlank()) Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary); Spacer(Modifier.height(7.dp)); Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = EkataCardBackground)) { Column(Modifier.padding(18.dp), content = content) } }
+@Composable private fun Line(label: String, value: String) { Column(Modifier.padding(vertical = 6.dp)) { Text(label, color = EkataTextSecondary, style = MaterialTheme.typography.labelMedium); Text(value, style = MaterialTheme.typography.bodyLarge) } }
+@Composable private fun Optional(label: String?, value: String?) { if (!value.isNullOrBlank() && value !in listOf("any", "Let AI decide")) { if (label == null) Text(value, color = EkataTextSecondary, style = MaterialTheme.typography.bodySmall) else Line(label, value) } }
+@Composable private fun ErrorCard(message: String, retry: () -> Unit) { Section("") { Text(message); TextButton(onClick = retry) { Text("Retry") } } }
+private fun dateRange(trip: Trip): String { val f = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault()); return "${trip.startDate.format(f)} – ${trip.endDate.format(f)}" }
+private fun formatDate(value: String) = runCatching { LocalDate.parse(value).format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault())) }.getOrDefault(value)
+private fun money(range: CostRange): String { val f = NumberFormat.getIntegerInstance(); return "LKR ${f.format(range.min)} – ${f.format(range.max)}" }

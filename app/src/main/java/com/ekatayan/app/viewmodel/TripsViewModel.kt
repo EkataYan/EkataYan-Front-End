@@ -2,6 +2,7 @@ package com.ekatayan.app.viewmodel
 
 import com.ekatayan.app.data.model.Trip
 import com.ekatayan.app.data.repository.TripsRepository
+import com.ekatayan.app.data.repository.SavedAiTripDetails
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -69,6 +70,16 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
     fun deleteTrip(tripId: Int) {
         repository.deleteTrip(tripId)
     }
+
+    fun loadTripDetails(trip: Trip) {
+        if (trip.source != "ai" || trip.remoteId == null) return
+        _uiState.update { it.copy(detailsLoading = true, detailsError = null, aiDetails = null) }
+        viewModelScope.launch {
+            runCatching { repository.loadAiTripDetails(trip) }
+                .onSuccess { details -> _uiState.update { it.copy(detailsLoading = false, aiDetails = details) } }
+                .onFailure { error -> _uiState.update { it.copy(detailsLoading = false, detailsError = error.message ?: "We couldn't load the itinerary.") } }
+        }
+    }
 }
 
 data class TripsUiState(
@@ -76,5 +87,8 @@ data class TripsUiState(
     val today: LocalDate,
     val trips: List<Trip>,
     val selectedDate: LocalDate? = today,
+    val detailsLoading: Boolean = false,
+    val detailsError: String? = null,
+    val aiDetails: SavedAiTripDetails? = null,
 )
 
