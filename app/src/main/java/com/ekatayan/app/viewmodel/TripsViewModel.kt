@@ -26,11 +26,11 @@ import javax.inject.Singleton
 @HiltViewModel
 class TripsViewModel @Inject constructor(private val repository: TripsRepository) : ViewModel() {
     private val today = LocalDate.now()
-    private val _uiState = MutableStateFlow(TripsUiState(YearMonth.from(today), today, repository.trips.value))
+    private val _uiState = MutableStateFlow(TripsUiState(YearMonth.from(today), today, repository.trips.value, isLoading = true))
     val uiState: StateFlow<TripsUiState> = _uiState.asStateFlow()
 
     init {
-        viewModelScope.launch { runCatching { repository.refreshTrips() } }
+        refreshTrips()
         viewModelScope.launch {
             while (isActive) {
                 val today = LocalDate.now()
@@ -74,6 +74,17 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
         repository.deleteTrip(tripId)
     }
 
+    fun refreshTrips() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            runCatching { repository.refreshTrips() }
+                .onSuccess { _uiState.update { it.copy(isLoading = false, errorMessage = null) } }
+                .onFailure { error ->
+                    _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Trips couldn't be loaded.") }
+                }
+        }
+    }
+
     fun loadTripDetails(trip: Trip) {
         if (trip.source != "ai" || trip.remoteId == null) return
         _uiState.update { it.copy(detailsLoading = true, detailsError = null) }
@@ -90,6 +101,8 @@ data class TripsUiState(
     val today: LocalDate,
     val trips: List<Trip>,
     val selectedDate: LocalDate? = today,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
     val detailsLoading: Boolean = false,
     val detailsError: String? = null,
     val detailsFailure: TripDetailsFailure? = null,

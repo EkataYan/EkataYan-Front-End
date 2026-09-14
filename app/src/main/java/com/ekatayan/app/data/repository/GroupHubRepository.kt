@@ -1,7 +1,6 @@
 package com.ekatayan.app.data.repository
 
 import com.ekatayan.app.data.local.WishlistDestinationCatalog
-import com.ekatayan.app.data.local.initialGroupData
 import com.ekatayan.app.data.local.database.GroupHubDao
 import com.ekatayan.app.data.local.database.groupHubData
 import com.ekatayan.app.data.local.database.toSnapshot
@@ -25,13 +24,13 @@ class GroupHubRepository private constructor(private val dao: GroupHubDao?, test
     constructor() : this(null, true)
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO.limitedParallelism(1))
-    private val mutableState = MutableStateFlow(if (testMode) initialGroupData() else GroupHubData())
+    private val mutableState = MutableStateFlow(GroupHubData())
     val state = mutableState.asStateFlow()
     val destinations = WishlistDestinationCatalog.destinations
 
     init {
         if (dao != null) scope.launch {
-            dao.initialize(initialGroupData().toSnapshot())
+            dao.initialize(GroupHubData().toSnapshot())
             combine(dao.observeUsers(), dao.observeGroups(), dao.observeMembers(), dao.observeMessages(), dao.observeReactions(),
                 ::groupHubData).collect { mutableState.value = it }
         }

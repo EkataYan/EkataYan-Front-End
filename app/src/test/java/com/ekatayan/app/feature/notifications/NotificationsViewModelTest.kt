@@ -1,6 +1,10 @@
 package com.ekatayan.app.feature.notifications
 
-import com.ekatayan.app.data.local.NotificationsLocalDataSource
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.ui.graphics.Color
+import com.ekatayan.app.R
+import com.ekatayan.app.data.model.NotificationCategory
 import com.ekatayan.app.data.repository.NotificationsRepository
 import com.ekatayan.app.data.model.NotificationItem
 import com.ekatayan.app.data.model.TripInvitation
@@ -43,10 +47,21 @@ class NotificationsViewModelTest {
 
 
     private fun createViewModel(): NotificationsViewModel {
-        val dataSource = NotificationsLocalDataSource()
-        val repository = FakeNotificationsRepository(dataSource.getInitialNotifications())
+        val repository = FakeNotificationsRepository(notificationFixtures())
         return NotificationsViewModel(repository).also { store.put("notifications", it) }
     }
+
+    private fun notificationFixtures() = listOf(
+        NotificationItem(1, R.string.notifications_trip_title, R.string.notifications_trip_message,
+            R.string.notifications_just_now, NotificationCategory.TRIPS, Icons.Default.Groups,
+            Color.Blue, Color.LightGray, true),
+        NotificationItem(2, R.string.notifications_expense_title, R.string.notifications_expense_message,
+            R.string.notifications_25_min, NotificationCategory.EXPENSES, Icons.Default.Groups,
+            Color.Blue, Color.LightGray, true),
+        NotificationItem(3, R.string.notifications_weather_title, R.string.notifications_weather_message,
+            R.string.notifications_yesterday, NotificationCategory.UPDATES, Icons.Default.Groups,
+            Color.Blue, Color.LightGray, true),
+    )
 
     @Test
     fun openingNotificationMarksOnlyThatNotificationAsRead() {
@@ -69,7 +84,7 @@ class NotificationsViewModelTest {
     }
     @Test
     fun repositoryUpdatesReachEveryViewModelWithoutResettingFilter() {
-        val repository = FakeNotificationsRepository(NotificationsLocalDataSource().getInitialNotifications())
+        val repository = FakeNotificationsRepository(notificationFixtures())
         val first = NotificationsViewModel(repository).also { store.put("first", it) }
         val second = NotificationsViewModel(repository).also { store.put("second", it) }
         second.onFilterSelected(NotificationFilter.TRIPS)

@@ -129,16 +129,10 @@ class BusinessPartnerViewModelTest {
         assertEquals("content://photos/logo", vm.uiState.value.profile.imageUri)
     }
 
-    @Test fun bookingTransitionsRejectChangesAfterCompletion() {
+    @Test fun aNewBusinessAccountHasNoFabricatedBookings() {
         val vm = model()
         register(vm)
-        val id = vm.uiState.value.bookings.first().id
-        vm.changeBookingStatus(id, BookingStatus.COMPLETED)
-        assertEquals(BookingStatus.PENDING, vm.uiState.value.bookings.first().status)
-        vm.changeBookingStatus(id, BookingStatus.CONFIRMED)
-        vm.changeBookingStatus(id, BookingStatus.COMPLETED)
-        vm.changeBookingStatus(id, BookingStatus.CANCELLED)
-        assertEquals(BookingStatus.COMPLETED, vm.uiState.value.bookings.first().status)
+        assertTrue(vm.uiState.value.bookings.isEmpty())
     }
 
     @Test fun invalidPricesAndEmailsAreRejected() {
@@ -229,15 +223,16 @@ class BusinessPartnerViewModelTest {
     @Test fun changingCategoryDoesNotSaveUnrelatedFieldsOrTimeSlots() {
         val vm = model()
         register(vm)
-        vm.beginListing("safari")
-        vm.updateListingDraft { it.copy(category = ListingCategory.TRANSPORT,
+        vm.beginListing()
+        vm.updateListingDraft { it.copy(title = "Test service", description = "Test description", price = "1000",
+            priceUnit = "trip", imageUris = listOf("content://test/image"), category = ListingCategory.TRANSPORT,
             serviceFields = mapOf(ListingField.DURATION to "4 hours", ListingField.PASSENGERS to "8"),
             availability = ListingAvailability(timeSlots = "09:00")) }
         assertTrue(vm.saveListing())
-        val saved = vm.uiState.value.listings.first { it.id == "safari" }
+        val saved = vm.uiState.value.listings.first()
         assertEquals(mapOf(ListingField.PASSENGERS to "8"), saved.serviceFields)
         assertEquals("", saved.availability.timeSlots)
-        assertEquals(32, saved.views)
+        assertEquals(0, saved.views)
     }
 
     @Test fun ownerAndAddressFieldsAreRequiredAndProfileEditsPreserveThem() {

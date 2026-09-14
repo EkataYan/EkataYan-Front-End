@@ -72,7 +72,12 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
             Text("My Groups", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = EkataSpacing.lg, bottom = EkataSpacing.sm))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { GroupFilter.entries.forEach { item -> FilterChip(selected = filter == item, onClick = { onFilterChange(item) }, label = { Text(item.name) }, colors = FilterChipDefaults.filterChipColors(selectedContainerColor = EkataLightBlue), border = FilterChipDefaults.filterChipBorder(enabled = true, selected = filter == item, borderColor = PopupBorder, selectedBorderColor = EkataBlue)) } }
             LazyColumn(contentPadding = PaddingValues(top = 12.dp, bottom = 106.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                if (groups.isEmpty()) item { EmptyState(if (query.isNotBlank()) "No groups found" else "No groups yet") }
+                if (groups.isEmpty()) item {
+                    EmptyState(
+                        if (query.isNotBlank()) "No groups found"
+                        else "No groups yet\nCreate a trip or join your friends.",
+                    )
+                }
                 items(groups, key = ChatGroup::id) { group -> GroupRow(group, state, onGroupClick) }
             }
         }

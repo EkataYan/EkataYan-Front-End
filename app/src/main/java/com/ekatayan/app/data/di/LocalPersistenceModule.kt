@@ -31,10 +31,24 @@ object LocalPersistenceModule {
             db.execSQL("ALTER TABLE trips ADD COLUMN travelPace TEXT")
         }
     }
+    private val migration2To3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            // Remove only the exact legacy Figma seeds; preserve user-created and remote data.
+            db.execSQL("DELETE FROM trips WHERE remoteId IS NULL AND customName IS NULL AND id IN (1, 2, 3, 4)")
+            db.execSQL("DELETE FROM wishlist_groups WHERE (id = 1 AND name = 'My Favs') OR (id = 2 AND name = 'Beach Vibes') OR (id = 3 AND name = 'Hilly Vibes')")
+            db.execSQL("DELETE FROM chat_groups WHERE id IN ('fam-outings', 'work-trip', 'baddies', 'kawadahari', 'yanawa-yanawa')")
+            db.execSQL("DELETE FROM chat_users WHERE id IN ('current-user', 'ashley', 'dan', 'juniper', 'peter', 'sarah', 'tim', 'yamal', 'jennie', 'kasun')")
+            db.execSQL("DELETE FROM partner_bookings WHERE id IN ('booking-1', 'booking-2', 'booking-3')")
+            db.execSQL("DELETE FROM business_listings WHERE id IN ('room', 'safari', 'rental')")
+            db.execSQL("UPDATE business_partner_session SET demoLoaded = 0")
+        }
+    }
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): EkataYanDatabase =
-        Room.databaseBuilder(context, EkataYanDatabase::class.java, "ekatayan-local.db").addMigrations(migration1To2).build()
+        Room.databaseBuilder(context, EkataYanDatabase::class.java, "ekatayan-local.db")
+            .addMigrations(migration1To2, migration2To3)
+            .build()
 
     @Provides fun provideWishlistDao(database: EkataYanDatabase): WishlistDao = database.wishlistDao()
     @Provides fun provideTripsDao(database: EkataYanDatabase): TripsDao = database.tripsDao()

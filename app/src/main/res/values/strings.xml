@@ -196,22 +196,6 @@
     <string name="expenses_action_budget">Set Budget</string>
     <string name="expenses_action_export">Export</string>
 
-    <!-- Recent Expenses -->
-    <string name="expenses_hotel_kandy">Hotel in Kandy</string>
-    <string name="expenses_today_time">Today, 10:30 AM</string>
-
-    <string name="expenses_train_tickets">Train Tickets</string>
-    <string name="expenses_yesterday_train_time">Yesterday, 8:45 AM</string>
-
-    <string name="expenses_lunch_peradeniya">Lunch at Peradeniya</string>
-    <string name="expenses_yesterday_lunch_time">Yesterday, 1:15 PM</string>
-
-    <string name="expenses_sigiriya_tickets">Sigiriya Tickets</string>
-    <string name="expenses_sigiriya_time">2 days ago, 9:00 AM</string>
-
-    <string name="expenses_souvenirs">Souvenirs</string>
-    <string name="expenses_souvenirs_time">2 days ago, 4:30 PM</string>
-
     <string name="notification_detail_back">Back</string>
     <string name="notification_detail_title">Notification Details</string>
     <string name="notification_detail_not_found">Notification not found</string>
@@ -225,19 +209,6 @@
     <string name="trip_details_notes">Notes</string>
     <string name="trip_details_no_notes">No notes added.</string>
     <string name="trip_details_recommendations">Recommendations</string>
-
-    <!-- Trip Sample Data -->
-    <string name="trip_galle_name">Galle Trip</string>
-    <string name="trip_galle_location">Galle, Sri Lanka</string>
-
-    <string name="trip_kandy_name">Kandy Trip</string>
-    <string name="trip_kandy_location">Kandy, Sri Lanka</string>
-
-    <string name="trip_sigiriya_name">Sigiriya Trip</string>
-    <string name="trip_sigiriya_location">Sigiriya, Sri Lanka</string>
-
-    <string name="trip_nuwara_eliya_name">Nuwara Eliya Trip</string>
-    <string name="trip_nuwara_eliya_location">Nuwara Eliya, Sri Lanka</string>
 
     <!-- Trip Status -->
     <string name="trip_status_planned">Planned</string>

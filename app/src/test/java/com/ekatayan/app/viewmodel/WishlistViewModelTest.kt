@@ -23,8 +23,9 @@ class WishlistViewModelTest {
     fun removingCoverPlaceClearsCoverAndPlaceCanBeAddedAgain() {
         val repository = WishlistRepository()
         val viewModel = WishlistViewModel(repository).also { store.put("wishlist", it) }
+        val place = viewModel.uiState.value.availableDestinations.first()
+        assertTrue(viewModel.createGroupWithPlace("Test wishlist", place))
         val group = viewModel.uiState.value.groups.first()
-        val place = group.items.first()
         assertFalse(viewModel.addPlaceToGroup(group.id, place))
         assertTrue(viewModel.updateGroupCoverFromPlace(group.id, place.id))
         viewModel.removePlaceFromGroup(group.id, place.id)

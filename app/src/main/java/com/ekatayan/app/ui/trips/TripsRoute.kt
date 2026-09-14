@@ -41,6 +41,7 @@ fun TripsRoute(
         onNotificationClick = onNotificationClick,
         onSettingsClick = onSettingsClick,
         hasUnreadNotifications = notificationState.hasUnreadNotifications,
+        onRetry = viewModel::refreshTrips,
         onDeleteTrip = viewModel::deleteTrip,
         onTripClick = { trip ->
             viewModel.selectDate(trip.startDate)

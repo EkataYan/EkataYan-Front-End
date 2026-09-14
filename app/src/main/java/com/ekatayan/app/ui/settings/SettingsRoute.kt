@@ -46,8 +46,7 @@ fun SettingsRoute(
         onPushNotificationsChanged = setNotifications,
         onAccountClick=onAccountClick,onPasswordClick=onPasswordClick,onAppearanceClick=onAppearanceClick,onLanguageClick=onLanguageClick,onPermissionsClick=onPermissionsClick,onPrivacyClick=onPrivacyClick,onStorageClick=onStorageClick,onHelpClick=onHelpClick,onAboutClick=onAboutClick,onLegalClick=onLegalClick,
         onLogoutClick = {
-            viewModel.logout()
-            onLogoutClick()
+            viewModel.logout(onLogoutClick)
         },
         onHomeClick = onHomeClick,
         onTripsClick = onTripsClick,

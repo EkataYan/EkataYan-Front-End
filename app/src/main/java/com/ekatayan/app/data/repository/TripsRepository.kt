@@ -2,7 +2,6 @@ package com.ekatayan.app.data.repository
 
 import com.ekatayan.app.R
 import com.ekatayan.app.data.local.destinationGuideFor
-import com.ekatayan.app.data.local.initialTrips
 import com.ekatayan.app.data.local.database.TripsDao
 import com.ekatayan.app.data.local.database.toEntity
 import com.ekatayan.app.data.local.database.toModel
@@ -41,13 +40,12 @@ class TripsRepository private constructor(private val dao: TripsDao?, private va
     constructor() : this(null, null, true)
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO.limitedParallelism(1))
-    private val seedTrips = initialTrips(LocalDate.now())
-    private val mutableTrips = MutableStateFlow(if (testMode) seedTrips else emptyList())
+    private val mutableTrips = MutableStateFlow<List<Trip>>(emptyList())
     val trips = mutableTrips.asStateFlow()
 
     init {
         if (dao != null) scope.launch {
-            dao.initialize(seedTrips.map(Trip::toEntity))
+            dao.initialize(emptyList())
             dao.observeAll().collect { values -> mutableTrips.value = values.map { it.toModel() } }
         }
     }
@@ -74,8 +72,9 @@ class TripsRepository private constructor(private val dao: TripsDao?, private va
 
     suspend fun refreshTrips() {
         val remote = requireNotNull(api).trips().data ?: return
-        val localOnly = mutableTrips.value.filter { it.remoteId == null }
-        val updated = localOnly + remote.map(::remoteTrip)
+        // The authenticated backend is authoritative. Never mix account-independent
+        // local/Figma rows into another user's trip collection.
+        val updated = remote.map(::remoteTrip)
         mutableTrips.value = updated
         persist(updated)
     }

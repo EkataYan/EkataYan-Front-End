@@ -13,8 +13,8 @@ import javax.inject.Inject
 @Immutable
 data class SettingsPreferences(
     val loaded: Boolean = false,
-    val userName: String = "Zendaya Holland",
-    val userEmail: String = "Zendaya@gmail.com",
+    val userName: String = "",
+    val userEmail: String = "",
     @param:DrawableRes val profileImageResId: Int? = null,
     val selectedLanguage: String = "en",
     val selectedCurrency: String = "LKR - Sri Lankan Rupees",
