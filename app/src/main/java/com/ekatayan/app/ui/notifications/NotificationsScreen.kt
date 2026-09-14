@@ -54,7 +54,7 @@ fun NotificationsScreen(
     uiState: NotificationsUiState,
     selectedBottomNavItem: AppBottomNavItem,
     onFilterSelected: (NotificationFilter) -> Unit,
-    onNotificationClick: (Int) -> Unit,
+    onNotificationClick: (String) -> Unit,
     onAcceptInvite:(String)->Unit,
     onDeclineInvite:(String)->Unit,
     onRetryInvites:()->Unit,
@@ -213,12 +213,12 @@ private fun NotificationCard(
                     .padding(horizontal = 12.dp),
             ) {
                 Text(
-                    text = stringResource(notification.titleRes),
+                    text = notification.title,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    text = stringResource(notification.messageRes),
+                    text = notification.message,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 2.dp),
@@ -234,7 +234,7 @@ private fun NotificationCard(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        text = stringResource(notification.timeLabelRes),
+                        text = notification.timeLabel,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = 4.dp),

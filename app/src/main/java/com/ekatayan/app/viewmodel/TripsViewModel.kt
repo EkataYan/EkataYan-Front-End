@@ -45,11 +45,8 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
         viewModelScope.launch {
             repository.trips.collect { trips ->
                 _uiState.update { state ->
-                    val newTrip = trips.firstOrNull { trip -> state.trips.none { it.id == trip.id } }
                     state.copy(
                         trips = trips.sortedBy { it.startDate },
-                        displayedMonth = newTrip?.let { YearMonth.from(it.startDate) } ?: state.displayedMonth,
-                        selectedDate = newTrip?.startDate ?: state.selectedDate,
                     )
                 }
             }
@@ -66,6 +63,17 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
 
     fun selectDate(date: LocalDate) {
         _uiState.update { it.copy(selectedDate = date) }
+    }
+
+    fun showToday() {
+        val today = LocalDate.now()
+        _uiState.update {
+            it.copy(
+                displayedMonth = YearMonth.from(today),
+                today = today,
+                selectedDate = today,
+            )
+        }
     }
 
     fun guideFor(destination: String) = repository.guideFor(destination)

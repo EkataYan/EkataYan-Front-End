@@ -11,6 +11,8 @@ class UserSessionProvider @Inject constructor(private val store: SessionStore) {
     @Volatile private var session: StoredSession? = store.read()
     private val mutableUserName = MutableStateFlow(session?.name)
     val userName = mutableUserName.asStateFlow()
+    private val mutableAccessToken = MutableStateFlow(currentAccessToken())
+    val accessToken = mutableAccessToken.asStateFlow()
 
     fun currentAccessToken(): String? = session?.takeIf {
         it.expiresAtMillis > System.currentTimeMillis()
@@ -33,6 +35,7 @@ class UserSessionProvider @Inject constructor(private val store: SessionStore) {
         ).also {
             session = it
             mutableUserName.value = it.name
+            mutableAccessToken.value = it.accessToken
             store.save(it)
         }
     }
@@ -55,6 +58,7 @@ class UserSessionProvider @Inject constructor(private val store: SessionStore) {
     fun clearSession() {
         session = null
         mutableUserName.value = null
+        mutableAccessToken.value = null
         store.clear()
     }
 }

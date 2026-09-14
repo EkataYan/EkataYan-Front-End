@@ -47,10 +47,4 @@ data class GoogleIdTokenRequest(
     val provider: String = "google",
     @com.google.gson.annotations.SerializedName("id_token") val idToken: String,
     val nonce: String? = null,
-    val data: GoogleUserMetadataRequest? = null,
-)
-
-data class GoogleUserMetadataRequest(
-    @com.google.gson.annotations.SerializedName("full_name") val fullName: String? = null,
-    @com.google.gson.annotations.SerializedName("avatar_url") val avatarUrl: String? = null,
 )
