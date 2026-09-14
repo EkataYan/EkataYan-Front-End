@@ -5,7 +5,6 @@ import com.ekatayan.app.data.remote.StoredSession
 import com.ekatayan.app.data.remote.UserSessionProvider
 import com.ekatayan.app.data.remote.api.RefreshTokenRequest
 import com.ekatayan.app.data.remote.api.GoogleIdTokenRequest
-import com.ekatayan.app.data.remote.api.GoogleUserMetadataRequest
 import com.ekatayan.app.data.remote.api.SupabaseAuthApiService
 import com.ekatayan.app.data.remote.dto.PasswordSignInRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignUpMetadata
@@ -16,6 +15,7 @@ import com.ekatayan.app.data.remote.dto.SupabaseUserMetadataDto
 import com.ekatayan.app.data.repository.SupabaseAuthRepository
 import com.ekatayan.app.data.repository.SignUpResult
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import dagger.Lazy
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -23,22 +23,13 @@ import org.junit.Test
 
 class AuthRepositoryTest {
     @Test fun googleIdTokenRequestUsesSupabaseNativeSignInContract() {
-        val json = Gson().toJson(
-            GoogleIdTokenRequest(
-                idToken = "google-id-token",
-                nonce = "raw-nonce",
-                data = GoogleUserMetadataRequest(
-                    fullName = "Google Traveler",
-                    avatarUrl = "https://example.com/avatar",
-                ),
-            ),
-        )
+        val json = Gson().toJson(GoogleIdTokenRequest(idToken = "google-id-token", nonce = "raw-nonce"))
+        val fields = JsonParser.parseString(json).asJsonObject.keySet()
 
+        assertEquals(setOf("provider", "id_token", "nonce"), fields)
         assertTrue(json.contains("\"provider\":\"google\""))
         assertTrue(json.contains("\"id_token\":\"google-id-token\""))
         assertTrue(json.contains("\"nonce\":\"raw-nonce\""))
-        assertTrue(json.contains("\"full_name\":\"Google Traveler\""))
-        assertTrue(json.contains("\"avatar_url\":\"https://example.com/avatar\""))
     }
 
     @Test fun signUpRequestUsesProfileProvisioningMetadataContract() {
@@ -176,7 +167,7 @@ private class FakeSupabaseAuthApi(
         return signUpResponse
     }
     override suspend fun signInWithIdToken(grantType: String, request: GoogleIdTokenRequest): SupabaseSessionDto {
-        googleRequest = request.copy(data = null)
+        googleRequest = request
         return session()
     }
     override suspend fun refreshSession(grantType: String, request: RefreshTokenRequest): SupabaseSessionDto {

@@ -6,7 +6,6 @@ import com.ekatayan.app.data.remote.UserSessionProvider
 import com.ekatayan.app.data.remote.api.SupabaseAuthApiService
 import com.ekatayan.app.data.remote.api.PasswordUpdateRequest
 import com.ekatayan.app.data.remote.api.GoogleIdTokenRequest
-import com.ekatayan.app.data.remote.api.GoogleUserMetadataRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignInRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignUpMetadata
 import com.ekatayan.app.data.remote.dto.PasswordSignUpRequest
@@ -92,12 +91,12 @@ class SupabaseAuthRepository @Inject constructor(
                     request = GoogleIdTokenRequest(
                         idToken = idToken,
                         nonce = nonce,
-                        data = GoogleUserMetadataRequest(displayName, avatarUrl),
                     ),
                 ),
                 authenticatedName = displayName,
                 preferAuthenticatedName = true,
             )
+            logger.info("Google sign-in completed through Supabase Auth")
         } catch (e: AuthenticationException) {
             throw e
         } catch (e: HttpException) {

@@ -25,16 +25,26 @@ data class NotificationsUiState(
     val invitationError:String?=null,
 ) {
     val unreadCount: Int
-        get() = notifications.count(NotificationItem::isUnread)
+        get() {
+            val notifiedInviteIds = notifications.mapNotNullTo(mutableSetOf(), NotificationItem::relatedInviteId)
+            return notifications.count(NotificationItem::isUnread) +
+                invitations.count { it.id !in notifiedInviteIds }
+        }
 
     val hasUnreadNotifications: Boolean
         get() = unreadCount > 0 || invitations.isNotEmpty()
 
     val filteredNotifications: List<NotificationItem>
-        get() = if (selectedFilter == NotificationFilter.ALL) {
-            notifications
-        } else {
-            notifications.filter { it.category.name == selectedFilter.name }
+        get() {
+            val representedInvites = invitations.mapTo(mutableSetOf(), TripInvitation::id)
+            val visible = notifications.filterNot {
+                it.type == "trip_invite" && it.relatedInviteId in representedInvites
+            }
+            return if (selectedFilter == NotificationFilter.ALL) {
+                visible
+            } else {
+                visible.filter { it.category.name == selectedFilter.name }
+            }
         }
 }
 
@@ -56,15 +66,24 @@ class NotificationsViewModel @Inject constructor(
     }
 
     init {
-        refreshInvitations()
         viewModelScope.launch {
             repository.notifications.collect { notifications ->
                 _uiState.update { it.copy(notifications = notifications) }
             }
         }
+        viewModelScope.launch {
+            repository.invitations.collect { invitations ->
+                _uiState.update { it.copy(invitations = invitations, loadingInvitations = false) }
+            }
+        }
     }
 
-    fun markAsRead(notificationId: Int) = repository.markAsRead(notificationId)
+    fun markAsRead(notificationId: String) = repository.markAsRead(notificationId)
+    fun onAppForeground() = repository.onAppForeground()
+    fun onNotificationsOpened() {
+        repository.onAppForeground()
+        refreshInvitations()
+    }
     fun refreshInvitations()=viewModelScope.launch { _uiState.update{it.copy(loadingInvitations=true,invitationError=null)}; runCatching{repository.refreshInvitations()}.onSuccess{_uiState.update{it.copy(loadingInvitations=false,invitations=repository.invitations.value)}}.onFailure{e->_uiState.update{it.copy(loadingInvitations=false,invitationError=e.message)}} }
     fun acceptInvitation(id: String) = respondToInvitation(id, "joining") { repository.acceptInvitation(id) }
     fun declineInvitation(id: String) = respondToInvitation(id, "declining") { repository.declineInvitation(id) }
