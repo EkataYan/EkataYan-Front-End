@@ -1,6 +1,7 @@
 package com.ekatayan.app.data.repository
 
 import com.ekatayan.app.data.local.WishlistDestinationCatalog
+import com.ekatayan.app.data.local.GroupHubPeopleCatalog
 import com.ekatayan.app.data.local.database.GroupHubDao
 import com.ekatayan.app.data.local.database.groupHubData
 import com.ekatayan.app.data.local.database.toSnapshot
@@ -27,6 +28,7 @@ class GroupHubRepository private constructor(private val dao: GroupHubDao?, test
     private val mutableState = MutableStateFlow(GroupHubData())
     val state = mutableState.asStateFlow()
     val destinations = WishlistDestinationCatalog.destinations
+    val directoryUsers = GroupHubPeopleCatalog.users
 
     init {
         if (dao != null) scope.launch {

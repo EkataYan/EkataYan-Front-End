@@ -10,6 +10,8 @@ import com.ekatayan.app.core.designsystem.theme.EkataYanTheme
 import com.ekatayan.app.data.local.DestinationDetailsCatalog
 import com.ekatayan.app.data.local.WishlistDestinationCatalog
 import com.ekatayan.app.data.model.WishlistGroup
+import com.ekatayan.app.data.model.ChatGroup
+import com.ekatayan.app.viewmodel.GroupHubUiState
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -31,7 +33,7 @@ class DestinationDetailsScreenTest {
                     wishlistItem = wishlistItem,
                     wishlistGroups = emptyList(),
                     onBackClick = {},
-                    onShareClick = {},
+                    onSharePlace = { _, _, _ -> true },
                     onPlaceClick = { selectedPlaceId = it },
                     onGroupSelectionChange = { _, _, _ -> },
                     onCreateGroupWithPlace = { _, _ -> true },
@@ -59,7 +61,7 @@ class DestinationDetailsScreenTest {
                     wishlistItem = wishlistItem,
                     wishlistGroups = groups,
                     onBackClick = {},
-                    onShareClick = {},
+                    onSharePlace = { _, _, _ -> true },
                     onPlaceClick = {},
                     onGroupSelectionChange = { _, _, _ -> },
                     onCreateGroupWithPlace = { _, _ -> true },
@@ -74,6 +76,35 @@ class DestinationDetailsScreenTest {
     }
 
     @Test
+    fun shareButtonOpensReusableGroupHubPickerAndSendsSelection() {
+        val destination = requireNotNull(DestinationDetailsCatalog.destination("polonnaruwa"))
+        val wishlistItem = WishlistDestinationCatalog.destinations.first { it.id == destination.wishlistItemId }
+        var sentGroupIds = emptySet<String>()
+        composeRule.setContent {
+            EkataYanTheme(darkTheme = false) {
+                DestinationDetailsScreen(
+                    destination = destination,
+                    popularPlaces = emptyList(),
+                    wishlistItem = wishlistItem,
+                    wishlistGroups = emptyList(),
+                    groupHubState = GroupHubUiState(groups = listOf(ChatGroup("crew", "Travel Crew"))),
+                    onBackClick = {},
+                    onSharePlace = { groups, _, _ -> sentGroupIds = groups; true },
+                    onPlaceClick = {},
+                    onGroupSelectionChange = { _, _, _ -> },
+                    onCreateGroupWithPlace = { _, _ -> true },
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Share").performClick()
+        composeRule.onNodeWithText("Share Place").assertIsDisplayed()
+        composeRule.onNodeWithText("Travel Crew").performClick()
+        composeRule.onNodeWithText("Send").performClick()
+        composeRule.runOnIdle { assertEquals(setOf("crew"), sentGroupIds) }
+    }
+
+    @Test
     fun placeShowsDetailsSectionsAndWishlistAction() {
         val attraction = requireNotNull(DestinationDetailsCatalog.attraction("gal_vihara"))
         val wishlistItem = WishlistDestinationCatalog.destinations.first { it.id == attraction.wishlistItemId }
@@ -84,7 +115,7 @@ class DestinationDetailsScreenTest {
                     wishlistItem = wishlistItem,
                     wishlistGroups = emptyList(),
                     onBackClick = {},
-                    onShareClick = {},
+                    onSharePlace = { _, _, _ -> true },
                     onGroupSelectionChange = { _, _, _ -> },
                     onCreateGroupWithPlace = { _, _ -> true },
                 )
@@ -92,6 +123,7 @@ class DestinationDetailsScreenTest {
         }
 
         composeRule.onNodeWithText("About Gal Vihara").assertIsDisplayed()
+        composeRule.onNodeWithText("History Lovers").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Highlights").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Tips for Visitors").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Add to Wishlist").performScrollTo().assertIsDisplayed()

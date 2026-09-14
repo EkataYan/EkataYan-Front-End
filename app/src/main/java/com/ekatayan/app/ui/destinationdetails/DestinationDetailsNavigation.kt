@@ -5,6 +5,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.ekatayan.app.viewmodel.WishlistViewModel
+import com.ekatayan.app.viewmodel.GroupHubViewModel
 
 const val DESTINATION_DETAILS_ROUTE = "destination/{destinationId}"
 const val PLACE_DETAILS_ROUTE = "place/{placeId}"
@@ -16,6 +17,7 @@ fun placeDetailsRoute(placeId: String) = "place/$placeId"
 
 fun NavGraphBuilder.destinationDetailsScreens(
     wishlistViewModel: WishlistViewModel,
+    groupHubViewModel: GroupHubViewModel,
     onBackClick: () -> Unit,
     onPlaceClick: (String) -> Unit,
 ) {
@@ -26,6 +28,7 @@ fun NavGraphBuilder.destinationDetailsScreens(
         DestinationDetailsRoute(
             destinationId = requireNotNull(entry.arguments?.getString(DESTINATION_ID_ARGUMENT)),
             wishlistViewModel = wishlistViewModel,
+            groupHubViewModel = groupHubViewModel,
             onBackClick = onBackClick,
             onPlaceClick = onPlaceClick,
         )
@@ -37,6 +40,7 @@ fun NavGraphBuilder.destinationDetailsScreens(
         PlaceDetailsRoute(
             placeId = requireNotNull(entry.arguments?.getString(PLACE_ID_ARGUMENT)),
             wishlistViewModel = wishlistViewModel,
+            groupHubViewModel = groupHubViewModel,
             onBackClick = onBackClick,
         )
     }

@@ -4,7 +4,6 @@ import com.ekatayan.app.viewmodel.HomeViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.ekatayan.app.viewmodel.NotificationsUiState
-import com.ekatayan.app.viewmodel.WishlistViewModel
 import kotlinx.coroutines.flow.StateFlow
 
 const val HOME_ROUTE = "home"
@@ -22,7 +21,6 @@ fun NavGraphBuilder.homeScreen(
     onSettingsClick: () -> Unit,
     onNotificationClick: () -> Unit,
     notificationsUiState: StateFlow<NotificationsUiState>,
-    wishlistViewModel: WishlistViewModel,
 ) {
     composable(HOME_ROUTE) {
         HomeRoute(
@@ -38,7 +36,6 @@ fun NavGraphBuilder.homeScreen(
             onSettingsClick = onSettingsClick,
             onNotificationClick = onNotificationClick,
             notificationsUiState = notificationsUiState,
-            wishlistViewModel = wishlistViewModel,
         )
     }
 }

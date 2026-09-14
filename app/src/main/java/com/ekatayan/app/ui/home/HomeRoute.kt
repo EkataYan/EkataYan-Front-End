@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ekatayan.app.viewmodel.NotificationsUiState
-import com.ekatayan.app.viewmodel.WishlistViewModel
 import kotlinx.coroutines.flow.StateFlow
 import android.Manifest
 import android.content.pm.PackageManager
@@ -49,13 +48,11 @@ fun HomeRoute(
     onSettingsClick: () -> Unit,
     onNotificationClick: () -> Unit,
     notificationsUiState: StateFlow<NotificationsUiState>,
-    wishlistViewModel: WishlistViewModel,
     viewModel: HomeViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val notificationState by notificationsUiState.collectAsStateWithLifecycle()
-    val wishlistUiState by wishlistViewModel.uiState.collectAsStateWithLifecycle()
     val settingsState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -99,7 +96,6 @@ fun HomeRoute(
     }
     HomeScreen(
         uiState = uiState,
-        wishlistUiState = wishlistUiState,
         onSearchQueryChange = viewModel::onSearchQueryChange,
         onSearchSubmit = viewModel::onSearchSubmit,
         onWishlistClick = onWishlistClick,
@@ -119,14 +115,6 @@ fun HomeRoute(
             if (hasLocationPermission()) viewModel.refreshWeather()
             else locationLauncher.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
         },
-        onWishlistGroupSelectionChange = { groupId, item, selected ->
-            if (selected) {
-                wishlistViewModel.addPlaceToGroup(groupId, item)
-            } else {
-                wishlistViewModel.removePlaceFromGroup(groupId, item.id)
-            }
-        },
-        onCreateWishlistWithPlace = wishlistViewModel::createGroupWithPlace,
     )
     if (settingsState.loaded && !settingsState.locationPermissionPromptShown && !hasLocationPermission()) {
         AlertDialog(

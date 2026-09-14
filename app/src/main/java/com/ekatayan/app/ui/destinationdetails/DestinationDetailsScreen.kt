@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -77,6 +78,8 @@ import com.ekatayan.app.data.model.DestinationDetails
 import com.ekatayan.app.data.model.WishlistGroup
 import com.ekatayan.app.data.model.WishlistItem
 import com.ekatayan.app.ui.wishlist.WishlistGroupSelector
+import com.ekatayan.app.ui.grouphub.SharePlaceDialog
+import com.ekatayan.app.viewmodel.GroupHubUiState
 
 private val DetailBackground = Color(0xFFF9FBFE)
 private val DetailText = Color(0xFF151B2B)
@@ -92,8 +95,9 @@ fun DestinationDetailsScreen(
     popularPlaces: List<Attraction>,
     wishlistItem: WishlistItem?,
     wishlistGroups: List<WishlistGroup>,
+    groupHubState: GroupHubUiState = GroupHubUiState(),
     onBackClick: () -> Unit,
-    onShareClick: () -> Unit,
+    onSharePlace: (Set<String>, Set<String>, WishlistItem) -> Boolean = { _, _, _ -> false },
     onPlaceClick: (String) -> Unit,
     onGroupSelectionChange: (Int, WishlistItem, Boolean) -> Unit,
     onCreateGroupWithPlace: (String, WishlistItem) -> Boolean,
@@ -104,6 +108,7 @@ fun DestinationDetailsScreen(
         return
     }
     var selectorVisible by remember(wishlistItem?.id) { mutableStateOf(false) }
+    var shareVisible by remember(wishlistItem?.id) { mutableStateOf(false) }
     LazyColumn(
         modifier = modifier.fillMaxSize().background(DetailBackground),
         contentPadding = PaddingValues(bottom = 12.dp),
@@ -115,7 +120,7 @@ fun DestinationDetailsScreen(
                 imageRes = destination.imageRes,
                 categories = destination.categories,
                 onBackClick = onBackClick,
-                onShareClick = onShareClick,
+                onShareClick = { if (wishlistItem != null) shareVisible = true },
             )
         }
         item {
@@ -150,6 +155,14 @@ fun DestinationDetailsScreen(
             onCreateGroupWithPlace = onCreateGroupWithPlace,
         )
     }
+    if (shareVisible && wishlistItem != null) {
+        SharePlaceDialog(
+            item = wishlistItem,
+            state = groupHubState,
+            onDismiss = { shareVisible = false },
+            onSend = onSharePlace,
+        )
+    }
 }
 
 @Composable
@@ -157,8 +170,9 @@ fun PlaceDetailsScreen(
     attraction: Attraction?,
     wishlistItem: WishlistItem?,
     wishlistGroups: List<WishlistGroup>,
+    groupHubState: GroupHubUiState = GroupHubUiState(),
     onBackClick: () -> Unit,
-    onShareClick: () -> Unit,
+    onSharePlace: (Set<String>, Set<String>, WishlistItem) -> Boolean = { _, _, _ -> false },
     onGroupSelectionChange: (Int, WishlistItem, Boolean) -> Unit,
     onCreateGroupWithPlace: (String, WishlistItem) -> Boolean,
     modifier: Modifier = Modifier,
@@ -168,6 +182,7 @@ fun PlaceDetailsScreen(
         return
     }
     var selectorVisible by remember(wishlistItem?.id) { mutableStateOf(false) }
+    var shareVisible by remember(wishlistItem?.id) { mutableStateOf(false) }
     LazyColumn(
         modifier = modifier.fillMaxSize().background(DetailBackground),
         contentPadding = PaddingValues(bottom = 12.dp),
@@ -179,7 +194,7 @@ fun PlaceDetailsScreen(
                 imageRes = attraction.imageRes,
                 categories = attraction.categories,
                 onBackClick = onBackClick,
-                onShareClick = onShareClick,
+                onShareClick = { if (wishlistItem != null) shareVisible = true },
             )
         }
         item {
@@ -212,6 +227,14 @@ fun PlaceDetailsScreen(
             onDismiss = { selectorVisible = false },
             onGroupSelectionChange = { groupId, selected -> onGroupSelectionChange(groupId, wishlistItem, selected) },
             onCreateGroupWithPlace = onCreateGroupWithPlace,
+        )
+    }
+    if (shareVisible && wishlistItem != null) {
+        SharePlaceDialog(
+            item = wishlistItem,
+            state = groupHubState,
+            onDismiss = { shareVisible = false },
+            onSend = onSharePlace,
         )
     }
 }
@@ -330,15 +353,15 @@ private fun PopularPlaceRow(place: Attraction, onClick: () -> Unit, modifier: Mo
     }
 }
 
-private data class InfoField(val titleRes: Int, val value: String, val icon: ImageVector)
+private data class InfoField(val titleRes: Int, val values: List<String>, val icon: ImageVector)
 
 @Composable
 private fun PlaceInformation(attraction: Attraction, modifier: Modifier = Modifier) {
     val fields = buildList {
-        if (attraction.location.isNotBlank()) add(InfoField(R.string.destination_details_location, attraction.location, Icons.Default.LocationOn))
-        attraction.bestTime?.let { add(InfoField(R.string.destination_details_best_time, it, Icons.Default.Schedule)) }
-        attraction.entryFee?.let { add(InfoField(R.string.destination_details_entry_fee, it, Icons.Default.ConfirmationNumber)) }
-        if (attraction.idealFor.isNotEmpty()) add(InfoField(R.string.destination_details_ideal_for, attraction.idealFor.joinToString(), Icons.Default.Groups))
+        if (attraction.location.isNotBlank()) add(InfoField(R.string.destination_details_location, listOf(attraction.location), Icons.Default.LocationOn))
+        attraction.bestTime?.let { add(InfoField(R.string.destination_details_best_time, listOf(it), Icons.Default.Schedule)) }
+        attraction.entryFee?.let { add(InfoField(R.string.destination_details_entry_fee, listOf(it), Icons.Default.ConfirmationNumber)) }
+        if (attraction.idealFor.isNotEmpty()) add(InfoField(R.string.destination_details_ideal_for, attraction.idealFor, Icons.Default.Groups))
     }
     if (fields.isEmpty()) return
     BoxWithConstraints(modifier.fillMaxWidth()) {
@@ -356,11 +379,15 @@ private fun PlaceInformation(attraction: Attraction, modifier: Modifier = Modifi
 
 @Composable
 private fun InfoCard(field: InfoField, modifier: Modifier = Modifier) {
-    Surface(modifier.height(126.dp), shape = RoundedCornerShape(15.dp), color = Color.White, border = BorderStroke(1.dp, DetailOutline)) {
+    Surface(modifier.heightIn(min = 126.dp), shape = RoundedCornerShape(15.dp), color = Color.White, border = BorderStroke(1.dp, DetailOutline)) {
         Column(Modifier.padding(13.dp)) {
             Icon(field.icon, null, tint = DetailBlue, modifier = Modifier.size(27.dp))
             Text(stringResource(field.titleRes), color = DetailText, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 8.dp))
-            Text(field.value, color = DetailSecondaryText, fontSize = 13.sp, lineHeight = 17.sp, maxLines = 3, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 3.dp))
+            Column(Modifier.padding(top = 3.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                field.values.forEach { value ->
+                    Text(value, color = DetailSecondaryText, fontSize = 13.sp, lineHeight = 17.sp)
+                }
+            }
         }
     }
 }

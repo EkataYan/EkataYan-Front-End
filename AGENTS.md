@@ -34,7 +34,8 @@ Dependency versions are centralized in `gradle/libs.versions.toml`. Do not dupli
 - Route composables obtain Hilt ViewModels and pass state plus event callbacks to screen composables. Keep screen composables independent of `NavController`; navigation is expressed through callbacks.
 - Keep UI state and user-event handling in the feature ViewModel when state must survive recomposition. Keep reusable, presentation-only composables stateless where practical.
 - Splash is the current start destination. After its 1.5-second display delay, it leads to Welcome only until the user completes Get Started once; subsequent launches skip Welcome and open Login. This first-run state uses Preferences DataStore (with migration from the former private onboarding SharedPreferences) and resets when app data is cleared or the app is uninstalled. Welcome's Get Started opens the existing Login destination; startup destinations are removed from the back stack as the user continues. Welcome is static and does not require a ViewModel. The repository includes Home, Trips, Wishlist, Group Hub, booking, expenses, profile, notifications, and Business Partner feature packages; inspect each feature before assuming it is a placeholder.
-- Home destination cards open the reusable `destination/{destinationId}` details route, whose popular-place rows open `place/{placeId}` on the same NavHost. Both detail routes are callback-driven below navigation, omit the traveller bottom bar, and share the host-scoped `WishlistViewModel` with Home and Wishlist.
+- Home destination cards do not display Wishlist hearts; they open the reusable `destination/{destinationId}` details route, whose popular-place rows open `place/{placeId}` on the same NavHost. Both detail routes are callback-driven below navigation, omit the traveller bottom bar, and retain Add to Wishlist through the host-scoped `WishlistViewModel`.
+- Destination and place hero Share actions open the reusable in-app Share Place dialog. It reads groups and people from the host-scoped `GroupHubViewModel`; group recipients receive persisted `SharedPlace` messages, and person recipients use minimal Room-backed direct-chat groups in the same Group Hub repository. Shared-place chat cards resolve catalogue data by `placeId` and navigate back to the existing destination/place routes.
 
 ## Project Structure
 
@@ -42,7 +43,7 @@ Dependency versions are centralized in `gradle/libs.versions.toml`. Do not dupli
 - `app/src/main/java/com/ekatayan/app/ui/<feature>/`: migrated feature navigation, routes, and Compose screens.
 - `app/src/main/java/com/ekatayan/app/viewmodel/`: Android ViewModels and presentation state.
 - `app/src/main/java/com/ekatayan/app/data/`: models, local demo catalogs/data sources, repositories, and Hilt repository bindings.
-- `app/src/main/java/com/ekatayan/app/data/local/database/`: Room database version 1, normalized entities, DAOs, snapshots, and domain mappers for Wishlist, Trips, Group Hub, and Business Partner local data.
+- `app/src/main/java/com/ekatayan/app/data/local/database/`: Room database version 3, normalized entities, DAOs, snapshots, and domain mappers for Wishlist, Trips, Group Hub, and Business Partner local data.
 - `app/src/main/java/com/ekatayan/app/data/local/preferences/`: shared Preferences DataStore used for small frontend preferences and onboarding state.
 - `app/src/main/java/com/ekatayan/app/utils/`: shared date parsing and calendar helpers.
 - Splash and Welcome use `ui/splash/` and `ui/welcome/`, respectively, with Navigation -> Route -> Screen separation; these static startup screens do not require ViewModels or repositories.
@@ -140,7 +141,7 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 
 ## Local Frontend Persistence
 
-- Room 2.8.4 is the structured local source of truth. `EkataYanDatabase` uses schema version 1 and is provided with its DAOs through the existing Hilt/KSP setup; generated schemas are kept under `app/schemas/`.
+- Room 2.8.4 is the structured local source of truth. `EkataYanDatabase` uses schema version 3 and is provided with its DAOs through the existing Hilt/KSP setup; generated schemas are kept under `app/schemas/`.
 - Wishlist groups, covers, and destination membership; Trips; Group Hub groups, members, messages, reactions, themes, backgrounds, and attachment references; and Business Partner profiles, images, hours, links, document references, listings, listing fields, availability, bookings, and local session flags are persisted in normalized Room tables.
 - Preferences DataStore 1.2.1 stores lightweight settings and the welcome-completion flag. Existing encrypted authentication session storage remains separate and unchanged.
 - Static destination and attraction catalogue records are not duplicated in Room. Wishlist membership stores unique catalogue IDs; `WishlistItem.itemType` and `parentDestinationId` distinguish nested attractions from main destinations without a separate membership table. Home observes the same Wishlist repository for heart state, and Home's upcoming-trip card observes the persisted Trips repository.

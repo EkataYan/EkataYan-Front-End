@@ -23,6 +23,7 @@ import com.ekatayan.app.data.local.DestinationDetailsCatalog
 import com.ekatayan.app.ui.destinationdetails.destinationDetailsRoute
 import com.ekatayan.app.ui.destinationdetails.destinationDetailsScreens
 import com.ekatayan.app.ui.destinationdetails.placeDetailsRoute
+import com.ekatayan.app.data.model.WishlistItemType
 import com.ekatayan.app.ui.grouphub.GROUP_HUB_ROUTE
 import com.ekatayan.app.viewmodel.GroupHubViewModel
 import com.ekatayan.app.ui.grouphub.groupChatRoute
@@ -119,7 +120,6 @@ fun EkataYanNavHost(
             onRestartFlow = { navController.navigate(PARTNER_ENTRY_ROUTE) { popUpTo(HOME_ROUTE); launchSingleTop = true } },
         )
         homeScreen(
-            wishlistViewModel = wishlistViewModel,
             onDestinationClick = { wishlistItemId ->
                 DestinationDetailsCatalog.destinationIdForWishlistItem(wishlistItemId)?.let { destinationId ->
                     navController.navigate(destinationDetailsRoute(destinationId))
@@ -139,6 +139,7 @@ fun EkataYanNavHost(
         )
         destinationDetailsScreens(
             wishlistViewModel = wishlistViewModel,
+            groupHubViewModel = groupHubViewModel,
             onBackClick = navController::navigateUp,
             onPlaceClick = { placeId -> navController.navigate(placeDetailsRoute(placeId)) },
         )
@@ -260,6 +261,13 @@ fun EkataYanNavHost(
             onInfoClick = { navController.navigate(groupInfoRoute(it)) },
             onBackClick = navController::navigateUp,
             onRemoved = { navController.popBackStack(GROUP_HUB_ROUTE, inclusive = false) },
+            onSharedPlaceClick = { item ->
+                val route = when (item.itemType) {
+                    WishlistItemType.DESTINATION -> DestinationDetailsCatalog.destinationIdForWishlistItem(item.id)?.let(::destinationDetailsRoute)
+                    WishlistItemType.ATTRACTION -> DestinationDetailsCatalog.attractionIdForWishlistItem(item.id)?.let(::placeDetailsRoute)
+                }
+                route?.let(navController::navigate)
+            },
             onHomeClick = { navController.navigate(HOME_ROUTE) { launchSingleTop = true } },
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },

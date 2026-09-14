@@ -12,6 +12,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.content.Intent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -32,6 +33,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -42,7 +45,7 @@ import com.ekatayan.app.data.model.WishlistItem
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun GroupChatScreen(groupId: String, state: GroupHubUiState, onBackClick: () -> Unit, onInfoClick: () -> Unit, onSendText: (String, String, String?) -> Unit, onSendAttachment: (String, MessageType, String?, String?, Int?) -> Unit, onReact: (String, String) -> Unit, onDeleteMessage: (String, String) -> Unit, onTheme: (String, ChatTheme) -> Unit, onBackground: (String, String?) -> Unit, onLeave: () -> Unit, onFileSelected: (String) -> Unit, modifier: Modifier = Modifier) {
+fun GroupChatScreen(groupId: String, state: GroupHubUiState, onBackClick: () -> Unit, onInfoClick: () -> Unit, onSendText: (String, String, String?) -> Unit, onSendAttachment: (String, MessageType, String?, String?, Int?) -> Unit, onReact: (String, String) -> Unit, onDeleteMessage: (String, String) -> Unit, onTheme: (String, ChatTheme) -> Unit, onBackground: (String, String?) -> Unit, onLeave: () -> Unit, onFileSelected: (String) -> Unit, onSharedPlaceClick: (WishlistItem) -> Unit, modifier: Modifier = Modifier) {
     val group = state.groups.find { it.id == groupId } ?: return EmptyState("Group unavailable")
     val messages = state.messagesByGroup[groupId].orEmpty(); val listState = rememberLazyListState(); var input by rememberSaveable(groupId) { mutableStateOf("") }; var menu by remember { mutableStateOf(false) }; var attachmentMenu by remember { mutableStateOf(false) }; var placePicker by remember { mutableStateOf(false) }; var searchMode by remember { mutableStateOf(false) }; var search by remember { mutableStateOf("") }; var selectedMessage by remember { mutableStateOf<ChatMessage?>(null) }; var replyTo by remember { mutableStateOf<ChatMessage?>(null) }; var confirmLeave by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -65,7 +68,7 @@ fun GroupChatScreen(groupId: String, state: GroupHubUiState, onBackClick: () -> 
             val shown = messages.filter { search.isBlank() || it.text?.contains(search, true) == true || it.attachmentName?.contains(search, true) == true }
             LazyColumn(state = listState, modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (shown.isEmpty()) item { EmptyState(if (search.isNotBlank()) "No messages found" else "No messages yet.\nStart the conversation!") }
-                items(shown, key = ChatMessage::id) { message -> MessageBubble(message, state, messages, outgoing, { selectedMessage = message }) }
+                items(shown, key = ChatMessage::id) { message -> MessageBubble(message, state, messages, outgoing, { selectedMessage = message }, onSharedPlaceClick) }
                 state.typingUserIds[groupId].orEmpty().firstOrNull()?.let { id -> item { Text("${state.users.find { it.id == id }?.name ?: "Someone"}  •••", color = EkataTextSecondary, modifier = Modifier.background(Color.White, RoundedCornerShape(18.dp)).padding(12.dp)) } }
             }
         }
@@ -82,19 +85,22 @@ fun GroupChatScreen(groupId: String, state: GroupHubUiState, onBackClick: () -> 
     if (confirmLeave) ConfirmDialog("Leave group?", "Are you sure you want to leave \"${group.name}\"?", "Leave", { confirmLeave = false }, onLeave)
 }
 
-@Composable private fun MessageBubble(message: ChatMessage, state: GroupHubUiState, all: List<ChatMessage>, outgoingColor: Color, onLongClick: () -> Unit) {
+@Composable private fun MessageBubble(message: ChatMessage, state: GroupHubUiState, all: List<ChatMessage>, outgoingColor: Color, onLongClick: () -> Unit, onSharedPlaceClick: (WishlistItem) -> Unit) {
     val mine = message.senderId == CURRENT_USER_ID
+    val sharedPlace = if (message.type == MessageType.Place || message.type == MessageType.SharedPlace) {
+        state.availableDestinations.find { it.id == message.placeId }
+    } else null
     Row(Modifier.fillMaxWidth(), horizontalArrangement = if (mine) Arrangement.End else Arrangement.Start) {
         Column(Modifier.widthIn(max = 292.dp)) {
             if (!mine) Text(state.users.find { it.id == message.senderId }?.name ?: "Member", color = EkataBlue, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 10.dp, bottom = 2.dp))
-            Surface(color = if (mine) outgoingColor else Color.White, shape = RoundedCornerShape(18.dp, 18.dp, if (mine) 4.dp else 18.dp, if (mine) 18.dp else 4.dp), shadowElevation = if (mine) 0.dp else 1.dp, modifier = Modifier.combinedClickable(onClick = {}, onLongClick = onLongClick)) {
+            Surface(color = if (mine) outgoingColor else Color.White, shape = RoundedCornerShape(18.dp, 18.dp, if (mine) 4.dp else 18.dp, if (mine) 18.dp else 4.dp), shadowElevation = if (mine) 0.dp else 1.dp, modifier = Modifier.combinedClickable(onClick = { sharedPlace?.let(onSharedPlaceClick) }, onLongClick = onLongClick)) {
                 Column(Modifier.padding(11.dp)) {
                     message.replyToMessageId?.let { id -> all.find { it.id == id }?.let { Text("↪ ${it.text ?: it.type.name}", color = if (mine) Color.White.copy(.8f) else EkataTextSecondary, fontSize = 11.sp, modifier = Modifier.background(Color.Black.copy(.08f), RoundedCornerShape(8.dp)).padding(6.dp)) } }
                     when (message.type) {
                         MessageType.Text, MessageType.System -> Text(message.text.orEmpty(), color = if (mine) Color.White else EkataTextPrimary)
                         MessageType.Image -> { message.attachmentUri?.let { UriImage(it, "Photo message", Modifier.sizeIn(maxWidth = 240.dp, maxHeight = 210.dp).aspectRatio(1.25f).clip(RoundedCornerShape(12.dp))) }; Text("Photo", color = if (mine) Color.White else EkataTextPrimary) }
                         MessageType.File -> Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.InsertDriveFile, null, tint = if (mine) Color.White else EkataBlue); Spacer(Modifier.width(8.dp)); Column { Text(message.attachmentName ?: "File", color = if (mine) Color.White else EkataTextPrimary); Text("Document", fontSize = 10.sp, color = if (mine) Color.White.copy(.8f) else EkataTextSecondary) } }
-                        MessageType.Place -> { val place = state.availableDestinations.find { it.id == message.placeId }; place?.let { androidx.compose.foundation.Image(androidx.compose.ui.res.painterResource(it.imageRes), it.name, Modifier.fillMaxWidth().height(110.dp).clip(RoundedCornerShape(10.dp)), contentScale = ContentScale.Crop); Text("📍 ${it.name}", fontWeight = FontWeight.Bold, color = if (mine) Color.White else EkataTextPrimary); Text(it.location.orEmpty(), fontSize = 11.sp, color = if (mine) Color.White.copy(.8f) else EkataTextSecondary) } }
+                        MessageType.Place, MessageType.SharedPlace -> sharedPlace?.let { SharedPlaceMessageCard(it, mine) }
                         MessageType.Voice -> Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.PlayArrow, null, tint = if (mine) Color.White else EkataBlue); Text(" ━━━━━  ${message.voiceDurationSeconds ?: 0}s", color = if (mine) Color.White else EkataTextPrimary) }
                     }
                     Text(message.timestamp.format(DateTimeFormatter.ofPattern("h:mm a")), fontSize = 9.sp, color = if (mine) Color.White.copy(.75f) else EkataTextSecondary, modifier = Modifier.align(Alignment.End))
@@ -102,6 +108,23 @@ fun GroupChatScreen(groupId: String, state: GroupHubUiState, onBackClick: () -> 
             }
             if (message.reactions.isNotEmpty()) Text(message.reactions.joinToString(""), fontSize = 16.sp, modifier = Modifier.align(Alignment.End).offset(y = (-5).dp))
         }
+    }
+}
+
+@Composable
+private fun SharedPlaceMessageCard(place: WishlistItem, mine: Boolean) {
+    val primary = if (mine) Color.White else EkataTextPrimary
+    val secondary = if (mine) Color.White.copy(alpha = 0.82f) else EkataTextSecondary
+    Column(Modifier.fillMaxWidth()) {
+        Text(stringResource(com.ekatayan.app.R.string.share_place_shared_label), color = secondary, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+        Image(
+            painterResource(place.imageRes), place.name,
+            Modifier.fillMaxWidth().height(118.dp).padding(top = 5.dp).clip(RoundedCornerShape(10.dp)),
+            contentScale = ContentScale.Crop,
+        )
+        Text(place.name, fontWeight = FontWeight.Bold, color = primary, fontSize = 16.sp, modifier = Modifier.padding(top = 7.dp))
+        Text(place.location.orEmpty(), fontSize = 11.sp, color = secondary, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text(place.description, fontSize = 12.sp, lineHeight = 16.sp, color = secondary, maxLines = 3, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 5.dp))
     }
 }
 

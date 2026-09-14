@@ -1,6 +1,7 @@
 package com.ekatayan.app.ui.grouphub
 
 import com.ekatayan.app.viewmodel.GroupHubViewModel
+import com.ekatayan.app.data.model.WishlistItem
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,10 +19,10 @@ fun GroupHubRoute(viewModel: GroupHubViewModel, onGroupClick: (String) -> Unit, 
 }
 
 @Composable
-fun GroupChatRoute(groupId: String, viewModel: GroupHubViewModel, onBackClick: () -> Unit, onInfoClick: (String) -> Unit, onRemoved: () -> Unit) {
+fun GroupChatRoute(groupId: String, viewModel: GroupHubViewModel, onBackClick: () -> Unit, onInfoClick: (String) -> Unit, onRemoved: () -> Unit, onSharedPlaceClick: (WishlistItem) -> Unit) {
     val state by viewModel.uiState.collectAsState()
     LaunchedEffect(groupId) { viewModel.markRead(groupId) }
-    GroupChatScreen(groupId, state, onBackClick, { onInfoClick(groupId) }, viewModel::sendText, viewModel::sendAttachment, viewModel::react, viewModel::deleteMessage, viewModel::updateTheme, viewModel::updateBackground, { viewModel.leaveOrDelete(groupId); onRemoved() }, onFileSelected = { viewModel.sendFile(groupId, it) })
+    GroupChatScreen(groupId, state, onBackClick, { onInfoClick(groupId) }, viewModel::sendText, viewModel::sendAttachment, viewModel::react, viewModel::deleteMessage, viewModel::updateTheme, viewModel::updateBackground, { viewModel.leaveOrDelete(groupId); onRemoved() }, onFileSelected = { viewModel.sendFile(groupId, it) }, onSharedPlaceClick = onSharedPlaceClick)
 }
 
 @Composable

@@ -21,7 +21,7 @@ object DestinationDetailsCatalog {
             imageRes = R.drawable.polonnaruwa,
             categories = listOf("Historical", "Cultural", "UNESCO Site"),
             bestTime = "Early morning",
-            idealFor = listOf("History", "Culture", "Photography"),
+            idealFor = listOf("History Lovers", "Culture", "Photography"),
             highlights = listOf(
                 AttractionHighlight("Reclining Buddha", R.drawable.polonnaruwa),
                 AttractionHighlight("Seated Buddha", R.drawable.polonnaruwa),
@@ -157,10 +157,12 @@ object DestinationDetailsCatalog {
     private val destinationById = destinations.associateBy(DestinationDetails::id)
     private val destinationByWishlistId = destinations.associateBy(DestinationDetails::wishlistItemId)
     private val attractionById = attractions.associateBy(Attraction::id)
+    private val attractionByWishlistId = attractions.associateBy(Attraction::wishlistItemId)
 
     fun destination(id: String): DestinationDetails? = destinationById[id]
     fun destinationIdForWishlistItem(itemId: Int): String? = destinationByWishlistId[itemId]?.id
     fun attraction(id: String): Attraction? = attractionById[id]
+    fun attractionIdForWishlistItem(itemId: Int): String? = attractionByWishlistId[itemId]?.id
     fun popularPlaces(destination: DestinationDetails): List<Attraction> =
         destination.popularPlaceIds.mapNotNull(attractionById::get)
 
