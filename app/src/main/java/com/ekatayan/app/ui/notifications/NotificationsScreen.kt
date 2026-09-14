@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
+import com.ekatayan.app.core.designsystem.component.EkataEmptyState
 import com.ekatayan.app.core.designsystem.theme.*
 import com.ekatayan.app.data.model.NotificationCategory
 import com.ekatayan.app.data.model.NotificationFilter
@@ -106,6 +107,16 @@ fun NotificationsScreen(
             }
             items(uiState.filteredNotifications, key = NotificationItem::id) { notification ->
                 NotificationCard(notification = notification, onClick = { onNotificationClick(notification.id) })
+            }
+            if (!uiState.loadingInvitations && uiState.invitationError == null &&
+                uiState.invitations.isEmpty() && uiState.filteredNotifications.isEmpty()
+            ) {
+                item {
+                    EkataEmptyState(
+                        title = "No notifications yet",
+                        message = "Updates about your trips and groups will appear here.",
+                    )
+                }
             }
         }
     }

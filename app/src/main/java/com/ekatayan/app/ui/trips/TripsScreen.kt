@@ -65,6 +65,9 @@ import com.ekatayan.app.core.designsystem.component.AppBottomNavigation
 import com.ekatayan.app.core.designsystem.component.HeaderActions
 import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.component.EkataSectionHeading
+import com.ekatayan.app.core.designsystem.component.EkataEmptyState
+import com.ekatayan.app.core.designsystem.component.EkataErrorState
+import com.ekatayan.app.core.designsystem.component.EkataLoadingState
 import com.ekatayan.app.core.designsystem.theme.EkataBlue
 import com.ekatayan.app.core.designsystem.theme.EkataBlueDark
 import com.ekatayan.app.core.designsystem.theme.EkataElevation
@@ -95,6 +98,7 @@ fun TripsScreen(
     onDeleteTrip: (Int) -> Unit = {},
     onTripClick: (Trip) -> Unit = {},
     hasUnreadNotifications: Boolean = false,
+    onRetry: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var pendingDeleteTrip by remember { mutableStateOf<Trip?>(null) }
@@ -114,6 +118,18 @@ fun TripsScreen(
                 )
             }
             item { TimelineHeader() }
+            if (uiState.isLoading && uiState.trips.isEmpty()) {
+                item { EkataLoadingState("Loading your trips") }
+            } else if (uiState.errorMessage != null && uiState.trips.isEmpty()) {
+                item { EkataErrorState("Couldn't load trips", uiState.errorMessage, actionLabel = "Retry", onAction = onRetry) }
+            } else if (uiState.trips.isEmpty()) {
+                item {
+                    EkataEmptyState(
+                        title = "No trips yet",
+                        message = "Start planning your first Sri Lankan adventure.",
+                    )
+                }
+            }
             listOf(R.string.trip_status_upcoming, R.string.trip_status_ongoing, R.string.trip_status_past).forEach { status ->
                 val statusTrips = uiState.trips.filter { it.statusFor(uiState.today) == status }
                 if (statusTrips.isNotEmpty()) {

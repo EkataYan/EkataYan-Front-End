@@ -156,6 +156,7 @@ private fun ProfileIdentityHeader(
         Row(Modifier.fillMaxWidth().padding(EkataSpacing.md), verticalAlignment = Alignment.CenterVertically) {
             ProfileAvatar(
                 localPath = avatarLocalPath,
+                name = name,
                 modifier = Modifier.size(ProfileAvatarSize).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
             )
             Spacer(Modifier.width(EkataSpacing.md))

@@ -12,13 +12,13 @@ import javax.inject.Singleton
 @Singleton
 class HomeLocalDataSource @Inject constructor() {
 
-    fun getUser(): User = User(name = "Zendaya", profileImageRes = null)
+    fun getUser(): User = User(name = "", profileImageRes = null)
 
     fun getRecommendedDestinations(): List<WishlistItem> = destinationsById(14, 11, 1)
 
-    fun getUpcomingTrip(): UpcomingTrip? = UpcomingTrip(1, "Anuradhapura", "26 Aug 2026", "6 Days", R.drawable.anuradhapura)
+    fun getUpcomingTrip(): UpcomingTrip? = null
 
-    fun getWeather(): WeatherInfo? = WeatherInfo("Colombo", 29, "Sunny", 60, WeatherType.CLEAR)
+    fun getWeather(): WeatherInfo? = null
 
     fun getPopularDestinations(): List<WishlistItem> = destinationsById(1, 11, 12, 14, 15)
 

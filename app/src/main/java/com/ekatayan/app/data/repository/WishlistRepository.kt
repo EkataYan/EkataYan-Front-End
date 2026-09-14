@@ -1,6 +1,6 @@
 package com.ekatayan.app.data.repository
 
-import com.ekatayan.app.data.local.initialWishlistData
+import com.ekatayan.app.data.local.WishlistDestinationCatalog
 import com.ekatayan.app.data.local.database.WishlistDao
 import com.ekatayan.app.data.local.database.toEntities
 import com.ekatayan.app.data.local.database.wishlistData
@@ -24,13 +24,12 @@ class WishlistRepository private constructor(private val dao: WishlistDao?, test
     constructor() : this(null, true)
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO.limitedParallelism(1))
-    private val mutableState = MutableStateFlow(if (testMode) initialWishlistData() else WishlistData(emptyList(), emptyList()))
+    private val mutableState = MutableStateFlow(WishlistData(emptyList(), WishlistDestinationCatalog.destinations))
     val state = mutableState.asStateFlow()
 
     init {
         if (dao != null) scope.launch {
-            val seed = initialWishlistData().toEntities()
-            dao.initialize(seed.first, seed.second)
+            dao.initialize(emptyList(), emptyList())
             combine(dao.observeGroups(), dao.observeItems(), ::wishlistData).collect { mutableState.value = it }
         }
     }

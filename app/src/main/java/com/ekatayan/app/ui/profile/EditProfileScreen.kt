@@ -323,7 +323,7 @@ private fun EditProfileAvatar(localPath: String?, isUploading: Boolean, onChange
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
             ) {
-                ProfileAvatar(localPath = localPath, modifier = Modifier.clip(CircleShape))
+                ProfileAvatar(localPath = localPath, name = "", modifier = Modifier.clip(CircleShape))
             }
             Spacer(Modifier.width(EkataSpacing.md))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(EkataSpacing.xs)) {

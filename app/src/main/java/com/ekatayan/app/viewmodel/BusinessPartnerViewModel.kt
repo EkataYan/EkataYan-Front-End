@@ -67,8 +67,7 @@ class BusinessPartnerViewModel @Inject constructor(private val repository: Local
     fun setLoginPassword(value: String) = repository.update { it.copy(loginPassword = value) }
     fun login(): Boolean {
         if (!PartnerValidation.email(uiState.value.loginEmail) || uiState.value.loginPassword.isBlank()) return false
-        repository.populateDemo()
-        repository.update { it.copy(loginPassword = "") }
+        repository.update { it.copy(loggedIn = true, loginPassword = "") }
         return true
     }
 
