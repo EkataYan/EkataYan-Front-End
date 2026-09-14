@@ -8,7 +8,14 @@ data class WishlistItem(
     val description: String,
     val location: String? = null,
     @param:DrawableRes val imageRes: Int,
+    val itemType: WishlistItemType = WishlistItemType.DESTINATION,
+    val parentDestinationId: String? = null,
 )
+
+enum class WishlistItemType {
+    DESTINATION,
+    ATTRACTION,
+}
 
 sealed interface WishlistCover {
     data object None : WishlistCover

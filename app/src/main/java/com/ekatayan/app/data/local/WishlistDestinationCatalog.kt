@@ -28,5 +28,5 @@ object WishlistDestinationCatalog {
         WishlistItem(19, "Udawalawe", "An open-country national park famous for wild elephants.", "Sabaragamuwa Province", R.drawable.hiking),
         WishlistItem(20, "Hikkaduwa", "A lively beach town known for coral, surfing, and sunsets.", "Southern Province", R.drawable.bentota),
         WishlistItem(21, "Negombo", "A lagoon-side coastal city with beaches and a historic fishing culture.", "Western Province", R.drawable.colombo),
-    )
+    ) + DestinationDetailsCatalog.attractionWishlistItems
 }

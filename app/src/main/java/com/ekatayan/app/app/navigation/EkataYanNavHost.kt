@@ -19,6 +19,10 @@ import com.ekatayan.app.ui.booking.BOOKING_ROUTE
 import com.ekatayan.app.ui.booking.bookingScreen
 import com.ekatayan.app.ui.home.HOME_ROUTE
 import com.ekatayan.app.ui.home.homeScreen
+import com.ekatayan.app.data.local.DestinationDetailsCatalog
+import com.ekatayan.app.ui.destinationdetails.destinationDetailsRoute
+import com.ekatayan.app.ui.destinationdetails.destinationDetailsScreens
+import com.ekatayan.app.ui.destinationdetails.placeDetailsRoute
 import com.ekatayan.app.ui.grouphub.GROUP_HUB_ROUTE
 import com.ekatayan.app.viewmodel.GroupHubViewModel
 import com.ekatayan.app.ui.grouphub.groupChatRoute
@@ -116,6 +120,11 @@ fun EkataYanNavHost(
         )
         homeScreen(
             wishlistViewModel = wishlistViewModel,
+            onDestinationClick = { wishlistItemId ->
+                DestinationDetailsCatalog.destinationIdForWishlistItem(wishlistItemId)?.let { destinationId ->
+                    navController.navigate(destinationDetailsRoute(destinationId))
+                }
+            },
             onPartnershipClick = { navController.navigate(PARTNER_ENTRY_ROUTE) { launchSingleTop = true } },
             onGroupHubClick = { navController.navigate(GROUP_HUB_ROUTE) },
             onWishlistClick = { navController.navigate(WISHLIST_ROUTE) },
@@ -127,6 +136,11 @@ fun EkataYanNavHost(
             onSettingsClick = navController::navigateToSettings,
             onNotificationClick = navController::navigateToNotifications,
             notificationsUiState = notificationsViewModel.uiState,
+        )
+        destinationDetailsScreens(
+            wishlistViewModel = wishlistViewModel,
+            onBackClick = navController::navigateUp,
+            onPlaceClick = { placeId -> navController.navigate(placeDetailsRoute(placeId)) },
         )
         bookingScreen(
             onHomeClick = { navController.navigate(HOME_ROUTE) },

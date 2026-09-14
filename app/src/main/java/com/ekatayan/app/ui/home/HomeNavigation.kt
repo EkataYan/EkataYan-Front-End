@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 const val HOME_ROUTE = "home"
 
 fun NavGraphBuilder.homeScreen(
+    onDestinationClick: (Int) -> Unit,
     onGroupHubClick: () -> Unit,
     onPartnershipClick: () -> Unit,
     onWishlistClick: () -> Unit,
@@ -25,6 +26,7 @@ fun NavGraphBuilder.homeScreen(
 ) {
     composable(HOME_ROUTE) {
         HomeRoute(
+            onDestinationClick = onDestinationClick,
             onWishlistClick = onWishlistClick,
             onGroupHubClick = onGroupHubClick,
             onPartnershipClick = onPartnershipClick,

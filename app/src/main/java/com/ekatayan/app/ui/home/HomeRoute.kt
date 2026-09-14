@@ -37,6 +37,7 @@ import com.ekatayan.app.viewmodel.WeatherErrorKind
 
 @Composable
 fun HomeRoute(
+    onDestinationClick: (Int) -> Unit,
     onWishlistClick: () -> Unit,
     onGroupHubClick: () -> Unit,
     onPartnershipClick: () -> Unit,
@@ -111,6 +112,8 @@ fun HomeRoute(
         onProfileClick = onProfileClick,
         onSettingsClick = onSettingsClick,
         onNotificationClick = onNotificationClick,
+        onRecommendedDestinationClick = onDestinationClick,
+        onPopularDestinationClick = onDestinationClick,
         hasUnreadNotifications = notificationState.hasUnreadNotifications,
         onWeatherAction = {
             if (hasLocationPermission()) viewModel.refreshWeather()
