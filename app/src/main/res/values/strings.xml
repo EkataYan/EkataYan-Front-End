@@ -254,4 +254,6 @@
     <string name="home_sunrise_label">Sunrise</string>
     <string name="home_no_popular_title">No popular destinations yet</string>
     <string name="home_no_popular_message">Popular destinations will appear here when they are available.</string>
+    <string name="auth_error_email_not_confirmed">Confirm your email address before signing in.</string>
+    <string name="auth_error_rate_limited">Too many sign-in attempts. Please wait a moment and try again.</string>
 </resources>

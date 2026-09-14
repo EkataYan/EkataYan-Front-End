@@ -12,6 +12,7 @@ EkataYan is an Android frontend/mobile application for AI-powered travel plannin
 
 ## Tech Stack
 
+
 Verified from the repository:
 
 - Kotlin and Gradle Kotlin DSL; official Kotlin code style.

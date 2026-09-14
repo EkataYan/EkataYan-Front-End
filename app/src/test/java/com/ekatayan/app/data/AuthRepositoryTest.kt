@@ -20,8 +20,62 @@ import dagger.Lazy
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Test
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
+import retrofit2.HttpException
+import retrofit2.Response
 
 class AuthRepositoryTest {
+    @Test fun freshStorageEmailLoginCreatesSessionWithoutCachedCredentials() = runTest {
+        val store = AuthMemorySessionStore()
+        val session = UserSessionProvider(store)
+        assertNull(session.currentAccessToken())
+        assertNull(session.refreshToken())
+
+        SupabaseAuthRepository(Lazy { FakeSupabaseAuthApi() }, session)
+            .signIn("fresh@example.com", "password")
+
+        assertEquals("access", session.currentAccessToken())
+        assertEquals("refresh", session.refreshToken())
+    }
+
+    @Test fun freshStorageRestoreDoesNotCallNetworkOrRequireCachedSession() = runTest {
+        val api = FakeSupabaseAuthApi()
+        val repository = SupabaseAuthRepository(Lazy { api }, UserSessionProvider(AuthMemorySessionStore()))
+
+        assertFalse(repository.restoreSession())
+        assertEquals(0, api.refreshCalls)
+    }
+
+    @Test fun authSuccessDoesNotDependOnProfileOrBackendAvailability() = runTest {
+        // AuthRepository intentionally has no ProfileApiService/Flask dependency.
+        val session = UserSessionProvider(AuthMemorySessionStore())
+        SupabaseAuthRepository(Lazy { FakeSupabaseAuthApi() }, session)
+            .signIn("traveler@example.com", "password")
+
+        assertNotNull(session.currentAccessToken())
+    }
+
+    @Test fun emailNotConfirmedResponseIsMappedSeparatelyFromBadPassword() = runTest {
+        val api = FakeSupabaseAuthApi(signInFailure = authHttpError(400, "email_not_confirmed"))
+        val repository = SupabaseAuthRepository(Lazy { api }, UserSessionProvider(AuthMemorySessionStore()))
+
+        val error = assertThrows(com.ekatayan.app.data.repository.AuthenticationException::class.java) {
+            kotlinx.coroutines.runBlocking { repository.signIn("unconfirmed@example.com", "password") }
+        }
+        assertEquals(com.ekatayan.app.data.repository.AuthenticationFailure.EMAIL_NOT_CONFIRMED, error.failure)
+    }
+
+    @Test fun rateLimitedResponseHasSpecificFailure() = runTest {
+        val api = FakeSupabaseAuthApi(signInFailure = authHttpError(429, "over_request_rate_limit"))
+        val repository = SupabaseAuthRepository(Lazy { api }, UserSessionProvider(AuthMemorySessionStore()))
+
+        val error = assertThrows(com.ekatayan.app.data.repository.AuthenticationException::class.java) {
+            kotlinx.coroutines.runBlocking { repository.signIn("traveler@example.com", "password") }
+        }
+        assertEquals(com.ekatayan.app.data.repository.AuthenticationFailure.RATE_LIMITED, error.failure)
+    }
+
     @Test fun googleIdTokenRequestUsesSupabaseNativeSignInContract() {
         val json = Gson().toJson(GoogleIdTokenRequest(idToken = "google-id-token", nonce = "raw-nonce"))
         val fields = JsonParser.parseString(json).asJsonObject.keySet()
@@ -152,6 +206,7 @@ private class AuthMemorySessionStore : SessionStore {
 
 private class FakeSupabaseAuthApi(
     private val signUpResponse: SupabaseSessionDto = session(),
+    private val signInFailure: HttpException? = null,
 ) : SupabaseAuthApiService {
     override suspend fun updatePassword(authorization: String, request: com.ekatayan.app.data.remote.api.PasswordUpdateRequest): Map<String, Any?> = emptyMap()
     var request: PasswordSignInRequest? = null
@@ -160,6 +215,7 @@ private class FakeSupabaseAuthApi(
     var refreshCalls = 0
     override suspend fun signInWithPassword(grantType: String, request: PasswordSignInRequest): SupabaseSessionDto {
         this.request = request
+        signInFailure?.let { throw it }
         return session()
     }
     override suspend fun signUpWithPassword(request: PasswordSignUpRequest): SupabaseSessionDto {
@@ -184,3 +240,11 @@ private class FakeSupabaseAuthApi(
         )
     }
 }
+
+private fun authHttpError(status: Int, errorCode: String): HttpException = HttpException(
+    Response.error<Any>(
+        status,
+        "{\"error_code\":\"$errorCode\",\"msg\":\"redacted test message\"}"
+            .toResponseBody("application/json".toMediaType()),
+    ),
+)

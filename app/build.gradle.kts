@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.net.URI
 
 plugins {
     alias(libs.plugins.android.application)
@@ -21,6 +22,29 @@ val supabasePublishableKey = providers.gradleProperty("SUPABASE_PUBLISHABLE_KEY"
 val googleWebClientId = providers.gradleProperty("GOOGLE_WEB_CLIENT_ID")
     .orElse(provider { localConfiguration.getProperty("GOOGLE_WEB_CLIENT_ID", "") })
 fun quoted(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
+val clientConfigurationErrors = buildList {
+    val url = supabaseUrl.get().trim()
+    if (url.isBlank()) add("SUPABASE_URL is missing")
+    else if (runCatching { URI(url) }.getOrNull()?.let { it.scheme != "https" || it.host.isNullOrBlank() } != false) {
+        add("SUPABASE_URL must be a valid HTTPS URL")
+    }
+    val key = supabasePublishableKey.get().trim()
+    if (key.isBlank()) add("SUPABASE_PUBLISHABLE_KEY is missing")
+    else if (!key.startsWith("sb_publishable_") && !key.startsWith("eyJ")) {
+        add("SUPABASE_PUBLISHABLE_KEY is not a publishable/legacy anon key")
+    }
+    val clientId = googleWebClientId.get().trim()
+    if (clientId.isBlank()) add("GOOGLE_WEB_CLIENT_ID is missing")
+    else if (!clientId.endsWith(".apps.googleusercontent.com")) add("GOOGLE_WEB_CLIENT_ID is invalid")
+}
+check(clientConfigurationErrors.isEmpty()) {
+    clientConfigurationErrors.joinToString(
+        prefix = "Client authentication configuration is incomplete:\n- ",
+        separator = "\n- ",
+        postfix = "\nCopy local.properties.example to local.properties and provide the missing values.",
+    )
+}
 
 android {
     namespace = "com.ekatayan.app"

@@ -6,8 +6,6 @@
    See https://developer.android.com/about/versions/12/backup-restore
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <!-- Encrypted auth tokens are bound to this installation's Android Keystore. -->
+    <exclude domain="sharedpref" path="ekatayan_auth_session.xml"/>
 </full-backup-content>

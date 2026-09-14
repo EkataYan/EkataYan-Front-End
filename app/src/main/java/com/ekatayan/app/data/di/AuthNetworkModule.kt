@@ -2,6 +2,7 @@ package com.ekatayan.app.data.di
 
 import com.ekatayan.app.BuildConfig
 import com.ekatayan.app.data.remote.SupabaseAuthInterceptor
+import com.ekatayan.app.data.remote.AuthDiagnosticsInterceptor
 import com.ekatayan.app.data.remote.api.SupabaseAuthApiService
 import dagger.Module
 import dagger.Provides
@@ -23,7 +24,9 @@ object AuthNetworkModule {
         val url = BuildConfig.SUPABASE_URL.toHttpUrl()
         require(url.isHttps && url.username.isEmpty() && url.password.isEmpty() && url.query == null && url.fragment == null)
         return Retrofit.Builder().baseUrl(url)
-            .client(OkHttpClient.Builder().addInterceptor(SupabaseAuthInterceptor())
+            .client(OkHttpClient.Builder()
+                .addInterceptor(SupabaseAuthInterceptor())
+                .addInterceptor(AuthDiagnosticsInterceptor())
                 .followRedirects(false).followSslRedirects(false).callTimeout(30, TimeUnit.SECONDS).build())
             .addConverterFactory(GsonConverterFactory.create()).build()
             .create(SupabaseAuthApiService::class.java)
