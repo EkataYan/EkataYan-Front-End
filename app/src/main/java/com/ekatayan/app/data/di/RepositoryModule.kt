@@ -16,6 +16,8 @@ import com.ekatayan.app.data.local.AndroidProfileImageStore
 import com.ekatayan.app.data.local.ProfileImageStore
 import com.ekatayan.app.data.auth.AndroidGoogleCredentialProvider
 import com.ekatayan.app.data.auth.GoogleCredentialProvider
+import com.ekatayan.app.data.remote.realtime.NotificationRealtimeClient
+import com.ekatayan.app.data.remote.realtime.OkHttpNotificationRealtimeClient
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -40,6 +42,12 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindGoogleCredentialProvider(impl: AndroidGoogleCredentialProvider): GoogleCredentialProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindNotificationRealtimeClient(
+        impl: OkHttpNotificationRealtimeClient,
+    ): NotificationRealtimeClient
 
     @Binds
     @Singleton

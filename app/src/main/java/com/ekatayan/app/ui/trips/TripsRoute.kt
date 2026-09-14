@@ -4,6 +4,7 @@ import com.ekatayan.app.data.model.Trip
 import com.ekatayan.app.viewmodel.TripsViewModel
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -25,6 +26,9 @@ fun TripsRoute(
     notificationsUiState: StateFlow<NotificationsUiState>,
     viewModel: TripsViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.showToday()
+    }
     val uiState by viewModel.uiState.collectAsState()
     val notificationState by notificationsUiState.collectAsStateWithLifecycle()
     TripsScreen(

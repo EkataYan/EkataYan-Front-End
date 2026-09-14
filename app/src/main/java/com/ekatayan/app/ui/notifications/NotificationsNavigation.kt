@@ -15,7 +15,7 @@ fun NavGraphBuilder.notificationsScreen(
     onPlannerClick: () -> Unit,
     onExpensesClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onNotificationClick: (Int) -> Unit,
+    onNotificationClick: (String) -> Unit,
 ) {
     composable(NOTIFICATIONS_ROUTE) {
         NotificationsRoute(

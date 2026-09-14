@@ -8,7 +8,7 @@ import com.ekatayan.app.viewmodel.NotificationsViewModel
 
 @Composable
 fun NotificationDetailRoute(
-    notificationId: Int,
+    notificationId: String,
     viewModel: NotificationsViewModel,
     onBackClick: () -> Unit,
 ) {

@@ -3,6 +3,7 @@ package com.ekatayan.app.app.navigation
 import com.ekatayan.app.ui.businesspartner.*
 import com.ekatayan.app.viewmodel.BusinessPartnerViewModel
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import android.net.Uri
 import androidx.compose.ui.Modifier
@@ -10,6 +11,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.ekatayan.app.ui.expenses.EXPENSES_ROUTE
 import com.ekatayan.app.ui.expenses.expensesScreen
 import com.ekatayan.app.ui.expenses.tripExpensesRoute
@@ -78,6 +82,15 @@ fun EkataYanNavHost(
     val wishlistViewModel: WishlistViewModel = hiltViewModel()
     val groupHubViewModel: GroupHubViewModel = hiltViewModel()
     val notificationsViewModel: NotificationsViewModel = hiltViewModel()
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner, notificationsViewModel) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) notificationsViewModel.onAppForeground()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     NavHost(
         navController = navController,

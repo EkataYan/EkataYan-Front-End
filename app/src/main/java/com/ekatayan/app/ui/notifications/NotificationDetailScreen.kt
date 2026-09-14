@@ -64,13 +64,13 @@ fun NotificationDetailScreen(
                             Icon(notification.icon, contentDescription = null, tint = notification.iconTint, modifier = Modifier.size(27.dp))
                         }
                         Text(
-                            text = stringResource(notification.titleRes),
+                            text = notification.title,
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.padding(top = 18.dp),
                         )
                         Text(
-                            text = stringResource(notification.messageRes),
+                            text = notification.message,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 10.dp),
@@ -80,7 +80,7 @@ fun NotificationDetailScreen(
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(Icons.Outlined.AccessTime, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.Gray)
-                            Text(stringResource(notification.timeLabelRes), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 6.dp))
+                            Text(notification.timeLabel, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 6.dp))
                             Spacer(Modifier.weight(1f))
                             Text(stringResource(notification.category.labelRes), style = MaterialTheme.typography.labelMedium, color = notification.iconTint)
                         }

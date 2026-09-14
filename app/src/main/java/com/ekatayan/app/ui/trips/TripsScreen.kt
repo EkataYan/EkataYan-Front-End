@@ -130,7 +130,7 @@ fun TripsScreen(
                     )
                 }
             }
-            listOf(R.string.trip_status_upcoming, R.string.trip_status_ongoing, R.string.trip_status_past).forEach { status ->
+            listOf(R.string.trip_status_ongoing, R.string.trip_status_upcoming, R.string.trip_status_past).forEach { status ->
                 val statusTrips = uiState.trips.filter { it.statusFor(uiState.today) == status }
                 if (statusTrips.isNotEmpty()) {
                     item { TimelineStatusHeader(status) }
