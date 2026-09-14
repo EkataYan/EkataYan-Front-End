@@ -165,6 +165,8 @@ private fun LoginForm(
                     com.ekatayan.app.data.repository.AuthenticationFailure.INVALID_CREDENTIALS -> R.string.login_error_invalid_credentials
                     com.ekatayan.app.data.repository.AuthenticationFailure.NETWORK -> R.string.login_error_network
                     com.ekatayan.app.data.repository.AuthenticationFailure.CONFIGURATION -> R.string.login_error_configuration
+                    com.ekatayan.app.data.repository.AuthenticationFailure.EMAIL_NOT_CONFIRMED -> R.string.auth_error_email_not_confirmed
+                    com.ekatayan.app.data.repository.AuthenticationFailure.RATE_LIMITED -> R.string.auth_error_rate_limited
                     com.ekatayan.app.data.repository.AuthenticationFailure.GOOGLE_CANCELED -> R.string.auth_google_canceled
                     com.ekatayan.app.data.repository.AuthenticationFailure.GOOGLE_NO_CREDENTIAL -> R.string.auth_google_no_credential
                     com.ekatayan.app.data.repository.AuthenticationFailure.GOOGLE_INVALID_TOKEN -> R.string.auth_google_invalid_token
