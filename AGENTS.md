@@ -85,6 +85,7 @@ Add code to the narrowest appropriate feature or core package. Do not place feat
 - Do not invent endpoints or contracts. Obtain or clearly document the required endpoint, HTTP method, request fields, response fields, error behavior, authentication requirements, and external backend dependency before implementation.
 - Preserve verified API contracts and existing integration patterns once they are introduced. Record stable cross-repository integration decisions here without including secrets.
 - Home weather uses the authenticated Flask weather endpoint through `WeatherRepository`; it queries the current profile home city and never stores provider credentials in Android. AI Planner requests an authenticated, non-persisted Gemini-backed itinerary preview first; only Save Trip creates the backend trip, persists the reviewed itinerary graph, and mirrors the saved trip into the current local Trips repository.
+- Home's Upcoming Trip observes the shared `TripsRepository`, selects the earliest trip whose start date is today or later, and opens the existing `trips/details/{tripKey}` destination using the remote UUID when available or the stable local ID otherwise.
 
 ## Git & GitHub Workflow
 

@@ -10,6 +10,7 @@ const val HOME_ROUTE = "home"
 
 fun NavGraphBuilder.homeScreen(
     onDestinationClick: (Int) -> Unit,
+    onUpcomingTripClick: (String) -> Unit,
     onGroupHubClick: () -> Unit,
     onPartnershipClick: () -> Unit,
     onWishlistClick: () -> Unit,
@@ -25,6 +26,7 @@ fun NavGraphBuilder.homeScreen(
     composable(HOME_ROUTE) {
         HomeRoute(
             onDestinationClick = onDestinationClick,
+            onUpcomingTripClick = onUpcomingTripClick,
             onWishlistClick = onWishlistClick,
             onGroupHubClick = onGroupHubClick,
             onPartnershipClick = onPartnershipClick,

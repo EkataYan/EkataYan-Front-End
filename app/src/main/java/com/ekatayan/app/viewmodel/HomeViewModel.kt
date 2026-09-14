@@ -16,6 +16,7 @@ import com.ekatayan.app.data.repository.TripsRepository
 import com.ekatayan.app.data.repository.WeatherRepository
 import com.ekatayan.app.data.remote.UserSessionProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
@@ -77,14 +78,21 @@ class HomeViewModel @Inject constructor(
         }
         viewModelScope.launch {
             tripsRepository.trips.collect { trips ->
-                val next = trips.filter { !it.endDate.isBefore(java.time.LocalDate.now()) }.minByOrNull { it.startDate }
+                val today = LocalDate.now()
+                val next = trips
+                    .asSequence()
+                    .filter { !it.startDate.isBefore(today) }
+                    .minByOrNull { it.startDate }
                 _uiState.update { state -> state.copy(upcomingTrip = next?.let { trip ->
                     UpcomingTrip(
-                        trip.id,
-                        trip.customLocation ?: context.getString(trip.locationRes),
-                        trip.startDate.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)),
-                        "${ChronoUnit.DAYS.between(trip.startDate, trip.endDate) + 1} Days",
-                        trip.imageRes,
+                        id = trip.id,
+                        tripKey = trip.remoteId ?: trip.id.toString(),
+                        name = trip.customName
+                            ?: trip.nameRes.takeIf { it != 0 }?.let(context::getString)
+                            ?: trip.customLocation.orEmpty(),
+                        date = trip.startDate.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)),
+                        duration = "${ChronoUnit.DAYS.between(trip.startDate, trip.endDate) + 1} Days",
+                        imageRes = trip.imageRes,
                     )
                 }) }
             }

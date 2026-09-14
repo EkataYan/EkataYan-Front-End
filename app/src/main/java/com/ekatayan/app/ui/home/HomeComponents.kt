@@ -268,7 +268,7 @@ fun PageIndicator(count: Int, selectedPage: Int, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClick: () -> Unit, weatherLoading: Boolean = false, weatherError: String? = null, onWeatherAction: (() -> Unit)? = null) {
+fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClick: (String) -> Unit, weatherLoading: Boolean = false, weatherError: String? = null, onWeatherAction: (() -> Unit)? = null) {
     BoxWithConstraints(
         Modifier.fillMaxWidth().padding(
             start = EkataSpacing.md,
@@ -297,9 +297,9 @@ fun HomeInfoCards(trip: UpcomingTrip?, weather: WeatherInfo?, onUpcomingTripClic
 private val HomeWidgetHeight = 264.dp
 
 @Composable
-fun UpcomingTripCard(trip: UpcomingTrip?, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun UpcomingTripCard(trip: UpcomingTrip?, onClick: (String) -> Unit, modifier: Modifier = Modifier) {
     Card(
-        onClick = onClick,
+        onClick = { trip?.let { onClick(it.tripKey) } },
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -319,14 +319,14 @@ fun UpcomingTripCard(trip: UpcomingTrip?, onClick: () -> Unit, modifier: Modifie
                 Spacer(Modifier.height(EkataSpacing.xs))
                 HomeInfoImage(trip.imageRes)
                 Spacer(Modifier.height(EkataSpacing.xs))
-                Text(trip.destination, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(trip.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(Modifier.fillMaxWidth().padding(top = EkataSpacing.xxs), horizontalArrangement = Arrangement.spacedBy(EkataSpacing.xs)) {
                     WidgetMetric(Icons.Default.CalendarMonth, trip.date, stringResource(R.string.home_travel_date), Modifier.weight(1f))
                     WidgetMetric(Icons.Outlined.Schedule, trip.duration, stringResource(R.string.home_duration), Modifier.weight(1f))
                 }
                 Spacer(Modifier.weight(1f))
                 Surface(
-                    onClick = onClick,
+                    onClick = { onClick(trip.tripKey) },
                     color = MaterialTheme.colorScheme.primary,
                     shape = MaterialTheme.shapes.extraLarge,
                     modifier = Modifier.fillMaxWidth(),

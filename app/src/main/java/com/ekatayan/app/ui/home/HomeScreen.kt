@@ -37,7 +37,7 @@ fun HomeScreen(
     onGroupHubClick: () -> Unit = {},
     onPartnershipClick: () -> Unit = {},
     onRecommendedDestinationClick: (Int) -> Unit = {},
-    onUpcomingTripClick: () -> Unit = {},
+    onUpcomingTripClick: (String) -> Unit = {},
     onPopularDestinationClick: (Int) -> Unit = {},
     onWeatherAction: () -> Unit = {},
     onHomeClick: () -> Unit = {},

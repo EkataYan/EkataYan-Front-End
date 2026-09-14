@@ -1,5 +1,6 @@
 package com.ekatayan.app.ui.trips
 
+import android.net.Uri
 import com.ekatayan.app.data.model.Trip
 
 import androidx.navigation.NavGraphBuilder
@@ -12,6 +13,10 @@ const val CREATE_TRIP_ROUTE = "trips/create"
 const val TRIP_DETAILS_ROUTE = "trips/details/{tripKey}"
 const val TRIP_MEMBERS_ROUTE = "trips/{tripId}/members"
 const val ADD_TRIP_MEMBER_ROUTE = "trips/{tripId}/members/add"
+
+fun tripDetailsRoute(tripKey: String): String = "trips/details/${Uri.encode(tripKey)}"
+
+fun tripDetailsRoute(trip: Trip): String = tripDetailsRoute(trip.remoteId ?: trip.id.toString())
 
 fun NavGraphBuilder.tripsScreen(
     onHomeClick: () -> Unit,
