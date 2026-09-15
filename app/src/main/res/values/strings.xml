@@ -37,6 +37,8 @@
     <string name="login_title">Welcome Back!</string>
     <string name="login_subtitle">Login to continue your journey</string>
     <string name="login_forgot_password">Forgot Password?</string>
+    <string name="login_password_reset_sending">Sending reset email…</string>
+    <string name="login_password_reset_sent">If an account exists for this email, a password-reset message has been sent.</string>
     <string name="login_action">Log In</string>
     <string name="login_error_invalid_credentials">Enter a valid email and password, or check your credentials.</string>
     <string name="login_error_network">Unable to reach Supabase. Check your connection and try again.</string>
@@ -84,7 +86,6 @@
     <string name="trips_timeline_subtitle">Your journeys at a glance</string>
     <string name="trips_open_trip">Open trip</string>
 
-    ```xml
     <string name="expenses_title">Expenses</string>
     <string name="expenses_budget_overview">Budget Overview</string>
     <string name="expenses_total_budget">Total Budget</string>
@@ -97,8 +98,6 @@
     <string name="expenses_quick_actions">Quick Actions</string>
     <string name="expenses_recent_expenses">Recent Expenses</string>
     <string name="expenses_view_all">View All</string>
-    ```
-    ```xml
     <string name="settings_title">Settings</string>
 
     <string name="settings_account">Account</string>
@@ -153,15 +152,12 @@
     <string name="settings_terms_privacy">Terms &amp; Privacy Policy</string>
     <string name="settings_terms_privacy_subtitle">View legal information</string>
     <string name="settings_account_actions">Account actions</string>
-    ```
-    ```xml
     <string name="notifications_title">Notifications</string>
 
     <string name="notifications_filter_all">All</string>
     <string name="notifications_filter_trips">Trips</string>
     <string name="notifications_filter_expenses">Expenses</string>
     <string name="notifications_filter_updates">Updates</string>
-    ```
     <string name="notifications_itinerary_title">Itinerary Updated</string>
     <string name="notifications_itinerary_message">Your trip itinerary has been updated.</string>
     <string name="notifications_just_now">Just now</string>

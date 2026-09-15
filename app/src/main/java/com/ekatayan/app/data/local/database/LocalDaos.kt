@@ -32,6 +32,9 @@ abstract class WishlistDao {
         insertGroups(groups)
         insertItems(items)
     }
+
+    @Transaction
+    open suspend fun clearAccountData() = deleteGroups()
 }
 
 @Dao
@@ -55,6 +58,9 @@ abstract class TripsDao {
         deleteAll()
         insertAll(values)
     }
+
+    @Transaction
+    open suspend fun clearAccountData() = deleteAll()
 }
 
 @Dao
@@ -87,6 +93,12 @@ abstract class GroupHubDao {
         deleteGroups()
         deleteUsers()
         insertSnapshot(snapshot)
+    }
+
+    @Transaction
+    open suspend fun clearAccountData() {
+        deleteGroups()
+        deleteUsers()
     }
 
     private suspend fun insertSnapshot(snapshot: GroupHubSnapshot) {

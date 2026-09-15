@@ -47,6 +47,13 @@ fun HomeScreen(
     onProfileClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val searchQuery = uiState.searchQuery.trim()
+    val matchesSearch: (com.ekatayan.app.data.model.WishlistItem) -> Boolean = { destination ->
+        searchQuery.isBlank() || destination.name.contains(searchQuery, ignoreCase = true) ||
+            destination.location?.contains(searchQuery, ignoreCase = true) == true
+    }
+    val filteredRecommended = uiState.recommendedDestinations.filter(matchesSearch)
+    val filteredPopular = uiState.popularDestinations.filter(matchesSearch)
     Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         if (uiState.isLoading) {
             EkataLoadingState(
@@ -86,7 +93,7 @@ fun HomeScreen(
                 }
                 item {
                     RecommendedSection(
-                        destinations = uiState.recommendedDestinations,
+                        destinations = filteredRecommended,
                         onDestinationClick = onRecommendedDestinationClick,
                     )
                 }
@@ -105,7 +112,7 @@ fun HomeScreen(
                 }
                 item {
                     PopularDestinationsSection(
-                        destinations = uiState.popularDestinations,
+                        destinations = filteredPopular,
                         onDestinationClick = onPopularDestinationClick,
                     )
                 }

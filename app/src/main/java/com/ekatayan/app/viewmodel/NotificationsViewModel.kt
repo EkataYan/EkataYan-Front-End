@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+import com.ekatayan.app.utils.runSuspendCatching
 
 @Immutable
 data class NotificationsUiState(
@@ -78,20 +79,22 @@ class NotificationsViewModel @Inject constructor(
         }
     }
 
-    fun markAsRead(notificationId: String) = repository.markAsRead(notificationId)
+    fun markAsRead(notificationId: String) = viewModelScope.launch {
+        runSuspendCatching { repository.markAsRead(notificationId) }
+            .onFailure { error -> _uiState.update { it.copy(invitationError = error.message) } }
+    }
     fun onAppForeground() = repository.onAppForeground()
     fun onNotificationsOpened() {
         repository.onAppForeground()
-        refreshInvitations()
     }
-    fun refreshInvitations()=viewModelScope.launch { _uiState.update{it.copy(loadingInvitations=true,invitationError=null)}; runCatching{repository.refreshInvitations()}.onSuccess{_uiState.update{it.copy(loadingInvitations=false,invitations=repository.invitations.value)}}.onFailure{e->_uiState.update{it.copy(loadingInvitations=false,invitationError=e.message)}} }
+    fun refreshInvitations()=viewModelScope.launch { _uiState.update{it.copy(loadingInvitations=true,invitationError=null)}; runSuspendCatching{repository.refreshInvitations()}.onSuccess{_uiState.update{it.copy(loadingInvitations=false,invitations=repository.invitations.value)}}.onFailure{e->_uiState.update{it.copy(loadingInvitations=false,invitationError=e.message)}} }
     fun acceptInvitation(id: String) = respondToInvitation(id, "joining") { repository.acceptInvitation(id) }
     fun declineInvitation(id: String) = respondToInvitation(id, "declining") { repository.declineInvitation(id) }
 
     private fun respondToInvitation(id: String, action: String, request: suspend () -> Unit) = viewModelScope.launch {
         if (id in _uiState.value.respondingInvites) return@launch
         _uiState.update { it.copy(respondingInvites = it.respondingInvites + (id to action), invitationError = null) }
-        runCatching { request() }
+        runSuspendCatching { request() }
             .onSuccess {
                 _uiState.update {
                     it.copy(invitations = repository.invitations.value, respondingInvites = it.respondingInvites - id)

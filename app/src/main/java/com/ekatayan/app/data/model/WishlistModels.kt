@@ -10,6 +10,7 @@ data class WishlistItem(
     @param:DrawableRes val imageRes: Int,
     val itemType: WishlistItemType = WishlistItemType.DESTINATION,
     val parentDestinationId: String? = null,
+    val savedPlaceId: String? = null,
 )
 
 enum class WishlistItemType {
@@ -28,6 +29,7 @@ data class WishlistGroup(
     val name: String,
     val cover: WishlistCover = WishlistCover.None,
     val items: List<WishlistItem> = emptyList(),
+    val remoteId: String? = null,
 )
 
 data class WishlistData(

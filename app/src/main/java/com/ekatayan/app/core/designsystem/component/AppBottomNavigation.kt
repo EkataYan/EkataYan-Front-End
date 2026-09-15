@@ -57,8 +57,7 @@ fun AppBottomNavigation(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val isImeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
-    if (isImeVisible) return
+    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current).toFloat()
 
     val callbacks = listOf(onHomeClick, onTripsClick, onPlannerClick, onExpensesClick, onProfileClick)
     // Keep the parameter while callers migrate, but use one geometry everywhere.
@@ -69,6 +68,10 @@ fun AppBottomNavigation(
     val itemSize = EkataComponentSize.bottomNavigationCompactIconContainer
     Row(
         modifier = modifier
+            // adjustResize shortens the Compose window while the keyboard is open.
+            // Offset by that lost height so the bar stays at the physical bottom
+            // of the screen, underneath the IME, instead of jumping above it.
+            .graphicsLayer { translationY = imeBottom }
             .padding(start = outerPadding, end = outerPadding, bottom = outerPadding)
             .fillMaxWidth()
             .height(barHeight)

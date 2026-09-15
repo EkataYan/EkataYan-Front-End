@@ -106,7 +106,7 @@
     <string name="bp_notification_message">Your demo workspace is ready. Check Bookings &amp; Inquiries to respond to travellers.</string>
     <string name="bp_help">Need Help?</string>
     <string name="bp_help_subtitle">Explore your partner workspace</string>
-    <string name="bp_help_message">Add listings, update your business profile, and manage demo inquiries. Changes are kept during this app session.</string>
+    <string name="bp_help_message">Add listings, update your business profile, and manage demo inquiries. Changes are saved on this device only.</string>
     <string name="bp_my_listings">My Listings</string>
     <string name="bp_add_new">+ Add New</string>
     <string name="bp_all">All</string>
@@ -153,7 +153,7 @@
     <string name="bp_verification_pending">Verification: Pending (demo)</string>
     <string name="bp_no_links">No social links added.</string>
     <string name="bp_active_listings">Active Listings</string>
-    <string name="bp_demo_data">Demo data · this app session only</string>
+    <string name="bp_demo_data">Preview data · saved on this device only</string>
     <string name="bp_required_hint">Complete all required fields to continue.</string>
     <string name="bp_email_error">Enter a valid email address.</string>
     <string name="bp_phone_error">Enter a phone number with 7–15 digits.</string>

@@ -34,10 +34,11 @@ class UserSessionProvider @Inject constructor(private val store: SessionStore) {
             email?.trim()?.takeIf(String::isNotEmpty),
             name?.trim()?.takeIf(String::isNotEmpty),
         ).also {
+            // Persist first so a reported login success always survives process restart.
+            store.save(it)
             session = it
             mutableUserName.value = it.name
             mutableAccessToken.value = it.accessToken
-            store.save(it)
             logger.info("Supabase session persisted access_present=true refresh_present=true")
         }
     }

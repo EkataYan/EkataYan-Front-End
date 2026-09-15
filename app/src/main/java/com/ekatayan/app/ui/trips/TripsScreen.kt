@@ -419,7 +419,7 @@ fun TripTimelineCard(trip: Trip, onClick: () -> Unit, today: LocalDate = LocalDa
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowForwardIos, stringResource(R.string.trips_open_trip), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(15.dp))
-                IconButton(onClick = onDeleteClick, modifier = Modifier.size(32.dp)) {
+                IconButton(onClick = onDeleteClick, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.Default.Delete, stringResource(R.string.trips_delete_action), tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                 }
             }

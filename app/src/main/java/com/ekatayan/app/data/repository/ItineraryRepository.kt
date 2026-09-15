@@ -4,6 +4,7 @@ import com.ekatayan.app.data.model.*
 import com.ekatayan.app.data.remote.api.*
 import java.time.LocalDate
 import javax.inject.Inject
+import com.ekatayan.app.data.remote.apiCall
 
 data class ItineraryPlanInput(
     val destinations: List<String>, val travellerType: String, val startDate: LocalDate,
@@ -15,19 +16,19 @@ data class ItineraryPlanInput(
 
 class ItineraryRepository @Inject constructor(private val api: EkataYanApiService, private val settings: SettingsRepository = SettingsRepository()) {
     suspend fun preview(input: ItineraryPlanInput): Itinerary {
-        val response = api.previewItinerary(input.toRequest())
+        val response = apiCall("We couldn't finish your itinerary.") { api.previewItinerary(input.toRequest()) }
         return response.data?.toDomain()
             ?: throw IllegalStateException(response.error?.message ?: "We couldn't finish your itinerary.")
     }
 
     suspend fun modify(input: ItineraryPlanInput, itinerary: Itinerary, instruction: String, targetDay: Int? = null): Itinerary {
-        val response = api.modifyItinerary(ModifyItineraryRequest(input.toRequest(), itinerary.toDto(), instruction, targetDay))
+        val response = apiCall("We couldn't update your itinerary.") { api.modifyItinerary(ModifyItineraryRequest(input.toRequest(), itinerary.toDto(), instruction, targetDay)) }
         return response.data?.toDomain()
             ?: throw IllegalStateException(response.error?.message ?: "We couldn't update your itinerary.")
     }
 
     suspend fun save(input: ItineraryPlanInput, itinerary: Itinerary): PlannedItinerarySaveDto {
-        val response = api.savePlannedItinerary(PlannedItinerarySaveRequest(input.toRequest(), itinerary.toDto()))
+        val response = apiCall("The trip could not be saved.") { api.savePlannedItinerary(PlannedItinerarySaveRequest(input.toRequest(), itinerary.toDto())) }
         return response.data
             ?: throw IllegalStateException(response.error?.message ?: "The trip could not be saved.")
     }

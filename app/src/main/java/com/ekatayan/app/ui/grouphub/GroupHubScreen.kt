@@ -66,6 +66,10 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
                 HeaderActions(onNotificationClick = onNotificationClick, onSettingsClick = onSettingsClick, hasUnreadNotifications = hasUnreadNotifications)
             }
             Spacer(Modifier.height(18.dp))
+            Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.medium) {
+                Text("Preview • Groups and messages are saved on this device only.", modifier = Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+            Spacer(Modifier.height(10.dp))
             SearchField(query, onQueryChange, "Search Your Groups")
             Spacer(Modifier.height(14.dp))
             Button(onClick = { creating = true }, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().height(EkataComponentSize.buttonHeight)) { Icon(Icons.Default.GroupAdd, null); Spacer(Modifier.width(EkataSpacing.xs)); Text("Create Group", style = MaterialTheme.typography.labelLarge) }

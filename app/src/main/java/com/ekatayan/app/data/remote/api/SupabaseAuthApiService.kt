@@ -10,6 +10,11 @@ import retrofit2.http.PUT
 import retrofit2.http.Header
 
 interface SupabaseAuthApiService {
+    @POST("auth/v1/recover")
+    suspend fun requestPasswordRecovery(
+        @Body request: PasswordRecoveryRequest,
+    ): Map<String, Any?>
+
     @PUT("auth/v1/user")
     suspend fun updatePassword(
         @Header("Authorization") authorization: String,
@@ -40,6 +45,8 @@ interface SupabaseAuthApiService {
 }
 
 data class PasswordUpdateRequest(val password: String)
+
+data class PasswordRecoveryRequest(val email: String)
 
 data class RefreshTokenRequest(val refresh_token: String)
 

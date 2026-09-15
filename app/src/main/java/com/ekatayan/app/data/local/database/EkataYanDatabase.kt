@@ -25,7 +25,7 @@ import androidx.room.RoomDatabase
         PartnerBookingEntity::class,
         BusinessPartnerSessionEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class EkataYanDatabase : RoomDatabase() {

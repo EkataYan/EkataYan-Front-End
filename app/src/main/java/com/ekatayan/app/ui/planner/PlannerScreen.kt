@@ -93,6 +93,7 @@ import com.ekatayan.app.viewmodel.PlannerTravelStyle
 import com.ekatayan.app.viewmodel.TravelPace
 import com.ekatayan.app.viewmodel.PlannerGenerationState
 import com.ekatayan.app.viewmodel.PlannerPhase
+import com.ekatayan.app.viewmodel.PlannerFailedAction
 import com.ekatayan.app.viewmodel.displayLabel
 import java.time.Instant
 import java.time.LocalDate
@@ -221,9 +222,9 @@ fun PlannerScreen(
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                             trailingIcon = {
                                 Row {
-                                    IconButton(onClick = { onMoveDestination(index + 1, -1) }, modifier = Modifier.size(36.dp)) { Icon(Icons.Default.ArrowUpward, "Move up", Modifier.size(18.dp)) }
-                                    IconButton(onClick = { onMoveDestination(index + 1, 1) }, modifier = Modifier.size(36.dp)) { Icon(Icons.Default.ArrowDownward, "Move down", Modifier.size(18.dp)) }
-                                    IconButton(onClick = { onRemoveAdditionalDestination(index) }, modifier = Modifier.size(36.dp)) {
+                                    IconButton(onClick = { onMoveDestination(index + 1, -1) }, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowUpward, "Move destination earlier", Modifier.size(20.dp)) }
+                                    IconButton(onClick = { onMoveDestination(index + 1, 1) }, enabled = index < uiState.additionalDestinations.lastIndex, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowDownward, "Move destination later", Modifier.size(20.dp)) }
+                                    IconButton(onClick = { onRemoveAdditionalDestination(index) }, modifier = Modifier.size(48.dp)) {
                                         Icon(Icons.Default.Close, contentDescription = stringResource(R.string.planner_remove_place), tint = EkataTextSecondary, modifier = Modifier.size(18.dp))
                                     }
                                 }
@@ -554,7 +555,14 @@ private fun PlannerGenerationContent(
                 Text(generationState.status, color = EkataTextSecondary, modifier = Modifier.padding(top = 8.dp))
             }
             PlannerPhase.ERROR -> Column(Modifier.align(Alignment.Center).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("We couldn't finish your itinerary.", style = MaterialTheme.typography.titleLarge)
+                Text(
+                    when (generationState.failedAction) {
+                        PlannerFailedAction.SAVE -> "We couldn't save your trip."
+                        PlannerFailedAction.MODIFY_DAY -> "We couldn't update this day."
+                        else -> "We couldn't finish your itinerary."
+                    },
+                    style = MaterialTheme.typography.titleLarge,
+                )
                 Text(generationState.error.orEmpty(), color = EkataTextSecondary, modifier = Modifier.padding(vertical = 12.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRetry) { Text("Try Again") }; TextButton(onClick = onEditPreferences) { Text("Edit Preferences") } }
             }
@@ -580,7 +588,11 @@ private fun PlannerGenerationContent(
                                 Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.Top) {
                                     Text(activity.startTime.take(5), style = MaterialTheme.typography.labelLarge, color = EkataBlue, modifier = Modifier.width(52.dp))
                                     Column(Modifier.weight(1f)) { Text(activity.name, style = MaterialTheme.typography.titleSmall); Text(activity.location.name, style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary); if (activity.transportFromPrevious.isNotBlank()) Text("${activity.transportFromPrevious} • ${activity.travelTimeMinutes} min", style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary) }
-                                    Column { IconButton(onClick = { onMoveActivity(dayIndex, activityIndex, -1) }, Modifier.size(32.dp)) { Icon(Icons.Default.ArrowUpward, "Move up", Modifier.size(16.dp)) }; IconButton(onClick = { onMoveActivity(dayIndex, activityIndex, 1) }, Modifier.size(32.dp)) { Icon(Icons.Default.ArrowDownward, "Move down", Modifier.size(16.dp)) }; IconButton(onClick = { onRemoveActivity(dayIndex, activityIndex) }, Modifier.size(32.dp)) { Icon(Icons.Default.DeleteOutline, "Remove", Modifier.size(16.dp)) } }
+                                    Column {
+                                        IconButton(onClick = { onMoveActivity(dayIndex, activityIndex, -1) }, enabled = activityIndex > 0, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowUpward, "Move activity earlier", Modifier.size(20.dp)) }
+                                        IconButton(onClick = { onMoveActivity(dayIndex, activityIndex, 1) }, enabled = activityIndex < day.activities.lastIndex, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowDownward, "Move activity later", Modifier.size(20.dp)) }
+                                        IconButton(onClick = { onRemoveActivity(dayIndex, activityIndex) }, enabled = day.activities.size > 1, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.DeleteOutline, "Remove activity", Modifier.size(20.dp)) }
+                                    }
                                 }
                             }
                             TextButton(onClick = { onMakeDayRelaxed(dayIndex) }) { Text("Make this day more relaxed") }

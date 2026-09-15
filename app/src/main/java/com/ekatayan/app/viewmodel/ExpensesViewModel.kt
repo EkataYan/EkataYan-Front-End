@@ -14,11 +14,30 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.ekatayan.app.utils.runSuspendCatching
 
 @HiltViewModel class ExpensesViewModel @Inject constructor(private val expenses:ExpensesRepository,private val trips:TripsRepository,savedState:SavedStateHandle):ViewModel(){
     private val requested:String?=savedState["tripId"]; private val mutable=MutableStateFlow(ExpensesData()); val uiState=mutable.asStateFlow()
     init{refresh()}
-    fun refresh()=viewModelScope.launch{mutable.value=mutable.value.copy(loading=true,error=null);runCatching{trips.refreshTrips();val available=trips.trips.value.filter{it.remoteId!=null};val selected=available.firstOrNull{it.remoteId==(mutable.value.tripId?:requested)}?:available.firstOrNull();if(selected==null)return@runCatching ExpensesData(availableTrips=available,loading=false);val id=requireNotNull(selected.remoteId);val rows=expenses.expenses(id);val balances=expenses.balances(id).balances;val total=rows.sumOf{it.amount.toBigDecimalOrNull()?:BigDecimal.ZERO};val categories=rows.groupBy{it.category}.map{(name,items)->val amount=items.sumOf{it.amount.toBigDecimalOrNull()?:BigDecimal.ZERO};ExpenseCategoryTotal(name,amount.toLong(),if(total.signum()==0)0 else amount.multiply(BigDecimal(100)).divide(total,0,RoundingMode.HALF_UP).toInt())};ExpensesData(id,selected.customName?:"Trip",available,total.toLong(),categories,rows,balances,false)}.onSuccess{mutable.value=it}.onFailure{mutable.value=mutable.value.copy(loading=false,error=it.message)}}
+    fun refresh()=viewModelScope.launch{
+        mutable.value=mutable.value.copy(loading=true,error=null,balanceError=null)
+        runSuspendCatching{
+            trips.refreshTrips()
+            val available=trips.trips.value.filter{it.remoteId!=null}
+            val selected=available.firstOrNull{it.remoteId==(mutable.value.tripId?:requested)}?:available.firstOrNull()
+            if(selected==null)return@runSuspendCatching ExpensesData(availableTrips=available,loading=false)
+            val id=requireNotNull(selected.remoteId)
+            val rows=expenses.expenses(id)
+            val balanceResult=runSuspendCatching { expenses.balances(id).balances }
+            val total=rows.sumOf{it.amount.toBigDecimalOrNull()?:BigDecimal.ZERO}
+            val categories=rows.groupBy{it.category}.map{(name,items)->
+                val amount=items.sumOf{it.amount.toBigDecimalOrNull()?:BigDecimal.ZERO}
+                ExpenseCategoryTotal(name,amount.toLong(),if(total.signum()==0)0 else amount.multiply(BigDecimal(100)).divide(total,0,RoundingMode.HALF_UP).toInt())
+            }
+            ExpensesData(id,selected.customName?:"Trip",available,total.toLong(),categories,rows,
+                balanceResult.getOrDefault(emptyList()),false,balanceError=balanceResult.exceptionOrNull()?.message)
+        }.onSuccess{mutable.value=it}.onFailure{mutable.value=mutable.value.copy(loading=false,error=it.message)}
+    }
     fun selectTrip(id:String){mutable.value=mutable.value.copy(tripId=id);refresh()}
 }
 
@@ -26,8 +45,29 @@ data class AddExpenseUiState(val members:List<PublicTripMemberDto> = emptyList()
 
 @HiltViewModel class AddExpenseViewModel @Inject constructor(private val expenses:ExpensesRepository,private val members:TripMembersRepository,savedState:SavedStateHandle):ViewModel(){
     val tripId:String=savedState["tripId"]?:"";private val mutable=MutableStateFlow(AddExpenseUiState());val state=mutable.asStateFlow()
-    init{viewModelScope.launch{runCatching{members.members(tripId)}.onSuccess{rows->mutable.value=mutable.value.copy(members=rows,paidBy=rows.firstOrNull{it.isCurrentUser}?.userId?:rows.firstOrNull()?.userId,participantIds=rows.map{it.userId}.toSet(),loading=false)}.onFailure{mutable.value=mutable.value.copy(loading=false,error=it.message)}}}
+    init{viewModelScope.launch{runSuspendCatching{members.members(tripId)}.onSuccess{rows->mutable.value=mutable.value.copy(members=rows,paidBy=rows.firstOrNull{it.isCurrentUser}?.userId?:rows.firstOrNull()?.userId,participantIds=rows.map{it.userId}.toSet(),loading=false)}.onFailure{mutable.value=mutable.value.copy(loading=false,error=it.message)}}}
     fun title(v:String){mutable.value=mutable.value.copy(title=v)};fun amount(v:String){mutable.value=mutable.value.copy(amount=v.filter{it.isDigit()||it=='.'})};fun category(v:String){mutable.value=mutable.value.copy(category=v)};fun payer(v:String){mutable.value=mutable.value.copy(paidBy=v)}
     fun participant(id:String){val ids=mutable.value.participantIds;mutable.value=mutable.value.copy(participantIds=if(id in ids)ids-id else ids+id)};fun selectAll(){mutable.value=mutable.value.copy(participantIds=mutable.value.members.map{it.userId}.toSet())};fun date(v:String){mutable.value=mutable.value.copy(date=v)};fun notes(v:String){mutable.value=mutable.value.copy(notes=v)}
-    fun save()=viewModelScope.launch{val s=mutable.value;val value=s.amount.toBigDecimalOrNull();when{s.title.isBlank()->mutable.value=s.copy(error="Enter an expense title.");value==null||value<=BigDecimal.ZERO->mutable.value=s.copy(error="Enter a valid amount.");s.paidBy==null->mutable.value=s.copy(error="Choose who paid.");s.participantIds.isEmpty()->mutable.value=s.copy(error="Select at least one participant.");else->{mutable.value=s.copy(saving=true,error=null);runCatching{expenses.create(tripId,ExpenseRequest(s.title.trim(),value.setScale(2,RoundingMode.HALF_UP).toPlainString(),s.category,s.paidBy,s.participantIds.toList(),s.date,s.notes.trim().takeIf{it.isNotEmpty()}))}.onSuccess{mutable.value=mutable.value.copy(saving=false,saved=true)}.onFailure{mutable.value=mutable.value.copy(saving=false,error=it.message)}}}}
+    fun save()=viewModelScope.launch{
+        val s=mutable.value
+        if (s.saving || s.saved) return@launch
+        val value=s.amount.toBigDecimalOrNull()
+        val validDate=runCatching { LocalDate.parse(s.date) }.getOrNull()
+        when{
+            s.title.isBlank()->mutable.value=s.copy(error="Enter an expense title.")
+            s.title.trim().length > 160->mutable.value=s.copy(error="Expense titles must be 160 characters or fewer.")
+            value==null||value<=BigDecimal.ZERO->mutable.value=s.copy(error="Enter a valid amount.")
+            value.precision() > 14 || value.scale() > 2->mutable.value=s.copy(error="Enter an amount with at most 12 digits and 2 decimal places.")
+            s.paidBy==null->mutable.value=s.copy(error="Choose who paid.")
+            s.participantIds.isEmpty()->mutable.value=s.copy(error="Select at least one participant.")
+            validDate==null->mutable.value=s.copy(error="Enter a valid date in YYYY-MM-DD format.")
+            s.notes.length > 2000->mutable.value=s.copy(error="Notes must be 2,000 characters or fewer.")
+            else->{
+                mutable.value=s.copy(saving=true,error=null)
+                runSuspendCatching{expenses.create(tripId,ExpenseRequest(s.title.trim(),value.setScale(2,RoundingMode.HALF_UP).toPlainString(),s.category,s.paidBy,s.participantIds.toList(),validDate.toString(),s.notes.trim().takeIf{it.isNotEmpty()}))}
+                    .onSuccess{mutable.value=mutable.value.copy(saving=false,saved=true)}
+                    .onFailure{mutable.value=mutable.value.copy(saving=false,error=it.message)}
+            }
+        }
+    }
 }

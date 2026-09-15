@@ -39,6 +39,26 @@ class AuthRepositoryTest {
         assertEquals("refresh", session.refreshToken())
     }
 
+    @Test fun passwordRecoveryUsesTrimmedEmailWithoutCreatingASession() = runTest {
+        val store = AuthMemorySessionStore()
+        val api = FakeSupabaseAuthApi()
+        SupabaseAuthRepository(Lazy { api }, UserSessionProvider(store))
+            .requestPasswordRecovery("  traveler@example.com  ")
+
+        assertEquals("traveler@example.com", api.passwordRecoveryRequest?.email)
+        assertNull(UserSessionProvider(store).currentAccessToken())
+    }
+
+    @Test fun passwordRecoveryRateLimitIsMapped() = runTest {
+        val api = FakeSupabaseAuthApi(passwordRecoveryFailure = authHttpError(429, "over_email_send_rate_limit"))
+        val repository = SupabaseAuthRepository(Lazy { api }, UserSessionProvider(AuthMemorySessionStore()))
+
+        val error = assertThrows(com.ekatayan.app.data.repository.AuthenticationException::class.java) {
+            kotlinx.coroutines.runBlocking { repository.requestPasswordRecovery("traveler@example.com") }
+        }
+        assertEquals(com.ekatayan.app.data.repository.AuthenticationFailure.RATE_LIMITED, error.failure)
+    }
+
     @Test fun freshStorageRestoreDoesNotCallNetworkOrRequireCachedSession() = runTest {
         val api = FakeSupabaseAuthApi()
         val repository = SupabaseAuthRepository(Lazy { api }, UserSessionProvider(AuthMemorySessionStore()))
@@ -207,7 +227,14 @@ private class AuthMemorySessionStore : SessionStore {
 private class FakeSupabaseAuthApi(
     private val signUpResponse: SupabaseSessionDto = session(),
     private val signInFailure: HttpException? = null,
+    private val passwordRecoveryFailure: HttpException? = null,
 ) : SupabaseAuthApiService {
+    var passwordRecoveryRequest: com.ekatayan.app.data.remote.api.PasswordRecoveryRequest? = null
+    override suspend fun requestPasswordRecovery(request: com.ekatayan.app.data.remote.api.PasswordRecoveryRequest): Map<String, Any?> {
+        passwordRecoveryRequest = request
+        passwordRecoveryFailure?.let { throw it }
+        return emptyMap()
+    }
     override suspend fun updatePassword(authorization: String, request: com.ekatayan.app.data.remote.api.PasswordUpdateRequest): Map<String, Any?> = emptyMap()
     var request: PasswordSignInRequest? = null
     var signUpRequest: PasswordSignUpRequest? = null

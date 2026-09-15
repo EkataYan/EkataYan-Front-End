@@ -2,6 +2,7 @@ package com.ekatayan.app.data.di
 
 import com.ekatayan.app.BuildConfig
 import com.ekatayan.app.data.remote.ProfileAuthInterceptor
+import com.ekatayan.app.data.remote.SessionAuthenticator
 import com.ekatayan.app.data.remote.api.ProfileApiService
 import com.ekatayan.app.data.remote.api.EkataYanApiService
 import dagger.Module
@@ -18,11 +19,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 @Module
 @InstallIn(SingletonComponent::class)
 object ProfileNetworkModule {
-    private fun backendRetrofit(auth: ProfileAuthInterceptor): Retrofit {
+    private fun backendRetrofit(auth: ProfileAuthInterceptor, authenticator: SessionAuthenticator): Retrofit {
         val url = BuildConfig.BACKEND_BASE_URL.toHttpUrl()
         require(url.username.isEmpty() && url.password.isEmpty() && url.query == null && url.fragment == null)
         require(BuildConfig.DEBUG || url.isHttps) { "Release backend must use HTTPS" }
-        val client = OkHttpClient.Builder().addInterceptor(auth).followRedirects(false)
+        val client = OkHttpClient.Builder().addInterceptor(auth).authenticator(authenticator).followRedirects(false)
             .followSslRedirects(false).callTimeout(120, TimeUnit.SECONDS)
             .readTimeout(120, TimeUnit.SECONDS).build()
         return Retrofit.Builder().baseUrl(url).client(client)
@@ -31,10 +32,11 @@ object ProfileNetworkModule {
 
     @Provides
     @Singleton
-    fun profileApi(auth: ProfileAuthInterceptor): ProfileApiService {
-        return backendRetrofit(auth).create(ProfileApiService::class.java)
+    fun profileApi(auth: ProfileAuthInterceptor, authenticator: SessionAuthenticator): ProfileApiService {
+        return backendRetrofit(auth, authenticator).create(ProfileApiService::class.java)
     }
 
     @Provides @Singleton
-    fun applicationApi(auth: ProfileAuthInterceptor): EkataYanApiService = backendRetrofit(auth).create(EkataYanApiService::class.java)
+    fun applicationApi(auth: ProfileAuthInterceptor, authenticator: SessionAuthenticator): EkataYanApiService =
+        backendRetrofit(auth, authenticator).create(EkataYanApiService::class.java)
 }

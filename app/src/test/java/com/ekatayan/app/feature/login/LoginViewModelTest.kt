@@ -82,6 +82,22 @@ class LoginViewModelTest {
         assertEquals(AuthenticationFailure.INVALID_CREDENTIALS, viewModel.uiState.error)
     }
 
+    @Test fun passwordRecoveryRequiresAValidEmailAndReportsSuccess() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val repository = FakeAuthRepository()
+            val viewModel = LoginViewModel(repository)
+            viewModel.onForgotPasswordClick()
+            assertEquals(0, repository.passwordRecoveryCalls)
+            viewModel.onEmailChange("traveler@example.com")
+            viewModel.onForgotPasswordClick()
+            advanceUntilIdle()
+            assertEquals(1, repository.passwordRecoveryCalls)
+            assertTrue(viewModel.uiState.passwordResetSent)
+            assertFalse(viewModel.uiState.isPasswordResetLoading)
+        } finally { Dispatchers.resetMain() }
+    }
+
     @Test fun loginDoesNotRestoreSessionOrFlashAuthenticatedNavigation() = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
         try {
@@ -100,12 +116,14 @@ private class FakeAuthRepository(
     private val signInGate: CompletableDeferred<Unit>? = null,
 ) : AuthRepository {
     var signInCalls = 0
+    var passwordRecoveryCalls = 0
     var restoreCalls = 0
     override suspend fun signIn(email: String, password: String) {
         signInCalls++
         failure?.let { throw AuthenticationException(it) }
         signInGate?.await()
     }
+    override suspend fun requestPasswordRecovery(email: String) { passwordRecoveryCalls++ }
     override suspend fun signUp(name: String, email: String, phone: String, password: String) = error("Not used by LoginViewModel")
     override suspend fun restoreSession(): Boolean { restoreCalls++; return restored }
     override suspend fun refreshSession() = false

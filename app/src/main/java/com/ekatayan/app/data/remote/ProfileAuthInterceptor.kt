@@ -7,11 +7,14 @@ import javax.inject.Inject
 
 class AuthenticationRequiredException : IOException("Authentication required")
 
-class ProfileAuthInterceptor @Inject constructor(
-    private val session: UserSessionProvider,
+class ProfileAuthInterceptor private constructor(
+    private val tokenProvider: () -> String?,
 ) : Interceptor {
+    @Inject constructor(refresh: SessionRefreshCoordinator) : this(refresh::tokenForRequest)
+    internal constructor(session: UserSessionProvider) : this(session::currentAccessToken)
+
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = session.currentAccessToken() ?: throw AuthenticationRequiredException()
+        val token = tokenProvider() ?: throw AuthenticationRequiredException()
         return chain.proceed(chain.request().newBuilder()
             .header("Authorization", "Bearer $token")
             .build())

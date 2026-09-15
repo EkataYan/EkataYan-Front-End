@@ -44,12 +44,13 @@ class EncryptedSessionStore @Inject constructor(
     }
 
     override fun save(session: StoredSession) {
-        preferences.edit().putString(ACCESS_TOKEN, session.accessToken)
+        val saved = preferences.edit().putString(ACCESS_TOKEN, session.accessToken)
             .putString(REFRESH_TOKEN, session.refreshToken).putLong(EXPIRES_AT, session.expiresAtMillis)
-            .putString(EMAIL, session.email).putString(NAME, session.name).apply()
+            .putString(EMAIL, session.email).putString(NAME, session.name).commit()
+        check(saved) { "The encrypted session could not be persisted." }
     }
 
-    override fun clear() { preferences.edit().clear().apply() }
+    override fun clear() { preferences.edit().clear().commit() }
 
     private companion object {
         const val ACCESS_TOKEN = "access_token"

@@ -76,8 +76,13 @@ fun CreateTripScreen(onBackClick: () -> Unit, uiState: CreateTripUiState, onFiel
         OutlinedTextField(budget, { onFieldChange(CreateTripField.BUDGET, it) }, label = { Text(stringResource(R.string.create_trip_budget)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.fillMaxWidth(), colors = colors)
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(notes, { onFieldChange(CreateTripField.NOTES, it) }, label = { Text(stringResource(R.string.create_trip_notes)) }, minLines = 4, modifier = Modifier.fillMaxWidth(), colors = colors)
-        error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }; Spacer(Modifier.height(22.dp))
-        Button(onClick = onSave, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(stringResource(R.string.create_trip_save)) }
+        error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
+        uiState.operationError?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
+        Spacer(Modifier.height(22.dp))
+        Button(onClick = onSave, enabled = !uiState.isSaving, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+            if (uiState.isSaving) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+            else Text(stringResource(R.string.create_trip_save))
+        }
     }
     if (showPicker) {
         val current = if (pickerForStart) startDate else endDate

@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ekatayan.app.viewmodel.NotificationsUiState
 import kotlinx.coroutines.flow.StateFlow
@@ -69,6 +70,9 @@ fun WishlistGroupDetailsRoute(
     val group = uiState.groups.find { it.id == groupId }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    LaunchedEffect(uiState.errorMessage) {
+        uiState.errorMessage?.let { snackbarHostState.showSnackbar(it) }
+    }
 
     WishlistGroupDetailsScreen(
         group = group,
@@ -85,14 +89,6 @@ fun WishlistGroupDetailsRoute(
         },
         onRemovePlace = { item ->
             viewModel.removePlaceFromGroup(groupId, item.id)
-            scope.launch {
-                val result = snackbarHostState.showSnackbar(
-                    message = "Removed from ${group?.name.orEmpty()}",
-                    actionLabel = "UNDO",
-                    duration = SnackbarDuration.Long,
-                )
-                if (result == SnackbarResult.ActionPerformed) viewModel.addPlaceToGroup(groupId, item)
-            }
         },
         onHomeClick = onHomeClick,
         onTripsClick = onTripsClick,

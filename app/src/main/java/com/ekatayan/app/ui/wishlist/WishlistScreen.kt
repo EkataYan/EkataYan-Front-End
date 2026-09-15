@@ -18,6 +18,8 @@ import android.content.Intent
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,6 +83,10 @@ fun WishlistScreen(
         ) {
             item {
                 WishlistHeader(onNotificationClick, onSettingsClick, hasUnreadNotifications)
+            }
+            if (uiState.isLoading) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+            uiState.errorMessage?.let { message ->
+                item { Text(message, color = MaterialTheme.colorScheme.error) }
             }
             if (uiState.groups.isEmpty()) {
                 item { EmptyWishlistState() }

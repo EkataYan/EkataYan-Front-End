@@ -1,11 +1,13 @@
 package com.ekatayan.app.data.repository
 
 import com.ekatayan.app.data.local.WishlistDestinationCatalog
-import com.ekatayan.app.data.local.GroupHubPeopleCatalog
 import com.ekatayan.app.data.local.database.GroupHubDao
 import com.ekatayan.app.data.local.database.groupHubData
 import com.ekatayan.app.data.local.database.toSnapshot
 import com.ekatayan.app.data.model.GroupHubData
+import com.ekatayan.app.data.model.ChatUser
+import com.ekatayan.app.data.model.GroupRole
+import com.ekatayan.app.data.model.CURRENT_USER_ID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -28,7 +30,8 @@ class GroupHubRepository private constructor(private val dao: GroupHubDao?, test
     private val mutableState = MutableStateFlow(GroupHubData())
     val state = mutableState.asStateFlow()
     val destinations = WishlistDestinationCatalog.destinations
-    val directoryUsers = GroupHubPeopleCatalog.users
+    // Do not surface the old Figma people catalogue as real app users.
+    val directoryUsers = listOf(ChatUser(CURRENT_USER_ID, "You", GroupRole.Admin))
 
     init {
         if (dao != null) scope.launch {

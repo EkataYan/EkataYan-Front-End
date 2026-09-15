@@ -34,6 +34,7 @@ import java.util.Locale
             item{Text("Recent expenses",style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.Bold)}
             if(state.recentExpenses.isEmpty())item{EkataEmptyState("No expenses yet","Add your first shared expense to start tracking trip spending.")}
             items(state.recentExpenses,key={it.id}){expense->ExpenseRow(expense){detail=expense}}
+            state.balanceError?.let { message -> item { EkataErrorState("Balances unavailable", message, actionLabel="Retry", onAction=onRetry) } }
             if(state.balances.isNotEmpty())item{EkataCard(Modifier.fillMaxWidth()){Text("BALANCES",fontWeight=FontWeight.Bold);state.balances.forEach{b->val net=b.netBalance.toBigDecimalOrNull()?:BigDecimal.ZERO;Row(Modifier.fillMaxWidth().padding(vertical=5.dp)){Column(Modifier.weight(1f)){Text(b.displayName);Text("@${b.username}",style=MaterialTheme.typography.labelSmall)};Text((if(net.signum()>0)"Owed " else if(net.signum()<0)"Owes " else "Settled ")+money(net.abs()),color=if(net.signum()>=0)MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error)}}}}
         }}
     }}

@@ -20,6 +20,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import com.ekatayan.app.data.model.NotificationFilter
 import androidx.lifecycle.ViewModelStore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +30,7 @@ private class FakeNotificationsRepository(initial: List<NotificationItem>) : Not
     private val items = MutableStateFlow(initial)
     override val notifications: StateFlow<List<NotificationItem>> = items
     override val invitations = MutableStateFlow<List<TripInvitation>>(emptyList())
-    override fun markAsRead(notificationId: String) {
+    override suspend fun markAsRead(notificationId: String) {
         items.value = items.value.map { if (it.id == notificationId) it.copy(isUnread = false) else it }
     }
     override suspend fun refreshNotifications() = Unit
@@ -98,7 +99,7 @@ class NotificationsViewModelTest {
         assertFalse(viewModel.uiState.value.hasUnreadNotifications)
     }
     @Test
-    fun repositoryUpdatesReachEveryViewModelWithoutResettingFilter() {
+    fun repositoryUpdatesReachEveryViewModelWithoutResettingFilter() = runTest {
         val repository = FakeNotificationsRepository(notificationFixtures())
         val first = NotificationsViewModel(repository).also { store.put("first", it) }
         val second = NotificationsViewModel(repository).also { store.put("second", it) }

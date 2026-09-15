@@ -28,6 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
+import com.ekatayan.app.utils.runSuspendCatching
 
 data class HomeUiState(
     val user: User,
@@ -73,8 +74,14 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             session.userName.collect { name ->
-                if (!name.isNullOrBlank()) _uiState.update { it.copy(user = it.user.copy(name = name)) }
+                _uiState.update { it.copy(user = it.user.copy(name = name.orEmpty())) }
             }
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            runSuspendCatching { tripsRepository.refreshTrips() }
+                .onSuccess { _uiState.update { it.copy(isLoading = false) } }
+                .onFailure { _uiState.update { it.copy(isLoading = false, errorMessage = "Trips could not be refreshed.") } }
         }
         viewModelScope.launch {
             tripsRepository.trips.collect { trips ->

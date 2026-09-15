@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -22,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -151,11 +153,21 @@ private fun LoginForm(
             contentAlignment = Alignment.CenterEnd,
         ) {
             Text(
-                text = stringResource(R.string.login_forgot_password),
+                text = stringResource(if (uiState.isPasswordResetLoading) R.string.login_password_reset_sending else R.string.login_forgot_password),
                 color = AuthLinkBlue,
-                fontSize = 11.sp,
+                fontSize = 13.sp,
                 fontWeight = FontWeight.Normal,
-                modifier = Modifier.clickable(onClick = onForgotPasswordClick),
+                modifier = Modifier
+                    .heightIn(min = 48.dp)
+                    .clickable(enabled = !uiState.isPasswordResetLoading, onClick = onForgotPasswordClick)
+                    .padding(vertical = 14.dp),
+            )
+        }
+        if (uiState.passwordResetSent) {
+            Text(
+                text = stringResource(R.string.login_password_reset_sent),
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 13.sp,
             )
         }
         uiState.error?.let { error ->
@@ -173,7 +185,7 @@ private fun LoginForm(
                     else -> R.string.login_error_generic
                 }),
                 color = Color(0xFFB3261E),
-                fontSize = 11.sp,
+                fontSize = 13.sp,
             )
         }
         Spacer(Modifier.height(16.dp))
