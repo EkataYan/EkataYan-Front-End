@@ -1,0 +1,8 @@
+# Copy this file to local.properties. local.properties is intentionally ignored by Git.
+# These are public Android client identifiers, never service-role keys or OAuth secrets.
+SUPABASE_URL=https://aitowlvncwhhpwcaeotj.supabase.co/
+SUPABASE_PUBLISHABLE_KEY=PASTE_ACTIVE_SUPABASE_PUBLISHABLE_KEY_HERE
+GOOGLE_WEB_CLIENT_ID=297943601320-g76vll8i3ndsssvqg6aptla3gaqarf4h.apps.googleusercontent.com
+
+# Optional. Production Railway is used when this is omitted.
+# BACKEND_BASE_URL=https://ekatayan-back-end-production.up.railway.app/

@@ -4,6 +4,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.logging.Logger
 
 /** Keeps the current session in memory and restores encrypted tokens after process restart. */
 @Singleton
@@ -37,6 +38,7 @@ class UserSessionProvider @Inject constructor(private val store: SessionStore) {
             mutableUserName.value = it.name
             mutableAccessToken.value = it.accessToken
             store.save(it)
+            logger.info("Supabase session persisted access_present=true refresh_present=true")
         }
     }
 
@@ -60,5 +62,8 @@ class UserSessionProvider @Inject constructor(private val store: SessionStore) {
         mutableUserName.value = null
         mutableAccessToken.value = null
         store.clear()
+        logger.info("Supabase session cleared")
     }
+
+    private companion object { val logger: Logger = Logger.getLogger("EkataYanAuth") }
 }

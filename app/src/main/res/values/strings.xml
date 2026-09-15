@@ -283,4 +283,6 @@
     <string name="share_place_cancel">Cancel</string>
     <string name="share_place_direct_chat">Direct chat</string>
     <string name="share_place_group_members">%1$d members</string>
+    <string name="auth_error_email_not_confirmed">Confirm your email address before signing in.</string>
+    <string name="auth_error_rate_limited">Too many sign-in attempts. Please wait a moment and try again.</string>
 </resources>

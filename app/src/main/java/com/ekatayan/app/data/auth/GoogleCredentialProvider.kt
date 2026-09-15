@@ -1,6 +1,8 @@
 package com.ekatayan.app.data.auth
 
 import android.content.Context
+import android.app.Activity
+import android.content.ContextWrapper
 import android.content.MutableContextWrapper
 import android.util.Base64
 import androidx.credentials.CredentialManager
@@ -15,6 +17,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import java.security.MessageDigest
 import java.security.SecureRandom
+import java.util.logging.Logger
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -52,15 +55,21 @@ class AndroidGoogleCredentialProvider @Inject constructor() : GoogleCredentialPr
 
         val nonce = generateNonce()
         val hashedNonce = sha256(nonce)
-        val manager = CredentialManager.create(context)
-        val foregroundContext = MutableContextWrapper(context)
+        val activityContext = context.findActivity()
+            ?: throw GoogleCredentialException(GoogleCredentialException.Reason.CONFIGURATION)
+        val manager = CredentialManager.create(activityContext)
+        val foregroundContext = MutableContextWrapper(activityContext)
+        logger.info("Google credential request started")
         val result = try {
             request(manager, foregroundContext, serverClientId, hashedNonce)
         } catch (_: NoCredentialException) {
+            logger.info("Google credential request returned no credential")
             throw GoogleCredentialException(GoogleCredentialException.Reason.NO_CREDENTIAL)
         } catch (e: GetCredentialCancellationException) {
+            logger.info("Google credential request canceled")
             throw GoogleCredentialException(GoogleCredentialException.Reason.CANCELED)
         } catch (e: GetCredentialException) {
+            logger.warning("Google credential request failed type=${e.javaClass.simpleName}")
             throw GoogleCredentialException(GoogleCredentialException.Reason.UNKNOWN)
         } catch (e: CancellationException) {
             throw e
@@ -76,6 +85,7 @@ class AndroidGoogleCredentialProvider @Inject constructor() : GoogleCredentialPr
             throw GoogleCredentialException(GoogleCredentialException.Reason.INVALID_TOKEN)
         }
         if (google.idToken.isBlank()) throw GoogleCredentialException(GoogleCredentialException.Reason.INVALID_TOKEN)
+        logger.info("Google credential received; starting Supabase exchange")
         return GoogleIdentityCredential(
             idToken = google.idToken,
             nonce = nonce,
@@ -109,5 +119,14 @@ class AndroidGoogleCredentialProvider @Inject constructor() : GoogleCredentialPr
         .digest(value.toByteArray(Charsets.UTF_8))
         .joinToString("") { "%02x".format(it) }
 
-    private companion object { const val PLACEHOLDER_CLIENT_ID = "PASTE_YOUR_WEB_CLIENT_ID_HERE" }
+    private tailrec fun Context.findActivity(): Activity? = when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
+
+    private companion object {
+        const val PLACEHOLDER_CLIENT_ID = "PASTE_YOUR_WEB_CLIENT_ID_HERE"
+        val logger: Logger = Logger.getLogger("EkataYanAuth")
+    }
 }

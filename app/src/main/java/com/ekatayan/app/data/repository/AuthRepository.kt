@@ -10,6 +10,7 @@ import com.ekatayan.app.data.remote.dto.PasswordSignInRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignUpMetadata
 import com.ekatayan.app.data.remote.dto.PasswordSignUpRequest
 import com.ekatayan.app.data.remote.dto.SupabaseSessionDto
+import com.google.gson.JsonParser
 import dagger.Lazy
 import java.io.IOException
 import java.util.logging.Logger
@@ -19,6 +20,7 @@ import retrofit2.HttpException
 
 enum class AuthenticationFailure {
     INVALID_CREDENTIALS, NETWORK, SERVER, CONFIGURATION, INVALID_RESPONSE,
+    EMAIL_NOT_CONFIRMED, RATE_LIMITED,
     GOOGLE_CANCELED, GOOGLE_NO_CREDENTIAL, GOOGLE_INVALID_TOKEN,
 }
 class AuthenticationException(val failure: AuthenticationFailure) : Exception()
@@ -59,21 +61,30 @@ class SupabaseAuthRepository @Inject constructor(
         } catch (e: Exception) { throw AuthenticationException(AuthenticationFailure.SERVER) }
     }
     override suspend fun signIn(email: String, password: String) {
+        logger.info("Email auth request started")
         try {
             store(api.get().signInWithPassword(request = PasswordSignInRequest(email, password)), authenticatedEmail = email)
+            logger.info("Email auth succeeded; Supabase session persisted")
         } catch (e: AuthenticationException) {
+            logger.warning("Email auth failed type=${e.failure}")
             throw e
         } catch (e: HttpException) {
-            throw AuthenticationException(if (e.code() in 400..401) AuthenticationFailure.INVALID_CREDENTIALS else AuthenticationFailure.SERVER)
+            val failure = e.toAuthenticationFailure(defaultClientFailure = AuthenticationFailure.INVALID_CREDENTIALS)
+            logger.warning("Email auth response failure status=${e.code()} type=$failure")
+            throw AuthenticationException(failure)
         } catch (e: SupabaseConfigurationException) {
+            logger.warning("Email auth configuration failure")
             throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
         } catch (e: IOException) {
+            logger.warning("Email auth network failure type=${e.javaClass.simpleName}")
             throw AuthenticationException(AuthenticationFailure.NETWORK)
         } catch (e: IllegalArgumentException) {
+            logger.warning("Email auth invalid client configuration")
             throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
+            logger.warning("Email auth unexpected failure type=${e.javaClass.simpleName}")
             throw AuthenticationException(AuthenticationFailure.SERVER)
         }
     }
@@ -85,6 +96,7 @@ class SupabaseAuthRepository @Inject constructor(
         avatarUrl: String?,
     ) {
         if (idToken.isBlank()) throw AuthenticationException(AuthenticationFailure.INVALID_RESPONSE)
+        logger.info("Google ID-token exchange started")
         try {
             store(
                 api.get().signInWithIdToken(
@@ -100,23 +112,28 @@ class SupabaseAuthRepository @Inject constructor(
         } catch (e: AuthenticationException) {
             throw e
         } catch (e: HttpException) {
-            throw AuthenticationException(
-                if (e.code() in 400..401) AuthenticationFailure.GOOGLE_INVALID_TOKEN else AuthenticationFailure.SERVER,
-            )
+            val failure = e.toAuthenticationFailure(defaultClientFailure = AuthenticationFailure.GOOGLE_INVALID_TOKEN)
+            logger.warning("Google ID-token exchange response failure status=${e.code()} type=$failure")
+            throw AuthenticationException(failure)
         } catch (e: SupabaseConfigurationException) {
+            logger.warning("Google auth configuration failure")
             throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
         } catch (e: IOException) {
+            logger.warning("Google auth network failure type=${e.javaClass.simpleName}")
             throw AuthenticationException(AuthenticationFailure.NETWORK)
         } catch (e: IllegalArgumentException) {
+            logger.warning("Google auth invalid client configuration")
             throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logger.warning("Google auth unexpected failure type=${e.javaClass.simpleName}")
             throw AuthenticationException(AuthenticationFailure.SERVER)
         }
     }
 
     override suspend fun signUp(name: String, email: String, phone: String, password: String): SignUpResult {
+        logger.info("Email signup request started")
         try {
             val response = api.get().signUpWithPassword(
                 PasswordSignUpRequest(email, password, PasswordSignUpMetadata(fullName = name, phone = phone)),
@@ -132,7 +149,9 @@ class SupabaseAuthRepository @Inject constructor(
         } catch (e: AuthenticationException) {
             throw e
         } catch (e: HttpException) {
-            throw AuthenticationException(if (e.code() in 400..401) AuthenticationFailure.INVALID_CREDENTIALS else AuthenticationFailure.SERVER)
+            val failure = e.toAuthenticationFailure(defaultClientFailure = AuthenticationFailure.INVALID_CREDENTIALS)
+            logger.warning("Email signup response failure status=${e.code()} type=$failure")
+            throw AuthenticationException(failure)
         } catch (e: SupabaseConfigurationException) {
             throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
         } catch (e: IOException) {
@@ -214,6 +233,22 @@ class SupabaseAuthRepository @Inject constructor(
 
     private fun SupabaseSessionDto.hasSession() =
         !accessToken.isNullOrBlank() && !refreshToken.isNullOrBlank()
+
+    private fun HttpException.toAuthenticationFailure(
+        defaultClientFailure: AuthenticationFailure,
+    ): AuthenticationFailure {
+        if (code() == 429) return AuthenticationFailure.RATE_LIMITED
+        val errorCode = runCatching {
+            response()?.errorBody()?.string()?.let(JsonParser::parseString)?.asJsonObject
+                ?.get("error_code")?.asString
+        }.getOrNull()
+        return when (errorCode) {
+            "email_not_confirmed" -> AuthenticationFailure.EMAIL_NOT_CONFIRMED
+            "over_request_rate_limit", "over_email_send_rate_limit", "email_rate_limit_exceeded" ->
+                AuthenticationFailure.RATE_LIMITED
+            else -> if (code() in 400..499) defaultClientFailure else AuthenticationFailure.SERVER
+        }
+    }
 
     private companion object { val logger: Logger = Logger.getLogger("EkataYanAuth") }
 }
