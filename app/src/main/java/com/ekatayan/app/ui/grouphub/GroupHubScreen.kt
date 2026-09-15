@@ -106,7 +106,7 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
 
 private fun messagePreview(message: ChatMessage?, state: GroupHubUiState): String {
     if (message == null) return "No messages yet"
-    val body = when (message.type) { MessageType.Text -> message.text.orEmpty(); MessageType.Image -> "📷 Photo"; MessageType.File -> "📎 ${message.attachmentName ?: "File"}"; MessageType.Place -> "📍 Shared a place"; MessageType.Voice -> "🎤 Voice note"; MessageType.System -> message.text.orEmpty() }
+    val body = when (message.type) { MessageType.Text -> message.text.orEmpty(); MessageType.Image -> "📷 Photo"; MessageType.File -> "📎 ${message.attachmentName ?: "File"}"; MessageType.Place, MessageType.SharedPlace -> "📍 Shared a place"; MessageType.Voice -> "🎤 Voice note"; MessageType.System -> message.text.orEmpty() }
     return if (message.senderId == CURRENT_USER_ID) "You: $body" else "${state.users.find { it.id == message.senderId }?.name ?: "Member"}: $body"
 }
 

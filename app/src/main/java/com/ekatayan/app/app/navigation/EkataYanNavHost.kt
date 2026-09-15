@@ -5,7 +5,6 @@ import com.ekatayan.app.viewmodel.BusinessPartnerViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
-import android.net.Uri
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
@@ -23,6 +22,11 @@ import com.ekatayan.app.ui.booking.BOOKING_ROUTE
 import com.ekatayan.app.ui.booking.bookingScreen
 import com.ekatayan.app.ui.home.HOME_ROUTE
 import com.ekatayan.app.ui.home.homeScreen
+import com.ekatayan.app.data.local.DestinationDetailsCatalog
+import com.ekatayan.app.ui.destinationdetails.destinationDetailsRoute
+import com.ekatayan.app.ui.destinationdetails.destinationDetailsScreens
+import com.ekatayan.app.ui.destinationdetails.placeDetailsRoute
+import com.ekatayan.app.data.model.WishlistItemType
 import com.ekatayan.app.ui.grouphub.GROUP_HUB_ROUTE
 import com.ekatayan.app.viewmodel.GroupHubViewModel
 import com.ekatayan.app.ui.grouphub.groupChatRoute
@@ -55,6 +59,7 @@ import com.ekatayan.app.ui.trips.CREATE_TRIP_ROUTE
 import com.ekatayan.app.ui.trips.TRIPS_ROUTE
 import com.ekatayan.app.ui.trips.createTripScreen
 import com.ekatayan.app.ui.trips.tripDetailsScreen
+import com.ekatayan.app.ui.trips.tripDetailsRoute
 import com.ekatayan.app.ui.trips.tripMemberScreens
 import com.ekatayan.app.ui.trips.tripsScreen
 import com.ekatayan.app.ui.wishlist.WISHLIST_ROUTE
@@ -128,7 +133,12 @@ fun EkataYanNavHost(
             onRestartFlow = { navController.navigate(PARTNER_ENTRY_ROUTE) { popUpTo(HOME_ROUTE); launchSingleTop = true } },
         )
         homeScreen(
-            wishlistViewModel = wishlistViewModel,
+            onDestinationClick = { wishlistItemId ->
+                DestinationDetailsCatalog.destinationIdForWishlistItem(wishlistItemId)?.let { destinationId ->
+                    navController.navigate(destinationDetailsRoute(destinationId))
+                }
+            },
+            onUpcomingTripClick = { tripKey -> navController.navigate(tripDetailsRoute(tripKey)) },
             onPartnershipClick = { navController.navigate(PARTNER_ENTRY_ROUTE) { launchSingleTop = true } },
             onGroupHubClick = { navController.navigate(GROUP_HUB_ROUTE) },
             onWishlistClick = { navController.navigate(WISHLIST_ROUTE) },
@@ -140,6 +150,12 @@ fun EkataYanNavHost(
             onSettingsClick = navController::navigateToSettings,
             onNotificationClick = navController::navigateToNotifications,
             notificationsUiState = notificationsViewModel.uiState,
+        )
+        destinationDetailsScreens(
+            wishlistViewModel = wishlistViewModel,
+            groupHubViewModel = groupHubViewModel,
+            onBackClick = navController::navigateUp,
+            onPlaceClick = { placeId -> navController.navigate(placeDetailsRoute(placeId)) },
         )
         bookingScreen(
             onHomeClick = { navController.navigate(HOME_ROUTE) },
@@ -170,7 +186,7 @@ fun EkataYanNavHost(
                 navController.navigate(CREATE_TRIP_ROUTE)
             },
             onTripClick = { trip ->
-                navController.navigate("trips/details/${Uri.encode(trip.remoteId ?: trip.id.toString())}")
+                navController.navigate(tripDetailsRoute(trip))
             },
             onNotificationClick = navController::navigateToNotifications,
             onSettingsClick = navController::navigateToSettings,
@@ -259,6 +275,13 @@ fun EkataYanNavHost(
             onInfoClick = { navController.navigate(groupInfoRoute(it)) },
             onBackClick = navController::navigateUp,
             onRemoved = { navController.popBackStack(GROUP_HUB_ROUTE, inclusive = false) },
+            onSharedPlaceClick = { item ->
+                val route = when (item.itemType) {
+                    WishlistItemType.DESTINATION -> DestinationDetailsCatalog.destinationIdForWishlistItem(item.id)?.let(::destinationDetailsRoute)
+                    WishlistItemType.ATTRACTION -> DestinationDetailsCatalog.attractionIdForWishlistItem(item.id)?.let(::placeDetailsRoute)
+                }
+                route?.let(navController::navigate)
+            },
             onHomeClick = { navController.navigate(HOME_ROUTE) { launchSingleTop = true } },
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },

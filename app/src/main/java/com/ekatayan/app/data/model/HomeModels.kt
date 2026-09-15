@@ -9,7 +9,8 @@ data class User(
 
 data class UpcomingTrip(
     val id: Int,
-    val destination: String,
+    val tripKey: String,
+    val name: String,
     val date: String,
     val duration: String,
     @param:DrawableRes val imageRes: Int,

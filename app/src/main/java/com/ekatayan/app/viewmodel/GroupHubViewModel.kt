@@ -7,6 +7,7 @@ import com.ekatayan.app.data.model.ChatTheme
 import com.ekatayan.app.data.model.GroupFilter
 import com.ekatayan.app.data.model.GroupHubData
 import com.ekatayan.app.data.model.MessageType
+import com.ekatayan.app.data.model.WishlistItem
 
 import com.ekatayan.app.data.repository.GroupHubRepository
 import com.ekatayan.app.data.repository.DocumentRepository
@@ -37,7 +38,7 @@ class GroupHubViewModel @Inject constructor(private val repository: GroupHubRepo
     }
 
     private fun GroupHubData.toUiState(query: String = "", filter: GroupFilter = GroupFilter.All) =
-        GroupHubUiState(groups, users, messagesByGroup, typingUserIds, repository.destinations, query, filter)
+        GroupHubUiState(groups, (users + repository.directoryUsers).distinctBy { it.id }, messagesByGroup, typingUserIds, repository.destinations, query, filter)
 
     fun searchGroups(value: String) { _uiState.update { it.copy(query = value) } }
     fun filterGroups(value: GroupFilter) { _uiState.update { it.copy(filter = value) } }
@@ -63,7 +64,57 @@ class GroupHubViewModel @Inject constructor(private val repository: GroupHubRepo
         if (cleanName.isEmpty()) return false
         val id = UUID.randomUUID().toString()
         val group = ChatGroup(id, cleanName, description.trim(), imageUri = imageUri, memberIds = (listOf(CURRENT_USER_ID) + memberIds).distinct())
-        repository.update { it.copy(groups = listOf(group) + it.groups, messagesByGroup = it.messagesByGroup + (id to emptyList())) }
+        repository.update { state ->
+            val members = repository.directoryUsers.filter { it.id in group.memberIds }
+            state.copy(
+                users = (state.users + members).distinctBy { it.id },
+                groups = listOf(group) + state.groups,
+                messagesByGroup = state.messagesByGroup + (id to emptyList()),
+            )
+        }
+        return true
+    }
+
+    fun sharePlace(groupIds: Set<String>, personIds: Set<String>, item: WishlistItem): Boolean {
+        if (groupIds.isEmpty() && personIds.isEmpty()) return false
+        val selectedPeople = uiState.value.users.filter { it.id in personIds && it.id != CURRENT_USER_ID }
+        val validGroupIds = uiState.value.groups.filter { it.id in groupIds }.mapTo(linkedSetOf()) { it.id }
+        if (validGroupIds.isEmpty() && selectedPeople.isEmpty()) return false
+        repository.update { state ->
+            val users = (state.users + repository.directoryUsers.filter { it.id == CURRENT_USER_ID } + selectedPeople)
+                .distinctBy { it.id }
+            var groups = state.groups
+            val directGroupIds = selectedPeople.map { person ->
+                val id = "direct-${person.id}"
+                if (groups.none { it.id == id }) {
+                    groups = listOf(
+                        ChatGroup(
+                            id = id,
+                            name = person.name,
+                            description = "Direct chat",
+                            memberIds = listOf(CURRENT_USER_ID, person.id),
+                        ),
+                    ) + groups
+                }
+                id
+            }
+            val targetIds = (validGroupIds + directGroupIds).distinct()
+            var messages = state.messagesByGroup
+            val sentAt = LocalDateTime.now()
+            targetIds.forEachIndexed { index, groupId ->
+                val message = ChatMessage(
+                    id = UUID.randomUUID().toString(),
+                    groupId = groupId,
+                    senderId = CURRENT_USER_ID,
+                    type = MessageType.SharedPlace,
+                    timestamp = sentAt.plusNanos(index.toLong()),
+                    placeId = item.id,
+                )
+                messages = messages + (groupId to (messages[groupId].orEmpty() + message))
+            }
+            groups = groups.map { group -> if (group.id in targetIds) group.copy(unreadCount = 0) else group }
+            state.copy(users = users, groups = groups, messagesByGroup = messages)
+        }
         return true
     }
 

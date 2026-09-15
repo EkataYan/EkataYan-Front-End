@@ -8,7 +8,7 @@ const val CURRENT_USER_ID = "current-user"
 data class ChatUser(val id: String, val name: String, val role: GroupRole = GroupRole.Member)
 enum class GroupRole { Owner, Admin, Member }
 enum class ChatTheme { DefaultBlue, Sky, Mint, Lavender, Warm }
-enum class MessageType { Text, Image, File, Place, Voice, System }
+enum class MessageType { Text, Image, File, Place, SharedPlace, Voice, System }
 
 data class ChatGroup(
     val id: String,
