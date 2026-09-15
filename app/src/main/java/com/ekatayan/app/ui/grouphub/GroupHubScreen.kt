@@ -1,5 +1,9 @@
 package com.ekatayan.app.ui.grouphub
 
+import com.ekatayan.app.R
+
+import androidx.compose.ui.res.stringResource
+
 import com.ekatayan.app.data.model.CURRENT_USER_ID
 import com.ekatayan.app.data.model.ChatGroup
 import com.ekatayan.app.data.model.ChatMessage
@@ -62,19 +66,19 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
     Box(modifier.fillMaxSize().background(EkataBackground)) {
         Column(Modifier.fillMaxSize().padding(horizontal = EkataSpacing.pageHorizontal)) {
             Row(Modifier.fillMaxWidth().height(HeaderActionsTopPadding), verticalAlignment = Alignment.CenterVertically) {
-                Text("Group Hub", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
+                Text(stringResource(R.string.home_group_hub), style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
                 HeaderActions(onNotificationClick = onNotificationClick, onSettingsClick = onSettingsClick, hasUnreadNotifications = hasUnreadNotifications)
             }
             Spacer(Modifier.height(18.dp))
             Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = MaterialTheme.shapes.medium) {
-                Text("Preview • Groups and messages are saved on this device only.", modifier = Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                Text(stringResource(R.string.ui_preview_groups_and_messages_are_saved_on_this_device_o), modifier = Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
             }
             Spacer(Modifier.height(10.dp))
-            SearchField(query, onQueryChange, "Search Your Groups")
+            SearchField(query, onQueryChange, stringResource(R.string.search_your_groups))
             Spacer(Modifier.height(14.dp))
-            Button(onClick = { creating = true }, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().height(EkataComponentSize.buttonHeight)) { Icon(Icons.Default.GroupAdd, null); Spacer(Modifier.width(EkataSpacing.xs)); Text("Create Group", style = MaterialTheme.typography.labelLarge) }
-            Text("My Groups", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = EkataSpacing.lg, bottom = EkataSpacing.sm))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { GroupFilter.entries.forEach { item -> FilterChip(selected = filter == item, onClick = { onFilterChange(item) }, label = { Text(item.name) }, colors = FilterChipDefaults.filterChipColors(selectedContainerColor = EkataLightBlue), border = FilterChipDefaults.filterChipBorder(enabled = true, selected = filter == item, borderColor = PopupBorder, selectedBorderColor = EkataBlue)) } }
+            Button(onClick = { creating = true }, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().height(EkataComponentSize.buttonHeight)) { Icon(Icons.Default.GroupAdd, null); Spacer(Modifier.width(EkataSpacing.xs)); Text(stringResource(R.string.ui_create_group), style = MaterialTheme.typography.labelLarge) }
+            Text(stringResource(R.string.profile_menu_my_groups), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = EkataSpacing.lg, bottom = EkataSpacing.sm))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { GroupFilter.entries.forEach { item -> FilterChip(selected = filter == item, onClick = { onFilterChange(item) }, label = { Text(stringResource(when(item){GroupFilter.All->R.string.filter_all;GroupFilter.Unread->R.string.filter_unread;GroupFilter.Favourites->R.string.filter_favourites})) }, colors = FilterChipDefaults.filterChipColors(selectedContainerColor = EkataLightBlue), border = FilterChipDefaults.filterChipBorder(enabled = true, selected = filter == item, borderColor = PopupBorder, selectedBorderColor = EkataBlue)) } }
             LazyColumn(contentPadding = PaddingValues(top = 12.dp, bottom = 106.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (groups.isEmpty()) item {
                     EmptyState(
@@ -143,12 +147,12 @@ private fun messagePreview(message: ChatMessage?, state: GroupHubUiState): Strin
         imageUri = uri?.toString()
     }
     StyledDialog(onDismiss) {
-        Text("Create Group", fontSize = 21.sp, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.ui_create_group), fontSize = 21.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(12.dp)); DialogInput(name, { name = it }, "Group name *"); Spacer(Modifier.height(8.dp)); DialogInput(description, { description = it }, "Description (optional)")
-        TextButton(onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) { Icon(Icons.Default.AddPhotoAlternate, null); Text(if (imageUri == null) " Add group photo" else " Photo selected") }
-        SearchField(search, { search = it }, "Search members")
-        Column(Modifier.heightIn(max = 190.dp)) { users.filter { it.name.contains(search, true) }.forEach { user -> Row(Modifier.fillMaxWidth().clickable { selected = if (user.id in selected) selected - user.id else selected + user.id }.padding(vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) { Checkbox(user.id in selected, { checked -> selected = if (checked) selected + user.id else selected - user.id }); Text(user.name) } }; if (users.none { it.name.contains(search, true) }) Text("No users found", color = EkataTextSecondary, modifier = Modifier.padding(12.dp)) }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { TextButton(onClick = onDismiss) { Text("Cancel", color = EkataTextPrimary) }; Button(onClick = { onCreate(name, description, selected, imageUri) }, enabled = name.isNotBlank()) { Text("Create") } }
+        TextButton(onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) { Icon(Icons.Default.AddPhotoAlternate, null); Text(stringResource(if (imageUri == null) R.string.add_group_photo else R.string.photo_selected)) }
+        SearchField(search, { search = it }, stringResource(R.string.search_members))
+        Column(Modifier.heightIn(max = 190.dp)) { users.filter { it.name.contains(search, true) }.forEach { user -> Row(Modifier.fillMaxWidth().clickable { selected = if (user.id in selected) selected - user.id else selected + user.id }.padding(vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) { Checkbox(user.id in selected, { checked -> selected = if (checked) selected + user.id else selected - user.id }); Text(user.name) } }; if (users.none { it.name.contains(search, true) }) Text(stringResource(R.string.ui_no_users_found), color = EkataTextSecondary, modifier = Modifier.padding(12.dp)) }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { TextButton(onClick = onDismiss) { Text(stringResource(R.string.planner_date_cancel), color = EkataTextPrimary) }; Button(onClick = { onCreate(name, description, selected, imageUri) }, enabled = name.isNotBlank()) { Text(stringResource(R.string.wishlist_create_action)) } }
     }
 }
 

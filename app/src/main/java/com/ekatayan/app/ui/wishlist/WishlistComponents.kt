@@ -147,9 +147,9 @@ fun WishlistGroupCard(
                     containerColor = Color.White,
                     shape = RoundedCornerShape(12.dp),
                 ) {
-                    DropdownMenuItem(text = { Text("Rename", color = EkataTextPrimary) }, onClick = { menuExpanded = false; onRenameClick() })
-                    DropdownMenuItem(text = { Text("Change Cover Photo", color = EkataTextPrimary) }, onClick = { menuExpanded = false; onChangeCoverClick() })
-                    DropdownMenuItem(text = { Text("Delete", color = EkataTextPrimary) }, onClick = { menuExpanded = false; onDeleteClick() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.ui_rename), color = EkataTextPrimary) }, onClick = { menuExpanded = false; onRenameClick() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.ui_change_cover_photo), color = EkataTextPrimary) }, onClick = { menuExpanded = false; onChangeCoverClick() })
+                    DropdownMenuItem(text = { Text(stringResource(R.string.bp_delete), color = EkataTextPrimary) }, onClick = { menuExpanded = false; onDeleteClick() })
                 }
             }
         }
@@ -191,8 +191,8 @@ fun CreateWishlistButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun EmptyWishlistState(modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().padding(vertical = 70.dp, horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("No wishlists yet", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
-        Text("Create your first wishlist to save the places you love.", color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp, bottom = 20.dp))
+        Text(stringResource(R.string.wishlist_empty_selector_title), fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.ui_create_your_first_wishlist_to_save_the_places_you_love), color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp, bottom = 20.dp))
     }
 }
 
@@ -315,15 +315,15 @@ fun WishlistNameDialog(title: String, confirmLabel: String, initialName: String,
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it; hasError = false },
-                label = { Text("Wishlist name") },
+                label = { Text(stringResource(R.string.ui_wishlist_name)) },
                 modifier = Modifier.fillMaxWidth().padding(top = 14.dp),
                 singleLine = true,
                 isError = hasError,
-                supportingText = if (hasError) ({ Text("Name can't be blank") }) else null,
+                supportingText = if (hasError) ({ Text(stringResource(R.string.ui_name_can_t_be_blank)) }) else null,
                 colors = wishlistTextFieldColors(),
             )
             Row(Modifier.align(Alignment.End).padding(top = 8.dp)) {
-                TextButton(onDismiss) { Text("Cancel", color = EkataTextPrimary) }
+                TextButton(onDismiss) { Text(stringResource(R.string.planner_date_cancel), color = EkataTextPrimary) }
                 TextButton(onClick = { hasError = !onConfirm(name) }) { Text(confirmLabel) }
             }
         }
@@ -334,11 +334,11 @@ fun WishlistNameDialog(title: String, confirmLabel: String, initialName: String,
 fun DeleteWishlistDialog(groupName: String, onDismiss: () -> Unit, onConfirm: () -> Unit) {
     WishlistPopupSurface(onDismiss) {
         Column(Modifier.padding(22.dp)) {
-            Text("Delete \"$groupName\"?", fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
-            Text("This wishlist and its saved places will be removed.", Modifier.padding(top = 12.dp))
+            Text(stringResource(R.string.wishlist_delete_named,groupName), fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.ui_this_wishlist_and_its_saved_places_will_be_removed), Modifier.padding(top = 12.dp))
             Row(Modifier.align(Alignment.End).padding(top = 12.dp)) {
-                TextButton(onDismiss) { Text("Cancel", color = EkataTextPrimary) }
-                TextButton(onConfirm) { Text("Delete", color = Color(0xFFD6284D)) }
+                TextButton(onDismiss) { Text(stringResource(R.string.planner_date_cancel), color = EkataTextPrimary) }
+                TextButton(onConfirm) { Text(stringResource(R.string.bp_delete), color = Color(0xFFD6284D)) }
             }
         }
     }
@@ -348,19 +348,19 @@ fun DeleteWishlistDialog(groupName: String, onDismiss: () -> Unit, onConfirm: ()
 fun ChangeCoverPhotoDialog(onDismiss: () -> Unit, onUseSavedPlace: () -> Unit, onChooseFromDevice: () -> Unit) {
     WishlistPopupSurface(onDismiss) {
         Column(Modifier.padding(22.dp)) {
-            Text("Change Cover Photo", color = EkataTextPrimary, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.ui_change_cover_photo), color = EkataTextPrimary, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
             Button(
                 onClick = onUseSavedPlace,
                 modifier = Modifier.fillMaxWidth().padding(top = 18.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = EkataLightBlue, contentColor = EkataTextPrimary),
-            ) { Text("Use a saved place image") }
+            ) { Text(stringResource(R.string.ui_use_a_saved_place_image)) }
             Button(
                 onClick = onChooseFromDevice,
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = EkataTextPrimary),
                 border = androidx.compose.foundation.BorderStroke(1.dp, WishlistPopupBorder),
-            ) { Text("Choose from device") }
-            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text("Cancel", color = EkataTextPrimary) }
+            ) { Text(stringResource(R.string.ui_choose_from_device)) }
+            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text(stringResource(R.string.planner_date_cancel), color = EkataTextPrimary) }
         }
     }
 }
@@ -374,15 +374,15 @@ fun SavedPlaceCoverDialog(
 ) {
     WishlistPopupSurface(onDismiss) {
         Column(Modifier.padding(22.dp)) {
-            Text("Use a saved place image", color = EkataTextPrimary, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.ui_use_a_saved_place_image), color = EkataTextPrimary, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
             if (items.isEmpty()) {
-                Text("No saved places available", color = EkataTextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 20.dp))
-                Text("Add places to this wishlist first, or choose an image from your device.", color = EkataTextPrimary, modifier = Modifier.padding(top = 8.dp))
+                Text(stringResource(R.string.ui_no_saved_places_available), color = EkataTextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 20.dp))
+                Text(stringResource(R.string.ui_add_places_to_this_wishlist_first_or_choose_an_image_f), color = EkataTextPrimary, modifier = Modifier.padding(top = 8.dp))
                 Button(
                     onClick = onChooseFromDevice,
                     colors = ButtonDefaults.buttonColors(containerColor = EkataLightBlue, contentColor = EkataTextPrimary),
                     modifier = Modifier.padding(top = 16.dp),
-                ) { Text("Choose from device") }
+                ) { Text(stringResource(R.string.ui_choose_from_device)) }
             } else {
                 LazyColumn(Modifier.fillMaxWidth().height(330.dp).padding(top = 12.dp)) {
                     items(items, key = WishlistItem::id) { item ->
@@ -396,7 +396,7 @@ fun SavedPlaceCoverDialog(
                     }
                 }
             }
-            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text("Close", color = EkataTextPrimary) }
+            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text(stringResource(R.string.wishlist_close), color = EkataTextPrimary) }
         }
     }
 }

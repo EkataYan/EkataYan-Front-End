@@ -187,7 +187,7 @@ fun PlannerScreen(
                 verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 Column {
-                    Text("Destination route", style = MaterialTheme.typography.titleMedium, color = EkataTextPrimary)
+                    Text(stringResource(R.string.ui_destination_route), style = MaterialTheme.typography.titleMedium, color = EkataTextPrimary)
                     Spacer(Modifier.height(8.dp))
                     OutlinedTextField(
                         value = uiState.destination,
@@ -222,8 +222,8 @@ fun PlannerScreen(
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                             trailingIcon = {
                                 Row {
-                                    IconButton(onClick = { onMoveDestination(index + 1, -1) }, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowUpward, "Move destination earlier", Modifier.size(20.dp)) }
-                                    IconButton(onClick = { onMoveDestination(index + 1, 1) }, enabled = index < uiState.additionalDestinations.lastIndex, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowDownward, "Move destination later", Modifier.size(20.dp)) }
+                                    IconButton(onClick = { onMoveDestination(index + 1, -1) }, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowUpward, stringResource(R.string.move_destination_earlier), Modifier.size(20.dp)) }
+                                    IconButton(onClick = { onMoveDestination(index + 1, 1) }, enabled = index < uiState.additionalDestinations.lastIndex, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowDownward, stringResource(R.string.move_destination_later), Modifier.size(20.dp)) }
                                     IconButton(onClick = { onRemoveAdditionalDestination(index) }, modifier = Modifier.size(48.dp)) {
                                         Icon(Icons.Default.Close, contentDescription = stringResource(R.string.planner_remove_place), tint = EkataTextSecondary, modifier = Modifier.size(18.dp))
                                     }
@@ -327,7 +327,7 @@ fun PlannerScreen(
                                     onPeopleCountChange((current - 1).coerceAtLeast(uiState.minimumPartySize).toString())
                                 },
                             ) {
-                                Icon(Icons.Default.Remove, contentDescription = "Decrease travellers")
+                                Icon(Icons.Default.Remove, contentDescription = stringResource(R.string.ui_decrease_travellers))
                             }
                             OutlinedTextField(
                                 value = uiState.customPeopleCount,
@@ -346,7 +346,7 @@ fun PlannerScreen(
                                     onPeopleCountChange((current + 1).coerceAtMost(100).toString())
                                 },
                             ) {
-                                Icon(Icons.Default.Add, contentDescription = "Increase travellers")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.ui_increase_travellers))
                             }
                         }
                     }
@@ -493,26 +493,26 @@ private fun PersonalizationSection(
         Column(Modifier.padding(16.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("✨ Personalize your trip", style = MaterialTheme.typography.titleMedium)
-                    Text("Add preferences for a better itinerary", style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
+                    Text(stringResource(R.string.ui_personalize_your_trip), style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.ui_add_preferences_for_a_better_itinerary), style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
                 }
-                IconButton(onClick = onToggleExpanded) { Icon(if (state.personalizationExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, "Expand preferences") }
+                IconButton(onClick = onToggleExpanded) { Icon(if (state.personalizationExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, stringResource(R.string.expand_preferences)) }
             }
             if (state.personalizationExpanded) {
                 PreferenceGroup("Transport", listOf("Train", "Bus", "Car", "Tuk-tuk", "Taxi / Ride-hailing", "Rental vehicle", "Own vehicle", "Let AI decide"), state.transportPreferences, onToggleTransport)
                 PreferenceGroup("Stay", listOf("Hotel", "Guesthouse", "Hostel", "Resort", "Homestay", "No accommodation needed", "Let AI decide"), setOf(state.accommodationPreference), onAccommodationSelected)
-                Text("What's your travel style?", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp, bottom = 6.dp))
+                Text(stringResource(R.string.ui_what_s_your_travel_style), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp, bottom = 6.dp))
                 PlannerTravelStyle.entries.chunked(2).forEach { row -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { row.forEach { option -> PlannerToggleAction(option.displayLabel, state.travelStyle == option, { onTravelStyleSelected(option) }, Modifier.weight(1f)) } } }
-                Text("Budget: Affordable stays, local food and public transport.\nComfort: Comfortable stays and convenient transport.\nPremium: Higher-end stays, dining and private transport.", style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
+                Text(stringResource(R.string.ui_budget_affordable_stays_local_food_and_public_transpor), style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
                 PreferenceGroup("Interests", listOf("Nature", "Beaches", "Adventure", "Culture", "Food", "Wildlife", "Photography", "Relaxation", "Shopping", "History", "Hiking", "Scenic routes"), state.interests, onToggleInterest)
-                Text("How do you like to travel?", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp, bottom = 6.dp))
+                Text(stringResource(R.string.ui_how_do_you_like_to_travel), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp, bottom = 6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { TravelPace.entries.forEach { option -> PlannerToggleAction(option.displayLabel, state.pace == option, { onPaceSelected(option) }, Modifier.weight(1f)) } }
-                Text("Relaxed: more free time • Balanced: activities and rest • Packed: more sightseeing", style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
+                Text(stringResource(R.string.ui_relaxed_more_free_time_balanced_activities_and_rest_pa), style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
                 OutlinedTextField(
                     value = state.specialRequests,
                     onValueChange = onSpecialRequestsChange,
-                    label = { Text("Anything else?") },
-                    placeholder = { Text("I want to take the Kandy–Ella train and visit Nine Arches Bridge.") },
+                    label = { Text(stringResource(R.string.ui_anything_else)) },
+                    placeholder = { Text(stringResource(R.string.ui_i_want_to_take_the_kandy_ella_train_and_visit_nine_arc)) },
                     minLines = 3,
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                     shape = PlannerFieldShape,
@@ -551,7 +551,7 @@ private fun PlannerGenerationContent(
         when (generationState.phase) {
             PlannerPhase.GENERATING, PlannerPhase.SAVING -> Column(Modifier.align(Alignment.Center).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 CircularProgressIndicator(color = EkataBlue)
-                Text(if (generationState.phase == PlannerPhase.SAVING) "Saving your trip..." else "Planning your Sri Lanka adventure...", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 20.dp))
+                Text(stringResource(if (generationState.phase == PlannerPhase.SAVING) R.string.saving_your_trip else R.string.planning_adventure), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 20.dp))
                 Text(generationState.status, color = EkataTextSecondary, modifier = Modifier.padding(top = 8.dp))
             }
             PlannerPhase.ERROR -> Column(Modifier.align(Alignment.Center).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -564,44 +564,44 @@ private fun PlannerGenerationContent(
                     style = MaterialTheme.typography.titleLarge,
                 )
                 Text(generationState.error.orEmpty(), color = EkataTextSecondary, modifier = Modifier.padding(vertical = 12.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRetry) { Text("Try Again") }; TextButton(onClick = onEditPreferences) { Text("Edit Preferences") } }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = onRetry) { Text(stringResource(R.string.ui_try_again)) }; TextButton(onClick = onEditPreferences) { Text(stringResource(R.string.ui_edit_preferences)) } }
             }
             PlannerPhase.SAVED -> Column(Modifier.align(Alignment.Center).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.Default.AutoAwesome, null, tint = EkataBlue, modifier = Modifier.size(48.dp))
-                Text("Trip saved", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp))
-                Text("Your itinerary is now available in Trips.", color = EkataTextSecondary)
-                Button(onClick = onTripsClick, modifier = Modifier.padding(top = 20.dp)) { Text("View Trips") }
+                Text(stringResource(R.string.ui_trip_saved), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(top = 12.dp))
+                Text(stringResource(R.string.ui_your_itinerary_is_now_available_in_trips), color = EkataTextSecondary)
+                Button(onClick = onTripsClick, modifier = Modifier.padding(top = 20.dp)) { Text(stringResource(R.string.ui_view_trips)) }
             }
             PlannerPhase.PREVIEW -> if (itinerary != null) Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp)) {
                 Text(itinerary.trip.title, style = MaterialTheme.typography.headlineSmall)
                 Text(itinerary.trip.route.joinToString(" → "), style = MaterialTheme.typography.titleSmall, color = EkataBlue, modifier = Modifier.padding(top = 4.dp))
-                Text("${itinerary.trip.startDate} – ${itinerary.trip.endDate} • ${itinerary.trip.travellerCount} ${itinerary.trip.travellerType.lowercase()}", color = EkataTextSecondary)
-                Text("${itinerary.trip.travelStyle} • ${itinerary.trip.travelPace} pace", style = MaterialTheme.typography.labelLarge, color = EkataBlue, modifier = Modifier.padding(top = 4.dp))
+                Text(stringResource(R.string.itinerary_trip_summary,itinerary.trip.startDate,itinerary.trip.endDate,itinerary.trip.travellerCount,itinerary.trip.travellerType.lowercase()), color = EkataTextSecondary)
+                Text(stringResource(R.string.style_and_pace,itinerary.trip.travelStyle,itinerary.trip.travelPace), style = MaterialTheme.typography.labelLarge, color = EkataBlue, modifier = Modifier.padding(top = 4.dp))
                 Text(itinerary.trip.summary, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 16.dp))
                 itinerary.days.forEachIndexed { dayIndex, day ->
                     Surface(Modifier.fillMaxWidth().padding(bottom = 12.dp), shape = RoundedCornerShape(18.dp), color = Color.White, shadowElevation = 1.dp) {
                         Column(Modifier.padding(16.dp)) {
-                            Text("Day ${day.dayNumber} — ${day.title}", style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.day_title,day.dayNumber,day.title), style = MaterialTheme.typography.titleMedium)
                             Text(day.date, style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
                             Text(day.summary, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
                             day.activities.forEachIndexed { activityIndex, activity ->
                                 Row(Modifier.fillMaxWidth().padding(top = 12.dp), verticalAlignment = Alignment.Top) {
                                     Text(activity.startTime.take(5), style = MaterialTheme.typography.labelLarge, color = EkataBlue, modifier = Modifier.width(52.dp))
-                                    Column(Modifier.weight(1f)) { Text(activity.name, style = MaterialTheme.typography.titleSmall); Text(activity.location.name, style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary); if (activity.transportFromPrevious.isNotBlank()) Text("${activity.transportFromPrevious} • ${activity.travelTimeMinutes} min", style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary) }
+                                    Column(Modifier.weight(1f)) { Text(activity.name, style = MaterialTheme.typography.titleSmall); Text(activity.location.name, style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary); if (activity.transportFromPrevious.isNotBlank()) Text(stringResource(R.string.transport_minutes,activity.transportFromPrevious,activity.travelTimeMinutes), style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary) }
                                     Column {
-                                        IconButton(onClick = { onMoveActivity(dayIndex, activityIndex, -1) }, enabled = activityIndex > 0, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowUpward, "Move activity earlier", Modifier.size(20.dp)) }
-                                        IconButton(onClick = { onMoveActivity(dayIndex, activityIndex, 1) }, enabled = activityIndex < day.activities.lastIndex, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowDownward, "Move activity later", Modifier.size(20.dp)) }
-                                        IconButton(onClick = { onRemoveActivity(dayIndex, activityIndex) }, enabled = day.activities.size > 1, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.DeleteOutline, "Remove activity", Modifier.size(20.dp)) }
+                                        IconButton(onClick = { onMoveActivity(dayIndex, activityIndex, -1) }, enabled = activityIndex > 0, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowUpward, stringResource(R.string.move_activity_earlier), Modifier.size(20.dp)) }
+                                        IconButton(onClick = { onMoveActivity(dayIndex, activityIndex, 1) }, enabled = activityIndex < day.activities.lastIndex, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.ArrowDownward, stringResource(R.string.move_activity_later), Modifier.size(20.dp)) }
+                                        IconButton(onClick = { onRemoveActivity(dayIndex, activityIndex) }, enabled = day.activities.size > 1, modifier = Modifier.size(48.dp)) { Icon(Icons.Default.DeleteOutline, stringResource(R.string.remove_activity), Modifier.size(20.dp)) }
                                     }
                                 }
                             }
-                            TextButton(onClick = { onMakeDayRelaxed(dayIndex) }) { Text("Make this day more relaxed") }
+                            TextButton(onClick = { onMakeDayRelaxed(dayIndex) }) { Text(stringResource(R.string.ui_make_this_day_more_relaxed)) }
                         }
                     }
                 }
-                Surface(shape = RoundedCornerShape(18.dp), color = EkataLightBlue) { Column(Modifier.fillMaxWidth().padding(16.dp)) { Text("Estimated trip cost", style = MaterialTheme.typography.titleMedium); Text("Estimated total • ${itinerary.costEstimate.currency} ${"%,d".format(itinerary.costEstimate.total.min)}–${"%,d".format(itinerary.costEstimate.total.max)}", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 6.dp)); Text(itinerary.costEstimate.disclaimer, style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary) } }
-                Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { TextButton(onClick = onEditPreferences, modifier = Modifier.weight(1f)) { Text("Edit preferences") }; Button(onClick = onRetry, modifier = Modifier.weight(1f)) { Text("Regenerate") } }
-                Button(onClick = onSaveTrip, modifier = Modifier.fillMaxWidth().height(52.dp).padding(top = 8.dp)) { Text("Save Trip") }
+                Surface(shape = RoundedCornerShape(18.dp), color = EkataLightBlue) { Column(Modifier.fillMaxWidth().padding(16.dp)) { Text(stringResource(R.string.ui_estimated_trip_cost), style = MaterialTheme.typography.titleMedium); Text(stringResource(R.string.estimated_total_range,itinerary.costEstimate.currency,"%,d".format(itinerary.costEstimate.total.min),"%,d".format(itinerary.costEstimate.total.max)), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 6.dp)); Text(itinerary.costEstimate.disclaimer, style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary) } }
+                Row(Modifier.fillMaxWidth().padding(top = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { TextButton(onClick = onEditPreferences, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.ui_edit_preferences)) }; Button(onClick = onRetry, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.ui_regenerate)) } }
+                Button(onClick = onSaveTrip, modifier = Modifier.fillMaxWidth().height(52.dp).padding(top = 8.dp)) { Text(stringResource(R.string.create_trip_save)) }
                 Spacer(Modifier.height(24.dp))
             }
             else -> Unit

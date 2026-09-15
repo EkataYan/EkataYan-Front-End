@@ -146,14 +146,14 @@ fun SettingsScreen(
                         androidx.compose.material3.TextButton(
                             onClick = { context.startActivity(android.content.Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)) },
                             modifier = Modifier.padding(start = 60.dp),
-                        ) { Text("Device notifications are unavailable — Open settings") }
+                        ) { Text(stringResource(R.string.ui_device_notifications_are_unavailable_open_settings)) }
                     }
                     SettingsDivider()
                     SettingsRow(
                         icon = Icons.Outlined.DarkMode,
                         titleRes = R.string.settings_appearance,
                         subtitleRes = R.string.settings_appearance_subtitle,
-                        subtitle = when(uiState.themeMode){"dark"->"Dark";"light"->"Light";else->"System default"},
+                        subtitle = stringResource(when(uiState.themeMode){"dark"->R.string.settings_theme_dark;"light"->R.string.settings_theme_light;else->R.string.settings_theme_system}),
                         onClick = onAppearanceClick,
                     )
                     SettingsDivider()
@@ -161,7 +161,7 @@ fun SettingsScreen(
                         icon = Icons.Outlined.Language,
                         titleRes = R.string.settings_language,
                         subtitleRes = R.string.settings_language_subtitle,
-                        subtitle = when(uiState.selectedLanguage){"si"->"සිංහල";"ta"->"தமிழ்";else->"English"},
+                        subtitle = stringResource(when(uiState.selectedLanguage){"si"->R.string.language_sinhala;"ta"->R.string.language_tamil;else->R.string.language_english}),
                         onClick = onLanguageClick,
                     )
                 }
@@ -174,7 +174,7 @@ fun SettingsScreen(
                         icon = Icons.Outlined.LocationOn,
                         titleRes = R.string.settings_location_permissions,
                         subtitleRes = R.string.settings_location_permissions_subtitle,
-                        subtitle = if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED || androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) "Allowed" else "Off",
+                        subtitle = stringResource(if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED || androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_COARSE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) R.string.permission_allowed else R.string.permission_off),
                         onClick = onPermissionsClick,
                     )
                     SettingsDivider()
@@ -230,10 +230,10 @@ fun SettingsScreen(
                     )
                 }
             }
-            item { Text("EkataYan v${com.ekatayan.app.BuildConfig.VERSION_NAME}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.fillMaxWidth().padding(top=EkataSpacing.lg),textAlign=androidx.compose.ui.text.style.TextAlign.Center) }
+            item { Text(stringResource(R.string.app_version_short,com.ekatayan.app.BuildConfig.VERSION_NAME),style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant,modifier=Modifier.fillMaxWidth().padding(top=EkataSpacing.lg),textAlign=androidx.compose.ui.text.style.TextAlign.Center) }
         }
     }
-    if(confirmLogout) androidx.compose.material3.AlertDialog(onDismissRequest={confirmLogout=false},title={Text("Log out of EkataYan?")},text={Text("You'll need to sign in again to access your account.")},confirmButton={androidx.compose.material3.TextButton(onClick={confirmLogout=false;onLogoutClick()}){Text("Log Out")}},dismissButton={androidx.compose.material3.TextButton(onClick={confirmLogout=false}){Text("Cancel")}})
+    if(confirmLogout) androidx.compose.material3.AlertDialog(onDismissRequest={confirmLogout=false},title={Text(stringResource(R.string.ui_log_out_of_ekatayan))},text={Text(stringResource(R.string.ui_you_ll_need_to_sign_in_again_to_access_your_account))},confirmButton={androidx.compose.material3.TextButton(onClick={confirmLogout=false;onLogoutClick()}){Text(stringResource(R.string.settings_logout))}},dismissButton={androidx.compose.material3.TextButton(onClick={confirmLogout=false}){Text(stringResource(R.string.planner_date_cancel))}})
 }
 
 @Composable

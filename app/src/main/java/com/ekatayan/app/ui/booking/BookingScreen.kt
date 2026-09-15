@@ -131,7 +131,7 @@ fun BookingScreen(
             }
             item {
                 Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(14.dp)) {
-                    Text("Preview • Browse travel options here. Online booking is not available yet.", modifier = Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text(stringResource(R.string.ui_preview_browse_travel_options_here_online_booking_is_n), modifier = Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
                 }
             }
             item {
@@ -310,7 +310,7 @@ private fun DestinationField(
             IconButton(onClick = onClearClick, modifier = Modifier.size(48.dp)) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Clear destination",
+                    contentDescription = stringResource(R.string.ui_clear_destination),
                     tint = EkataTextPrimary,
                     modifier = Modifier.size(18.dp),
                 )
@@ -386,7 +386,7 @@ private fun SearchRow(
         ) {
             Icon(
                 imageVector = Icons.Default.FilterList,
-                contentDescription = "Filter",
+                contentDescription = stringResource(R.string.ui_filter),
                 tint = EkataTextPrimary,
             )
         }
@@ -614,7 +614,7 @@ private fun DestinationPickerDialog(
                 onValueChange = onSearchQueryChange,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Search destinations") },
+                placeholder = { Text(stringResource(R.string.home_search_action)) },
                 colors = bookingPopupTextFieldColors(),
                 shape = RoundedCornerShape(14.dp),
             )

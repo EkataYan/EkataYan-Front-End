@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,7 +69,7 @@ fun CreateTripScreen(onBackClick: () -> Unit, uiState: CreateTripUiState, onFiel
             Card(modifier = Modifier.fillMaxWidth().padding(top = 12.dp), colors = CardDefaults.cardColors(containerColor = EkataLightBlue), shape = RoundedCornerShape(14.dp)) {
                 Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Outlined.CalendarMonth, null, tint = EkataBlue, modifier = Modifier.size(22.dp))
-                    Spacer(Modifier.width(10.dp)); Column { Text("Trip dates", fontSize = 11.sp, color = EkataTextSecondary); Text("$duration ${if (duration == 1L) "day" else "days"} · ${startDate.format(tripDateFormatter)} – ${endDate.format(tripDateFormatter)}", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = EkataTextPrimary) }
+                    Spacer(Modifier.width(10.dp)); Column { Text(stringResource(R.string.trips_calendar_trip_dates), fontSize = 11.sp, color = EkataTextSecondary); Text(stringResource(R.string.trip_duration_dates, pluralStringResource(R.plurals.days_count,duration.toInt(),duration),startDate.format(tripDateFormatter),endDate.format(tripDateFormatter)), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = EkataTextPrimary) }
                 }
             }
         }
@@ -105,4 +106,4 @@ fun CreateTripScreen(onBackClick: () -> Unit, uiState: CreateTripUiState, onFiel
 }
 
 @Composable private fun TripInput(value: String, onValueChange: (String) -> Unit, label: Int, colors: TextFieldColors) { OutlinedTextField(value, onValueChange, label = { Text(stringResource(label)) }, singleLine = true, modifier = Modifier.fillMaxWidth(), colors = colors) }
-@Composable private fun DateInput(value: String, onValueChange: (String) -> Unit, label: Int, onPickerClick: () -> Unit, modifier: Modifier) { OutlinedTextField(value, onValueChange, label = { Text(stringResource(label)) }, placeholder = { Text("25 Sep 2026") }, singleLine = true, modifier = modifier, trailingIcon = { IconButton(onClick = onPickerClick) { Icon(Icons.Outlined.CalendarMonth, stringResource(R.string.create_trip_choose_date)) } }, colors = TextFieldDefaults.colors(focusedTextColor = EkataTextPrimary, unfocusedTextColor = EkataTextPrimary, focusedContainerColor = Color.White, unfocusedContainerColor = Color.White, focusedIndicatorColor = EkataBlue, unfocusedIndicatorColor = EkataBlue, focusedLabelColor = EkataBlue, unfocusedLabelColor = EkataTextSecondary, cursorColor = EkataBlue)) }
+@Composable private fun DateInput(value: String, onValueChange: (String) -> Unit, label: Int, onPickerClick: () -> Unit, modifier: Modifier) { OutlinedTextField(value, onValueChange, label = { Text(stringResource(label)) }, placeholder = { Text(stringResource(R.string.ui_25_sep_2026)) }, singleLine = true, modifier = modifier, trailingIcon = { IconButton(onClick = onPickerClick) { Icon(Icons.Outlined.CalendarMonth, stringResource(R.string.create_trip_choose_date)) } }, colors = TextFieldDefaults.colors(focusedTextColor = EkataTextPrimary, unfocusedTextColor = EkataTextPrimary, focusedContainerColor = Color.White, unfocusedContainerColor = Color.White, focusedIndicatorColor = EkataBlue, unfocusedIndicatorColor = EkataBlue, focusedLabelColor = EkataBlue, unfocusedLabelColor = EkataTextSecondary, cursorColor = EkataBlue)) }

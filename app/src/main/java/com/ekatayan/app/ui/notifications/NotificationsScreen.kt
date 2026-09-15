@@ -100,7 +100,7 @@ fun NotificationsScreen(
             item { NotificationFilters(uiState.selectedFilter, onFilterSelected) }
             if(uiState.selectedFilter in setOf(NotificationFilter.ALL,NotificationFilter.TRIPS)) {
                 if(uiState.loadingInvitations) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
-                if(uiState.invitationError!=null) item { TextButton(onClick=onRetryInvites){Text("Couldn't load invitations. Retry")} }
+                if(uiState.invitationError!=null) item { TextButton(onClick=onRetryInvites){Text(stringResource(R.string.ui_couldn_t_load_invitations_retry))} }
                 items(uiState.invitations,key={"invite-${it.id}"}) { invite ->
                     InvitationCard(invite, uiState.respondingInvites[invite.id], onAcceptInvite, onDeclineInvite)
                 }
@@ -131,7 +131,7 @@ private fun InvitationCard(invite: TripInvitation, action: String?, accept: (Str
         border = androidx.compose.foundation.BorderStroke(EkataStroke.thin, MaterialTheme.colorScheme.outline),
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text("TRIP INVITATION", style = MaterialTheme.typography.labelMedium,
+            Text(stringResource(R.string.ui_trip_invitation), style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             Text("${invite.inviterName} invited you to join", modifier = Modifier.padding(top = 8.dp))
             Text(invite.tripName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)

@@ -29,6 +29,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
 import com.ekatayan.app.utils.runSuspendCatching
+import com.ekatayan.app.R
+import com.ekatayan.app.core.localization.StringResourceProvider
 
 data class HomeUiState(
     val user: User,
@@ -55,6 +57,7 @@ class HomeViewModel @Inject constructor(
     private val locationRepository: LocationRepository,
     private val weatherRepository: WeatherRepository,
     @ApplicationContext private val context: Context,
+    private val strings: StringResourceProvider,
 ) : ViewModel() {
     private var weatherJob: kotlinx.coroutines.Job? = null
 
@@ -81,7 +84,7 @@ class HomeViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             runSuspendCatching { tripsRepository.refreshTrips() }
                 .onSuccess { _uiState.update { it.copy(isLoading = false) } }
-                .onFailure { _uiState.update { it.copy(isLoading = false, errorMessage = "Trips could not be refreshed.") } }
+                .onFailure { _uiState.update { it.copy(isLoading = false, errorMessage = strings[R.string.error_trips_refresh]) } }
         }
         viewModelScope.launch {
             tripsRepository.trips.collect { trips ->
@@ -98,7 +101,7 @@ class HomeViewModel @Inject constructor(
                             ?: trip.nameRes.takeIf { it != 0 }?.let(context::getString)
                             ?: trip.customLocation.orEmpty(),
                         date = trip.startDate.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)),
-                        duration = "${ChronoUnit.DAYS.between(trip.startDate, trip.endDate) + 1} Days",
+                        duration = strings[R.string.duration_days, ChronoUnit.DAYS.between(trip.startDate, trip.endDate) + 1],
                         imageRes = trip.imageRes,
                     )
                 }) }
@@ -123,10 +126,10 @@ class HomeViewModel @Inject constructor(
                         weather = if (error is LocationPermissionDeniedException) null else it.weather,
                         isWeatherLoading = false,
                         weatherError = when(error) {
-                            is LocationPermissionDeniedException -> "Enable location to see local weather"
-                            is SystemLocationDisabledException -> "Turn on device Location to see local weather."
-                            is DeviceLocationUnavailableException -> "Couldn't determine your location."
-                            else -> "Weather is temporarily unavailable."
+                            is LocationPermissionDeniedException -> strings[R.string.weather_enable_location]
+                            is SystemLocationDisabledException -> strings[R.string.weather_enable_device_location]
+                            is DeviceLocationUnavailableException -> strings[R.string.weather_location_unavailable]
+                            else -> strings[R.string.weather_temporarily_unavailable]
                         },
                         weatherErrorKind = when(error) {
                             is LocationPermissionDeniedException -> WeatherErrorKind.PERMISSION
