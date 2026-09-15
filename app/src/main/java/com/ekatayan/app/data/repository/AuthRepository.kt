@@ -5,6 +5,7 @@ import com.ekatayan.app.data.remote.SupabaseConfigurationException
 import com.ekatayan.app.data.remote.UserSessionProvider
 import com.ekatayan.app.data.remote.api.SupabaseAuthApiService
 import com.ekatayan.app.data.remote.api.PasswordUpdateRequest
+import com.ekatayan.app.data.remote.api.PasswordRecoveryRequest
 import com.ekatayan.app.data.remote.api.GoogleIdTokenRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignInRequest
 import com.ekatayan.app.data.remote.dto.PasswordSignUpMetadata
@@ -43,6 +44,9 @@ interface AuthRepository {
     suspend fun updatePassword(password: String) {
         throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
     }
+    suspend fun requestPasswordRecovery(email: String) {
+        throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
+    }
     fun currentUserEmail(): String? = null
     fun currentUserName(): String? = null
     fun clearSession()
@@ -52,6 +56,28 @@ class SupabaseAuthRepository @Inject constructor(
     private val api: Lazy<SupabaseAuthApiService>,
     private val session: UserSessionProvider,
 ) : AuthRepository {
+    override suspend fun requestPasswordRecovery(email: String) {
+        logger.info("Password recovery request started")
+        try {
+            api.get().requestPasswordRecovery(PasswordRecoveryRequest(email.trim()))
+            logger.info("Password recovery request accepted")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: HttpException) {
+            val failure = e.toAuthenticationFailure(defaultClientFailure = AuthenticationFailure.INVALID_CREDENTIALS)
+            logger.warning("Password recovery response failure status=${e.code()} type=$failure")
+            throw AuthenticationException(failure)
+        } catch (e: SupabaseConfigurationException) {
+            throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
+        } catch (e: IOException) {
+            throw AuthenticationException(AuthenticationFailure.NETWORK)
+        } catch (e: IllegalArgumentException) {
+            throw AuthenticationException(AuthenticationFailure.CONFIGURATION)
+        } catch (e: Exception) {
+            throw AuthenticationException(AuthenticationFailure.SERVER)
+        }
+    }
+
     override suspend fun updatePassword(password: String) {
         val token = session.currentAccessToken() ?: throw AuthenticationException(AuthenticationFailure.INVALID_CREDENTIALS)
         try {

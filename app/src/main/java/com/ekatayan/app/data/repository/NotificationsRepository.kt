@@ -32,10 +32,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import com.ekatayan.app.data.remote.apiCall
+import com.ekatayan.app.utils.runSuspendCatching
 
 interface NotificationsRepository {
     val notifications: StateFlow<List<NotificationItem>>
-    fun markAsRead(notificationId: String)
+    suspend fun markAsRead(notificationId: String)
     val invitations: StateFlow<List<TripInvitation>>
     suspend fun refreshNotifications()
     suspend fun refreshInvitations()
@@ -61,6 +63,8 @@ class DefaultNotificationsRepository @Inject constructor(
 ) : NotificationsRepository {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val refreshMutex = Mutex()
+    private val readMutex = Mutex()
+    private val readsInFlight = mutableSetOf<String>()
     @Volatile private var activeUserId: String? = null
     @Volatile private var lastRefreshAt = 0L
 
@@ -96,39 +100,60 @@ class DefaultNotificationsRepository @Inject constructor(
         }
     }
 
-    override fun markAsRead(notificationId: String) {
-        _notifications.update { current ->
-            current.map { notification ->
-                if (notification.id == notificationId) notification.copy(isUnread = false) else notification
-            }
+    override suspend fun markAsRead(notificationId: String) {
+        val shouldSend = readMutex.withLock {
+            val unread = _notifications.value.any { it.id == notificationId && it.isUnread }
+            unread && readsInFlight.add(notificationId)
         }
-        scope.launch {
-            runCatching { api.markNotificationRead(notificationId) }
-                .onFailure { logger.warning("Notification read state could not be synchronized") }
+        if (!shouldSend) return
+        try {
+            val response = apiCall("The notification could not be marked as read.") { api.markNotificationRead(notificationId) }
+            if (!response.success || response.data == null) {
+                error(response.error?.message ?: "The notification could not be marked as read.")
+            }
+            _notifications.update { current ->
+                current.map { notification ->
+                    if (notification.id == notificationId) notification.copy(isUnread = false) else notification
+                }
+            }
+        } finally {
+            readMutex.withLock { readsInFlight.remove(notificationId) }
         }
     }
 
     override suspend fun refreshNotifications() {
-        val incoming = api.notifications().data.orEmpty().map { it.toDomain() }
-        _notifications.update { current -> mergeNotificationItems(current, incoming) }
+        val response = apiCall("Notifications could not be loaded.") { api.notifications() }
+        val incoming = response.data.takeIf { response.success }
+            ?: error(response.error?.message ?: "Notifications could not be loaded.")
+        val mapped = incoming.map { it.toDomain() }
+        _notifications.update { current -> mergeNotificationItems(current, mapped) }
     }
 
     override suspend fun refreshInvitations() {
-        mutableInvitations.value = api.myTripInvites().data.orEmpty().map {
+        val response = apiCall("Invitations could not be loaded.") { api.myTripInvites() }
+        val invitations = response.data.takeIf { response.success }
+            ?: error(response.error?.message ?: "Invitations could not be loaded.")
+        mutableInvitations.value = invitations.map {
             TripInvitation(it.inviteId, it.tripId, it.tripName, it.tripStartDate, it.tripEndDate,
                 it.inviterDisplayName, it.inviterUsername, it.inviterAvatarUrl, it.createdAt)
         }
     }
 
     override suspend fun acceptInvitation(id: String) {
-        api.acceptTripInvite(id)
+        val response = apiCall("The invitation could not be accepted.") { api.acceptTripInvite(id) }
+        if (!response.success || response.data == null) {
+            error(response.error?.message ?: "The invitation could not be accepted.")
+        }
         markInvitationNotificationRead(id)
         refreshInvitations()
         tripsRepository.refreshTrips()
     }
 
     override suspend fun declineInvitation(id: String) {
-        api.declineTripInvite(id)
+        val response = apiCall("The invitation could not be declined.") { api.declineTripInvite(id) }
+        if (!response.success || response.data == null) {
+            error(response.error?.message ?: "The invitation could not be declined.")
+        }
         markInvitationNotificationRead(id)
         refreshInvitations()
     }
@@ -154,7 +179,7 @@ class DefaultNotificationsRepository @Inject constructor(
         val item = dto.toDomain()
         _notifications.update { current -> mergeNotificationItems(current, listOf(item)) }
         if (dto.type == "trip_invite") {
-            runCatching { refreshInvitations() }
+            runSuspendCatching { refreshInvitations() }
                 .onFailure { logger.warning("Realtime invitation details could not be refreshed") }
         }
     }
@@ -166,7 +191,7 @@ class DefaultNotificationsRepository @Inject constructor(
         refreshMutex.withLock {
             val lockedNow = System.currentTimeMillis()
             if (!force && lockedNow - lastRefreshAt < REFRESH_THROTTLE_MILLIS) return
-            runCatching {
+            runSuspendCatching {
                 refreshNotifications()
                 refreshInvitations()
             }.onSuccess {
@@ -177,7 +202,7 @@ class DefaultNotificationsRepository @Inject constructor(
         }
     }
 
-    private fun markInvitationNotificationRead(inviteId: String) {
+    private suspend fun markInvitationNotificationRead(inviteId: String) {
         _notifications.value
             .filter { it.relatedInviteId == inviteId && it.isUnread }
             .forEach { markAsRead(it.id) }

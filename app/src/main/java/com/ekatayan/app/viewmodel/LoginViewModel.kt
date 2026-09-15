@@ -23,6 +23,8 @@ data class LoginUiState(
     val password: String = "",
     val isPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
+    val isPasswordResetLoading: Boolean = false,
+    val passwordResetSent: Boolean = false,
     val error: AuthenticationFailure? = null,
     val loginSucceeded: Boolean = false,
 )
@@ -37,13 +39,31 @@ class LoginViewModel @Inject constructor(
 
     private var signInJob: Job? = null
 
-    fun onEmailChange(value: String) = update { copy(email = value, error = null) }
+    fun onEmailChange(value: String) = update { copy(email = value, error = null, passwordResetSent = false) }
     fun onPasswordChange(value: String) = update { copy(password = value, error = null) }
     fun onPasswordVisibilityClick() = update {
         copy(isPasswordVisible = !isPasswordVisible)
     }
 
-    fun onForgotPasswordClick() = Unit
+    fun onForgotPasswordClick() {
+        if (uiState.isLoading || uiState.isPasswordResetLoading || signInJob?.isActive == true) return
+        val email = uiState.email.trim()
+        if (!email.matches(Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"))) {
+            uiState = uiState.copy(error = AuthenticationFailure.INVALID_CREDENTIALS, passwordResetSent = false)
+            return
+        }
+        signInJob = viewModelScope.launch {
+            uiState = uiState.copy(isPasswordResetLoading = true, error = null, passwordResetSent = false)
+            try {
+                authRepository.requestPasswordRecovery(email)
+                uiState = uiState.copy(isPasswordResetLoading = false, passwordResetSent = true)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: AuthenticationException) {
+                uiState = uiState.copy(isPasswordResetLoading = false, error = e.failure)
+            }
+        }
+    }
     fun onGoogleClick(context: Context) {
         if (uiState.isLoading || signInJob?.isActive == true) return
         signInJob = viewModelScope.launch {

@@ -158,7 +158,7 @@ fun EkataYanNavHost(
             onPlaceClick = { placeId -> navController.navigate(placeDetailsRoute(placeId)) },
         )
         bookingScreen(
-            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -168,7 +168,7 @@ fun EkataYanNavHost(
             notificationsUiState = notificationsViewModel.uiState,
         )
         plannerScreen(
-            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
             onProfileClick = { navController.navigate(PROFILE_ROUTE) },
@@ -177,7 +177,7 @@ fun EkataYanNavHost(
             notificationsUiState = notificationsViewModel.uiState,
         )
         tripsScreen(
-            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -201,7 +201,7 @@ fun EkataYanNavHost(
         )
         tripMemberScreens(navController::navigateUp) { navController.navigate("trips/$it/members/add") }
         expensesScreen(
-            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onProfileClick = { navController.navigate(PROFILE_ROUTE) },
@@ -214,7 +214,7 @@ fun EkataYanNavHost(
         )
         profileScreen(
             onBackClick = navController::navigateUp,
-            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -234,7 +234,7 @@ fun EkataYanNavHost(
                     launchSingleTop = true
                 }
             },
-            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -245,7 +245,7 @@ fun EkataYanNavHost(
         notificationsScreen(
             viewModel = notificationsViewModel,
             selectedBottomNavItem = { navController.previousTopLevelItem() },
-            onHomeClick = { navController.navigate(HOME_ROUTE) },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -260,7 +260,7 @@ fun EkataYanNavHost(
             viewModel = wishlistViewModel,
             onGroupClick = { navController.navigate(wishlistGroupRoute(it)) },
             onBackClick = navController::navigateUp,
-            onHomeClick = { navController.navigate(HOME_ROUTE) { launchSingleTop = true } },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -282,7 +282,7 @@ fun EkataYanNavHost(
                 }
                 route?.let(navController::navigate)
             },
-            onHomeClick = { navController.navigate(HOME_ROUTE) { launchSingleTop = true } },
+            onHomeClick = navController::navigateHome,
             onTripsClick = { navController.navigate(TRIPS_ROUTE) },
             onPlannerClick = { navController.navigate(PLANNER_ROUTE) },
             onExpensesClick = { navController.navigate(EXPENSES_ROUTE) },
@@ -329,6 +329,16 @@ private fun NavHostController.navigateToLogin() {
 private fun NavHostController.navigateHomeFromAuth() {
     navigate(HOME_ROUTE) {
         popUpTo(LOGIN_ROUTE) { inclusive = true }
+        launchSingleTop = true
+    }
+}
+
+private fun NavHostController.navigateHome() {
+    // Home remains the root of the authenticated graph. Return to that existing
+    // entry so its ViewModel and loaded dashboard state are retained instead of
+    // creating another Home destination and repeating the initial loading UI.
+    navigate(HOME_ROUTE) {
+        popUpTo(HOME_ROUTE) { inclusive = false }
         launchSingleTop = true
     }
 }

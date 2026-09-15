@@ -12,6 +12,8 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import com.ekatayan.app.utils.runSuspendCatching
 
 data class AccountSettingsState(
     val profile: ProfileDetails? = null,
@@ -33,12 +35,13 @@ class SettingsDetailViewModel @Inject constructor(
 
     fun refresh() = viewModelScope.launch {
         mutable.value = mutable.value.copy(loading = true, error = null)
-        runCatching { profiles.getProfile() }
+        runSuspendCatching { profiles.getProfile() }
             .onSuccess { mutable.value = AccountSettingsState(profile = it, loading = false) }
             .onFailure { mutable.value = mutable.value.copy(loading = false, error = "We couldn't load your account information.") }
     }
 
     fun saveAccount(name: String, username: String, phone: String) = viewModelScope.launch {
+        if (mutable.value.saving) return@launch
         val current = mutable.value.profile ?: return@launch
         mutable.value = mutable.value.copy(saving = true, error = null, message = null)
         try {
@@ -47,20 +50,26 @@ class SettingsDetailViewModel @Inject constructor(
         } catch (e: ProfileLoadException) {
             val message = if (e.failure == ProfileFailure.USERNAME_TAKEN) "That username is already taken." else "We couldn't save your changes. Please try again."
             mutable.value = mutable.value.copy(saving = false, error = message)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (_: Exception) {
+            mutable.value = mutable.value.copy(saving = false, error = "We couldn't save your changes. Please try again.")
         }
     }
 
     fun setDiscoverable(enabled: Boolean) = viewModelScope.launch {
+        if (mutable.value.saving) return@launch
         val current = mutable.value.profile ?: return@launch
         mutable.value = mutable.value.copy(saving = true, error = null)
-        runCatching { profiles.updateProfile(current.copy(isDiscoverable = enabled)) }
+        runSuspendCatching { profiles.updateProfile(current.copy(isDiscoverable = enabled)) }
             .onSuccess { mutable.value = mutable.value.copy(profile = it, saving = false, message = "Privacy preference updated.") }
             .onFailure { mutable.value = mutable.value.copy(saving = false, error = "We couldn't update your privacy preference.") }
     }
 
     fun updatePassword(password: String) = viewModelScope.launch {
+        if (mutable.value.saving) return@launch
         mutable.value = mutable.value.copy(saving = true, error = null, message = null)
-        runCatching { auth.updatePassword(password) }
+        runSuspendCatching { auth.updatePassword(password) }
             .onSuccess { mutable.value = mutable.value.copy(saving = false, message = "Password updated successfully.") }
             .onFailure { mutable.value = mutable.value.copy(saving = false, error = "We couldn't update your password. Please sign in again and retry.") }
     }

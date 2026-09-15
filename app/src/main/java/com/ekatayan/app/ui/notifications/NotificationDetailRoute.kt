@@ -14,7 +14,9 @@ fun NotificationDetailRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val notification = uiState.notifications.find { it.id == notificationId }
-    LaunchedEffect(notificationId) { viewModel.markAsRead(notificationId) }
+    LaunchedEffect(notificationId, notification?.isUnread) {
+        if (notification?.isUnread == true) viewModel.markAsRead(notificationId)
+    }
 
     NotificationDetailScreen(
         notification = notification,

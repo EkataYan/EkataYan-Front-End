@@ -22,26 +22,31 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.UUID
 import android.util.Log
 import com.google.gson.JsonParseException
 import java.io.IOException
 import retrofit2.HttpException
+import com.ekatayan.app.data.remote.apiCall
 
-@Singleton
-@OptIn(ExperimentalCoroutinesApi::class)
 data class SavedAiTripDetails(val itinerary: Itinerary, val planner: com.ekatayan.app.data.remote.api.PlannerPreviewRequest?)
 
 enum class TripDetailsFailure { AUTHENTICATION, FORBIDDEN, NOT_FOUND, NETWORK, SERVER, INVALID_RESPONSE }
 class TripDetailsException(val failure: TripDetailsFailure, message: String, cause: Throwable? = null) : Exception(message, cause)
 
-class TripsRepository private constructor(private val dao: TripsDao?, private val api: EkataYanApiService?, testMode: Boolean) {
-    @Inject constructor(dao: TripsDao, api: EkataYanApiService) : this(dao, api, false)
-    constructor() : this(null, null, true)
+@Singleton
+@OptIn(ExperimentalCoroutinesApi::class)
+class TripsRepository private constructor(private val dao: TripsDao?, private val api: EkataYanApiService?, testOnly: Unit?) {
+    @Inject constructor(dao: TripsDao, api: EkataYanApiService) : this(dao, api, null)
+    constructor() : this(null, null, Unit)
+    internal constructor(api: EkataYanApiService) : this(null, api, Unit)
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO.limitedParallelism(1))
     private val mutableTrips = MutableStateFlow<List<Trip>>(emptyList())
     val trips = mutableTrips.asStateFlow()
+    private val mutationMutex = Mutex()
 
     init {
         if (dao != null) scope.launch {
@@ -50,45 +55,35 @@ class TripsRepository private constructor(private val dao: TripsDao?, private va
         }
     }
 
-    fun addTrip(name: String, destination: String, startDate: LocalDate, endDate: LocalDate, budget: String, notes: String) {
-        val updated = synchronized(this) {
-            var nextId: Int
-            do nextId = UUID.randomUUID().hashCode() and Int.MAX_VALUE
-            while (nextId == 0 || mutableTrips.value.any { it.id == nextId })
-            (mutableTrips.value + Trip(nextId, 0, 0, R.string.trip_status_upcoming, startDate, endDate,
-                destinationImage(destination), name.trim(), destination.trim(), budget.trim().ifBlank { null }, notes.trim().ifBlank { null }))
-                .also { mutableTrips.value = it }
-        }
-        persist(updated)
-    }
-
     fun guideFor(destination: String): DestinationGuide = destinationGuideFor(destination)
 
-    suspend fun createManualTrip(name: String, destination: String, startDate: LocalDate, endDate: LocalDate, budget: String, notes: String) {
-        val response = requireNotNull(api).createTrip(TripRequest(name, listOf(destination), startDate.toString(), endDate.toString(), budget.ifBlank { "0" }, additionalRequirements = notes))
-        val trip = response.data ?: throw IllegalStateException(response.error?.message ?: "The trip could not be saved.")
+    suspend fun createManualTrip(name: String, destination: String, startDate: LocalDate, endDate: LocalDate, budget: String, notes: String) = mutationMutex.withLock {
+        val response = apiCall("The trip could not be saved.") { requireNotNull(api).createTrip(TripRequest(name, listOf(destination), startDate.toString(), endDate.toString(), budget.ifBlank { "0" }, additionalRequirements = notes)) }
+        val trip = response.data.takeIf { response.success }
+            ?: throw IllegalStateException(response.error?.message ?: "The trip could not be saved.")
         storeRemoteTrip(trip)
     }
 
-    suspend fun refreshTrips() {
-        val remote = requireNotNull(api).trips().data ?: return
+    suspend fun refreshTrips() = mutationMutex.withLock {
+        val response = apiCall("Trips couldn't be loaded.") { requireNotNull(api).trips() }
+        val remote = response.data.takeIf { response.success }
+            ?: throw IllegalStateException(response.error?.message ?: "Trips couldn't be loaded.")
         // The authenticated backend is authoritative. Never mix account-independent
         // local/Figma rows into another user's trip collection.
         val updated = remote.map(::remoteTrip)
-        mutableTrips.value = updated
-        persist(updated)
+        replaceTrips(updated)
     }
 
-    fun addAiTrip(saved: PlannedItinerarySaveDto) {
+    suspend fun addAiTrip(saved: PlannedItinerarySaveDto) = mutationMutex.withLock {
         val remote = saved.trip
         val itinerary = with(ItineraryRepository(api ?: error("API unavailable"))) { saved.structuredItinerary.toDomain() }
         val primaryDestination = itinerary.trip.route.firstOrNull().orEmpty()
-        val trip = Trip(uniqueId(), 0, 0, R.string.trip_status_upcoming, LocalDate.parse(remote.startDate), LocalDate.parse(remote.endDate),
+        val trip = Trip(stableRemoteId(remote.id), 0, 0, R.string.trip_status_upcoming, LocalDate.parse(remote.startDate), LocalDate.parse(remote.endDate),
             destinationImage(primaryDestination), remote.name, itinerary.trip.route.joinToString(" → "), null, null, null,
             remote.id, "ai", itinerary.trip.summary, itinerary.trip.route, itinerary.trip.travellerType,
             itinerary.trip.travellerCount, itinerary.trip.travelStyle, itinerary.trip.travelPace)
         val updated = synchronized(this) { (mutableTrips.value.filterNot { it.remoteId == remote.id } + trip).also { mutableTrips.value = it } }
-        persist(updated)
+        replaceTrips(updated)
     }
 
     suspend fun loadAiTripDetails(trip: Trip): SavedAiTripDetails {
@@ -127,7 +122,7 @@ class TripsRepository private constructor(private val dao: TripsDao?, private va
         }
     }
 
-    private fun storeRemoteTrip(value: TripDto) {
+    private suspend fun storeRemoteTrip(value: TripDto) {
         val trip = remoteTrip(value)
         val updated = synchronized(this) {
             (mutableTrips.value.filterNot {
@@ -135,32 +130,37 @@ class TripsRepository private constructor(private val dao: TripsDao?, private va
                     it.startDate.toString() == value.startDate && it.endDate.toString() == value.endDate)
             } + trip).also { mutableTrips.value = it }
         }
-        persist(updated)
+        replaceTrips(updated)
     }
 
     private fun remoteTrip(value: TripDto): Trip {
         val route = value.destinations
-        return Trip(uniqueId(), 0, 0, R.string.trip_status_upcoming, LocalDate.parse(value.startDate), LocalDate.parse(value.endDate),
+        return Trip(stableRemoteId(value.id), 0, 0, R.string.trip_status_upcoming, LocalDate.parse(value.startDate), LocalDate.parse(value.endDate),
             destinationImage(route.firstOrNull().orEmpty()), value.name, route.joinToString(" → "), value.budget.takeUnless { it == "0" },
             value.additionalRequirements.takeIf(String::isNotBlank), null, value.id, value.source,
             route = route, travellerCount = value.travelers, travelStyle = value.travelStyle)
     }
 
-    fun deleteTrip(tripId: Int) {
-        val updated = mutableTrips.value.filterNot { it.id == tripId }
-        mutableTrips.value = updated
-        persist(updated)
+    suspend fun deleteTrip(tripId: Int) = mutationMutex.withLock {
+        val trip = mutableTrips.value.firstOrNull { it.id == tripId }
+            ?: throw IllegalStateException("Trip not found.")
+        val remoteId = trip.remoteId ?: error("This trip is not synchronized. Refresh your trips and try again.")
+        val response = apiCall("The trip could not be deleted.") { requireNotNull(api).deleteTrip(remoteId) }
+        if (!response.success || response.data?.get("deleted") != true) {
+            throw IllegalStateException(response.error?.message ?: "The trip could not be deleted.")
+        }
+        replaceTrips(mutableTrips.value.filterNot { it.id == tripId })
     }
 
-    private fun persist(values: List<Trip>) {
-        dao?.let { storage -> scope.launch { runCatching { storage.replace(values.map(Trip::toEntity)) } } }
+    private suspend fun replaceTrips(values: List<Trip>) {
+        dao?.replace(values.map(Trip::toEntity))
+        mutableTrips.value = values
     }
 
-    private fun uniqueId(): Int {
-        var nextId: Int
-        do nextId = UUID.randomUUID().hashCode() and Int.MAX_VALUE while (nextId == 0 || mutableTrips.value.any { it.id == nextId })
-        return nextId
-    }
+    private fun stableRemoteId(remoteId: String): Int =
+        (runCatching { UUID.fromString(remoteId).hashCode() }.getOrElse { remoteId.hashCode() } and Int.MAX_VALUE)
+            .takeUnless { it == 0 } ?: 1
+
 }
 
 private const val TRIP_DETAILS_LOG = "EkataYanTripDetails"

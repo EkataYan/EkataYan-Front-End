@@ -37,7 +37,7 @@ class GroupHubSharePlaceTest {
     }
 
     @Test
-    fun sharePlaceAppendsToGroupsAndCreatesDirectChatInSameState() {
+    fun sharePlaceAppendsToSelectedGroupWithoutInventingDirectoryUsers() {
         val repository = GroupHubRepository()
         val documents = object : DocumentRepository {
             override suspend fun persistAndReadName(value: String): String? = null
@@ -55,10 +55,9 @@ class GroupHubSharePlaceTest {
         assertEquals(MessageType.SharedPlace, groupMessage.type)
         assertEquals(destination.id, groupMessage.placeId)
         val directGroup = state.groups.find { it.id == "direct-nethmi" }
-        assertNotNull(directGroup)
-        assertEquals(destination.id, state.messagesByGroup[directGroup?.id].orEmpty().single().placeId)
+        assertTrue(directGroup == null)
         assertTrue(state.users.any { it.id == CURRENT_USER_ID })
-        assertTrue(state.users.any { it.id == "nethmi" })
+        assertTrue(state.users.none { it.id == "nethmi" })
     }
 
     @Test

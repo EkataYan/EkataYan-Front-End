@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -129,6 +130,11 @@ fun BookingScreen(
                 }
             }
             item {
+                Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(14.dp)) {
+                    Text("Preview • Browse travel options here. Online booking is not available yet.", modifier = Modifier.fillMaxWidth().padding(12.dp), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                }
+            }
+            item {
                 DestinationField(
                     destination = uiState.selectedDestination,
                     onClick = {
@@ -216,7 +222,7 @@ fun BookingScreen(
         }
 
         AppBottomNavigation(
-            selectedItem = AppBottomNavItem.TRIPS,
+            selectedItem = AppBottomNavItem.HOME,
             onHomeClick = onHomeClick,
             onTripsClick = onTripsClick,
             onPlannerClick = onPlannerClick,
@@ -273,7 +279,7 @@ private fun DestinationField(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(46.dp)
+            .heightIn(min = 48.dp)
             .shadow(0.dp, RoundedCornerShape(999.dp))
             .background(Color.White, RoundedCornerShape(999.dp))
             .clickable(onClick = onClick),
@@ -301,7 +307,7 @@ private fun DestinationField(
             modifier = Modifier.weight(1f),
         )
         if (destination != null) {
-            IconButton(onClick = onClearClick, modifier = Modifier.size(34.dp)) {
+            IconButton(onClick = onClearClick, modifier = Modifier.size(48.dp)) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Clear destination",
@@ -332,7 +338,7 @@ private fun SearchRow(
         Row(
             modifier = Modifier
                 .weight(1f)
-                .height(46.dp)
+                .heightIn(min = 48.dp)
                 .shadow(0.dp, RoundedCornerShape(999.dp))
                 .background(Color.White, RoundedCornerShape(999.dp))
                 .padding(horizontal = 16.dp),
@@ -375,7 +381,7 @@ private fun SearchRow(
         IconButton(
             onClick = onFilterClick,
             modifier = Modifier
-                .size(40.dp)
+                .size(48.dp)
                 .background(Color.White, RoundedCornerShape(12.dp)),
         ) {
             Icon(

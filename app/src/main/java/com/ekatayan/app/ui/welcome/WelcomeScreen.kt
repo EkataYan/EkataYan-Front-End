@@ -164,8 +164,8 @@ private fun WelcomeFeatures(artwork: ImageBitmap) {
                             Text(
                                 text = stringResource(feature.title),
                                 color = Color(0xFF27384D),
-                                fontSize = 10.sp,
-                                lineHeight = 13.sp,
+                                fontSize = 12.sp,
+                                lineHeight = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
                             )
@@ -173,8 +173,8 @@ private fun WelcomeFeatures(artwork: ImageBitmap) {
                             Text(
                                 text = stringResource(feature.description),
                                 color = Color(0xFF455468),
-                                fontSize = 9.sp,
-                                lineHeight = 12.sp,
+                                fontSize = 11.sp,
+                                lineHeight = 14.sp,
                                 textAlign = TextAlign.Center,
                             )
                         }

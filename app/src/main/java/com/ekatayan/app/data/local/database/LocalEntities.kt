@@ -14,6 +14,7 @@ data class WishlistGroupEntity(
     val coverType: String,
     val coverReference: String?,
     val createdOrder: Long,
+    val remoteId: String? = null,
 )
 
 @Entity(
@@ -27,7 +28,7 @@ data class WishlistGroupEntity(
     )],
     indices = [Index("groupId"), Index("destinationId")],
 )
-data class WishlistGroupItemEntity(val groupId: Int, val destinationId: Int, val itemOrder: Int)
+data class WishlistGroupItemEntity(val groupId: Int, val destinationId: Int, val itemOrder: Int, val savedPlaceId: String? = null)
 
 @Entity(tableName = "trips", primaryKeys = ["id"])
 data class TripEntity(

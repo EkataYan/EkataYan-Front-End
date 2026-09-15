@@ -20,7 +20,9 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ekatayan.app.R
@@ -136,6 +138,7 @@ fun BusinessPartnerRoute(route: String, listingId: String?, viewModel: BusinessP
 
 @Composable
 private fun PartnerBottomNavigation(route: String, onNavigate: (String) -> Unit) {
+    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current).toFloat()
     val items = listOf(
         Triple(PARTNER_HOME_ROUTE, R.string.bp_home, Icons.Default.Home),
         Triple(PARTNER_LISTINGS_ROUTE, R.string.bp_listings, Icons.AutoMirrored.Filled.ListAlt),
@@ -147,7 +150,10 @@ private fun PartnerBottomNavigation(route: String, onNavigate: (String) -> Unit)
         PARTNER_ANALYTICS_ROUTE -> PARTNER_HOME_ROUTE
         else -> route
     }
-    NavigationBar(containerColor = androidx.compose.ui.graphics.Color.White) {
+    NavigationBar(
+        modifier = Modifier.graphicsLayer { translationY = imeBottom },
+        containerColor = androidx.compose.ui.graphics.Color.White,
+    ) {
         items.forEach { (target, label, icon) ->
             NavigationBarItem(active == target, { onNavigate(target) }, icon = { Icon(icon, null) }, label = { Text(stringResource(label)) },
                 colors = NavigationBarItemDefaults.colors(selectedIconColor = EkataBlue, selectedTextColor = EkataBlue, indicatorColor = EkataLightBlue))

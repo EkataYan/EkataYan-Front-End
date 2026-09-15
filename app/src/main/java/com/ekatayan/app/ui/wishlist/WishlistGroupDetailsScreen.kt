@@ -156,7 +156,7 @@ fun WishlistGroupDetailsScreen(
 @Composable
 private fun GroupDetailsHeader(title: String, placeCount: Int, onBackClick: () -> Unit, onNotificationClick: () -> Unit, onSettingsClick: () -> Unit, hasUnreadNotifications: Boolean) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        IconButton(onClick = onBackClick, modifier = Modifier.size(40.dp)) {
+        IconButton(onClick = onBackClick, modifier = Modifier.size(48.dp)) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.wishlist_back), tint = EkataTextPrimary, modifier = Modifier.size(24.dp))
         }
         Column(Modifier.weight(1f).padding(start = 4.dp, top = 2.dp, end = 6.dp)) {
@@ -240,7 +240,7 @@ fun WishlistPlaceCard(item: WishlistItem, onHeartClick: () -> Unit, modifier: Mo
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0x08000000), Color(0x20000000), Color(0xE6000000)))))
             Surface(
                 onClick = onHeartClick,
-                modifier = Modifier.align(Alignment.TopEnd).padding(10.dp).size(42.dp),
+                modifier = Modifier.align(Alignment.TopEnd).padding(10.dp).size(48.dp),
                 shape = RoundedCornerShape(EkataRadius.large),
                 color = Color.White.copy(alpha = 0.92f),
                 contentColor = Color(0xFFFF2851),

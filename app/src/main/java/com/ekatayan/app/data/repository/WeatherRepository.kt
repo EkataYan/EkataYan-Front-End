@@ -5,13 +5,14 @@ import com.ekatayan.app.data.model.WeatherType
 import com.ekatayan.app.data.remote.api.EkataYanApiService
 import java.time.LocalDate
 import javax.inject.Inject
+import com.ekatayan.app.data.remote.apiCall
 
 class WeatherRepository @Inject constructor(private val api: EkataYanApiService) {
     suspend fun forecast(latitude: Double, longitude: Double): WeatherInfo =
-        api.weatherByCoordinates(latitude, longitude, LocalDate.now().toString()).toWeatherInfo()
+        apiCall("Weather is unavailable.") { api.weatherByCoordinates(latitude, longitude, LocalDate.now().toString()) }.toWeatherInfo()
 
     suspend fun forecast(location: String): WeatherInfo {
-        return api.weather(location.trim(), LocalDate.now().toString()).toWeatherInfo()
+        return apiCall("Weather is unavailable.") { api.weather(location.trim(), LocalDate.now().toString()) }.toWeatherInfo()
     }
 
     private fun com.ekatayan.app.data.remote.api.ApiEnvelope<com.ekatayan.app.data.remote.api.WeatherDto>.toWeatherInfo(): WeatherInfo {

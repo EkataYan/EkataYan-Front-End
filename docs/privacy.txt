@@ -1,0 +1,200 @@
+# EkataYan Terms of Service
+
+**Effective Date:** September 15, 2026
+**Last Updated:** September 15, 2026
+
+Welcome to EkataYan. These Terms of Service (“Terms”) govern your access to and use of the EkataYan mobile application and related services (“EkataYan”, the “App”, or the “Service”).
+
+By creating an account or using EkataYan, you agree to these Terms. If you do not agree with these Terms, please do not use the Service.
+
+## 1. About EkataYan
+
+EkataYan is a travel planning and collaboration application designed to help users plan and organize trips in Sri Lanka.
+
+Depending on the features available in your version of the App, EkataYan may provide services such as:
+
+* AI-assisted travel itinerary generation
+* Trip planning and management
+* Group trip collaboration
+* Shared expense tracking
+* Group communication
+* Weather information
+* Location and place discovery
+* Wishlists and saved locations
+* Travel-related notifications
+
+Some features may be marked as **Preview**, beta, experimental, or otherwise under development. These features may be changed, limited, or removed at any time.
+
+## 2. User Accounts
+
+Certain features require an EkataYan account.
+
+You are responsible for providing accurate information when creating and maintaining your account and for keeping access to your account secure.
+
+You must not attempt to access another user's account without authorization or misuse another person's identity or account information.
+
+You are responsible for activity performed through your account unless the activity resulted from circumstances outside your reasonable control.
+
+## 3. AI-Generated Travel Information
+
+EkataYan may use artificial intelligence to generate itineraries, recommendations, descriptions, estimated travel information, and other travel-related content.
+
+AI-generated information may contain mistakes, outdated information, incomplete information, or recommendations that are unsuitable for a particular situation.
+
+AI-generated content is provided as planning assistance only and should not be treated as guaranteed or authoritative travel advice.
+
+Users should independently verify important information such as:
+
+* Transport availability and schedules
+* Accommodation availability
+* Prices and fees
+* Opening hours
+* Weather and environmental conditions
+* Travel times and routes
+* Entry requirements
+* Local restrictions
+* Safety information
+
+Users remain responsible for their final travel decisions.
+
+## 4. Location, Maps and Weather Information
+
+EkataYan may use device location, maps, place information, and third-party weather services to provide location-aware functionality.
+
+Location and weather information may occasionally be delayed, inaccurate, or unavailable.
+
+EkataYan does not guarantee the accuracy or continuous availability of information supplied by third-party mapping, location, weather, or travel services.
+
+## 5. Group Trips and Collaboration
+
+EkataYan may allow users to create trips, invite other users, communicate with group members, share trip information, and collaborate on travel plans.
+
+When participating in shared trips, information you choose to share may become visible to other members of that trip or group.
+
+Users must use group and communication features responsibly and must not use EkataYan to harass, threaten, impersonate, deceive, or harm other users.
+
+## 6. Expense Tracking
+
+EkataYan may provide tools for recording and splitting travel expenses between group members.
+
+These features are intended to assist users with record keeping and calculations.
+
+Unless explicitly stated otherwise, EkataYan does not process payments, transfer money, act as a bank, provide financial services, or guarantee repayment between users.
+
+Users are responsible for verifying expenses, balances, and settlements with other group members.
+
+## 7. Bookings and Third-Party Services
+
+EkataYan may display or link to third-party services for accommodation, transportation, activities, maps, weather, or other travel services.
+
+Unless specifically stated otherwise, EkataYan is not the provider of those third-party products or services.
+
+Bookings, payments, cancellations, refunds, availability, and disputes involving third-party providers are subject to the provider's own terms and policies.
+
+Features marked as **Preview** should not be considered completed booking or transaction services.
+
+## 8. Acceptable Use
+
+You agree not to:
+
+* Use EkataYan for unlawful or fraudulent purposes
+* Attempt to gain unauthorized access to accounts, systems, APIs, databases, or infrastructure
+* Interfere with the normal operation or security of the Service
+* Upload or distribute malicious software or harmful content
+* Abuse group communication or invitation features
+* Attempt to obtain another user's private information without authorization
+* Use automated methods to excessively access or disrupt the Service
+* Misrepresent Preview or experimental functionality as an official completed service
+
+We may restrict or terminate access where necessary to protect users, the Service, or other parties.
+
+## 9. User Content
+
+You may provide information such as profile information, trip details, itinerary preferences, group content, expenses, saved locations, and other content required to use EkataYan.
+
+You retain ownership of content that belongs to you.
+
+You grant EkataYan permission to process and display that content only as reasonably necessary to provide, maintain, secure, and improve the Service.
+
+Content shared within a group may remain relevant to other group members even if an individual member later leaves the group.
+
+## 10. Privacy
+
+Your use of EkataYan is also subject to the EkataYan Privacy Policy.
+
+The Privacy Policy explains how information is collected, processed, stored, shared, and deleted when using the Service.
+
+## 11. Account Deletion
+
+Where account deletion is available, users may request deletion through the application's account settings or available support channels.
+
+Deletion may remove or anonymize personal account information.
+
+Certain information associated with shared trips, group expenses, security records, backups, or legal obligations may need to be retained for a limited period or anonymized rather than immediately removed.
+
+Further information about deletion and retention will be described in the EkataYan Privacy Policy.
+
+## 12. Intellectual Property
+
+The EkataYan name, branding, interface designs, original graphics, software, and other original materials associated with the Service are protected by applicable intellectual property laws.
+
+These Terms do not transfer ownership of EkataYan or its intellectual property to users.
+
+Third-party names, maps, content, APIs, trademarks, and services remain the property of their respective owners.
+
+## 13. Availability and Changes
+
+EkataYan is under active development.
+
+We may add, modify, suspend, or remove functionality as the Service develops. Features marked Preview, beta, experimental, or similar may be incomplete and may change without notice.
+
+We do not guarantee that the Service will always be available, uninterrupted, or free from errors.
+
+## 14. Disclaimer
+
+EkataYan is provided on an “as available” basis to the extent permitted by applicable law.
+
+Travel involves circumstances outside EkataYan's control, including weather, transportation disruptions, road conditions, accommodation availability, third-party service changes, and other events.
+
+EkataYan does not guarantee that an itinerary, recommendation, route, price, weather forecast, or third-party service will be accurate or available.
+
+Users should exercise appropriate judgment and independently verify important travel information before acting on it.
+
+## 15. Limitation of Liability
+
+To the extent permitted by applicable law, EkataYan and its operators will not be responsible for indirect or consequential losses arising solely from reliance on inaccurate third-party information, AI-generated recommendations, service interruptions, or actions of independent third-party providers.
+
+Nothing in these Terms excludes or limits liability where doing so would be prohibited by applicable law.
+
+## 16. Suspension or Termination
+
+We may suspend or restrict access to EkataYan where reasonably necessary because of:
+
+* Serious or repeated violations of these Terms
+* Fraudulent or unlawful activity
+* Security threats
+* Abuse of other users
+* Attempts to compromise the Service
+
+Users may stop using EkataYan at any time and may request account deletion where that functionality is available.
+
+## 17. Changes to These Terms
+
+These Terms may be updated as EkataYan develops or as legal, technical, or operational requirements change.
+
+When material changes are made, the updated Terms and effective date will be made available through the App or an associated EkataYan service.
+
+Continued use of the Service after updated Terms become effective constitutes acceptance where permitted by applicable law.
+
+## 18. Governing Law
+
+These Terms are governed by the applicable laws of the **Democratic Socialist Republic of Sri Lanka**, without limiting any mandatory rights users may have under applicable consumer or data-protection laws.
+
+## 19. Contact
+
+Questions regarding these Terms may be directed through the official EkataYan support contact provided within the App or on the official EkataYan website.
+
+---
+
+**EkataYan**
+*Your Sri Lanka trip, without the chaos.*

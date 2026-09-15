@@ -140,6 +140,8 @@ fun HeroSection(
 
 @Composable
 fun HomeSearchBar(query: String, onQueryChange: (String) -> Unit, onSearchSubmit: () -> Unit, modifier: Modifier = Modifier) {
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+    val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     Row(
         modifier = modifier.fillMaxWidth().height(EkataComponentSize.inputMinHeight)
             .shadow(EkataElevation.low, CircleShape).background(MaterialTheme.colorScheme.surface, CircleShape)
@@ -155,7 +157,11 @@ fun HomeSearchBar(query: String, onQueryChange: (String) -> Unit, onSearchSubmit
             singleLine = true,
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-            keyboardActions = KeyboardActions(onSearch = { onSearchSubmit() }),
+            keyboardActions = KeyboardActions(onSearch = {
+                onSearchSubmit()
+                focusManager.clearFocus()
+                keyboardController?.hide()
+            }),
             decorationBox = { inner ->
                 Box {
                     if (query.isEmpty()) Text(stringResource(R.string.home_search_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

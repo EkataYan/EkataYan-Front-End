@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.util.UUID
+import com.ekatayan.app.utils.runSuspendCatching
 
 @HiltViewModel
 class WishlistViewModel @Inject constructor(private val repository: WishlistRepository) : ViewModel() {
@@ -24,8 +24,18 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
 
     init {
         viewModelScope.launch {
-            repository.state.collect { _uiState.value = it.toUiState() }
+            repository.state.collect { data ->
+                _uiState.update { it.copy(groups = data.groups, availableDestinations = data.availableDestinations) }
+            }
         }
+        refresh()
+    }
+
+    fun refresh() = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        runSuspendCatching { repository.refresh() }
+            .onSuccess { _uiState.update { it.copy(isLoading = false) } }
+            .onFailure { error -> _uiState.update { it.copy(isLoading = false, errorMessage = error.message) } }
     }
 
     private fun WishlistData.toUiState() = WishlistUiState(groups, availableDestinations)
@@ -41,54 +51,30 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
     private fun createGroup(name: String, initialItem: WishlistItem?): Boolean {
         val trimmedName = name.trim()
         if (trimmedName.isEmpty()) return false
-        repository.update { state ->
-            var nextId: Int
-            do nextId = UUID.randomUUID().hashCode() and Int.MAX_VALUE
-            while (nextId == 0 || state.groups.any { it.id == nextId })
-            state.copy(
-                groups = state.groups + WishlistGroup(
-                    id = nextId,
-                    name = trimmedName,
-                    items = listOfNotNull(initialItem).distinctBy(WishlistItem::id),
-                ),
-            )
-        }
+        launchMutation { repository.create(trimmedName, initialItem) }
         return true
     }
 
     fun renameGroup(groupId: Int, newName: String): Boolean {
         val trimmedName = newName.trim()
         if (trimmedName.isEmpty()) return false
-        repository.update { state ->
-            state.copy(groups = state.groups.map { group ->
-                if (group.id == groupId) group.copy(name = trimmedName) else group
-            })
-        }
+        if (repository.state.value.groups.none { it.id == groupId }) return false
+        launchMutation { repository.rename(groupId, trimmedName) }
         return true
     }
 
     fun deleteGroup(groupId: Int) {
-        repository.update { it.copy(groups = it.groups.filterNot { group -> group.id == groupId }) }
+        launchMutation { repository.delete(groupId) }
     }
 
     fun updateGroupCoverFromDevice(groupId: Int, imageUri: String) {
-        repository.update { state ->
-            state.copy(groups = state.groups.map { group ->
-                if (group.id == groupId) {
-                    group.copy(cover = WishlistCover.FromDevice(imageUri))
-                } else group
-            })
-        }
+        _uiState.update { it.copy(errorMessage = "Device photos cannot be synced as wishlist covers yet. Choose a saved place instead.") }
     }
 
     fun updateGroupCoverFromPlace(groupId: Int, placeId: Int): Boolean {
         val group = repository.state.value.groups.find { it.id == groupId } ?: return false
         if (group.items.none { it.id == placeId }) return false
-        repository.update { state ->
-            state.copy(groups = state.groups.map { current ->
-                if (current.id == groupId) current.copy(cover = WishlistCover.FromPlace(placeId)) else current
-            })
-        }
+        launchMutation { repository.setPlaceCover(groupId, placeId) }
         return true
     }
 
@@ -121,24 +107,20 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
     fun addPlaceToGroup(groupId: Int, item: WishlistItem): Boolean {
         val group = repository.state.value.groups.find { it.id == groupId } ?: return false
         if (group.items.any { it.id == item.id }) return false
-        repository.update { state ->
-            state.copy(groups = state.groups.map { current ->
-                if (current.id == groupId) current.copy(items = current.items + item) else current
-            })
-        }
+        launchMutation { repository.addPlace(groupId, item) }
         return true
     }
 
     fun removePlaceFromGroup(groupId: Int, itemId: Int) {
-        repository.update { state ->
-            state.copy(groups = state.groups.map { group ->
-                if (group.id == groupId) {
-                    group.copy(
-                        items = group.items.filterNot { it.id == itemId },
-                        cover = if ((group.cover as? WishlistCover.FromPlace)?.placeId == itemId) WishlistCover.None else group.cover,
-                    )
-                } else group
-            })
+        launchMutation { repository.removePlace(groupId, itemId) }
+    }
+
+    private fun launchMutation(request: suspend () -> Unit) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            runSuspendCatching { request() }
+                .onSuccess { _uiState.update { it.copy(isLoading = false) } }
+                .onFailure { error -> _uiState.update { it.copy(isLoading = false, errorMessage = error.message) } }
         }
     }
 }

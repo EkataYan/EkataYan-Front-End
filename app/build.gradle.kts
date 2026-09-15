@@ -82,6 +82,7 @@ android {
         compose = true
         buildConfig = true
     }
+    sourceSets["main"].assets.srcDir("../docs")
 }
 
 ksp {

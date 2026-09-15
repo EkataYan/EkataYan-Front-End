@@ -43,11 +43,17 @@ object LocalPersistenceModule {
             db.execSQL("UPDATE business_partner_session SET demoLoaded = 0")
         }
     }
+    private val migration3To4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE wishlist_groups ADD COLUMN remoteId TEXT")
+            db.execSQL("ALTER TABLE wishlist_group_items ADD COLUMN savedPlaceId TEXT")
+        }
+    }
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): EkataYanDatabase =
         Room.databaseBuilder(context, EkataYanDatabase::class.java, "ekatayan-local.db")
-            .addMigrations(migration1To2, migration2To3)
+            .addMigrations(migration1To2, migration2To3, migration3To4)
             .build()
 
     @Provides fun provideWishlistDao(database: EkataYanDatabase): WishlistDao = database.wishlistDao()

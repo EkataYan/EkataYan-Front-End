@@ -12,10 +12,10 @@ fun WishlistData.toEntities(): Pair<List<WishlistGroupEntity>, List<WishlistGrou
             is WishlistCover.FromPlace -> "PLACE" to cover.placeId.toString()
             is WishlistCover.FromDevice -> "DEVICE" to cover.uri
         }
-        WishlistGroupEntity(group.id, group.name, type, reference, index.toLong())
+        WishlistGroupEntity(group.id, group.name, type, reference, index.toLong(), group.remoteId)
     }
     val items = this.groups.flatMap { group ->
-        group.items.mapIndexed { index, item -> WishlistGroupItemEntity(group.id, item.id, index) }
+        group.items.mapIndexed { index, item -> WishlistGroupItemEntity(group.id, item.id, index, item.savedPlaceId) }
     }
     return groups to items
 }
@@ -33,7 +33,10 @@ fun wishlistData(groups: List<WishlistGroupEntity>, items: List<WishlistGroupIte
                     "DEVICE" -> entity.coverReference?.let(WishlistCover::FromDevice) ?: WishlistCover.None
                     else -> WishlistCover.None
                 },
-                items = items.filter { it.groupId == entity.id }.sortedBy { it.itemOrder }.mapNotNull { byId[it.destinationId] },
+                items = items.filter { it.groupId == entity.id }.sortedBy { it.itemOrder }.mapNotNull { row ->
+                    byId[row.destinationId]?.copy(savedPlaceId = row.savedPlaceId)
+                },
+                remoteId = entity.remoteId,
             )
         },
         availableDestinations = destinations,

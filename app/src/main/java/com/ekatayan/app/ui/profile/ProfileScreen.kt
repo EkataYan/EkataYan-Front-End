@@ -88,9 +88,7 @@ fun ProfileScreen(
                         Icons.Outlined.Tune,
                         R.string.profile_menu_travel_preferences,
                         R.string.profile_menu_travel_preferences_subtitle,
-                        onClick = {
-                            // TODO: Navigate when a Travel Preferences destination is implemented.
-                        },
+                        onClick = onPlannerClick,
                     )
                     ProfileMenuDivider()
                     ProfileMenuItem(Icons.Outlined.Groups, R.string.profile_menu_my_groups, R.string.profile_menu_my_groups_subtitle, onGroupsClick)

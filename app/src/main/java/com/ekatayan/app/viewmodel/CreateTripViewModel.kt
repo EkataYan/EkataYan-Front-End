@@ -14,6 +14,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.ekatayan.app.utils.runSuspendCatching
 
 enum class CreateTripField { NAME, DESTINATION, START, END, BUDGET, NOTES }
 
@@ -21,6 +22,7 @@ data class CreateTripUiState(
     val name: String = "", val destination: String = "",
     val startText: String = "", val endText: String = "",
     val budget: String = "", val notes: String = "", val errorRes: Int? = null,
+    val operationError: String? = null, val isSaving: Boolean = false, val saveSucceeded: Boolean = false,
 ) {
     val startDate: LocalDate? get() = parseTripDate(startText)
     val endDate: LocalDate? get() = parseTripDate(endText)
@@ -54,7 +56,7 @@ class CreateTripViewModel @Inject constructor(
     }
 
     fun updateField(field: CreateTripField, value: String) {
-        val state = uiState.value.copy(errorRes = null)
+        val state = uiState.value.copy(errorRes = null, operationError = null)
         update(when (field) {
             CreateTripField.NAME -> state.copy(name = value)
             CreateTripField.DESTINATION -> state.copy(destination = value)
@@ -78,6 +80,7 @@ class CreateTripViewModel @Inject constructor(
     }
 
     fun save(): Boolean {
+        if (uiState.value.isSaving) return false
         val state = uiState.value
         val start = state.startDate
         val end = state.endDate
@@ -91,10 +94,14 @@ class CreateTripViewModel @Inject constructor(
         }
         update(state.copy(errorRes = error))
         if (error != null || start == null || end == null) return false
-        repository.addTrip(state.name.trim(), state.destination.trim(), start, end, state.budget.trim(), state.notes.trim())
+        update(state.copy(errorRes = null, operationError = null, isSaving = true))
         viewModelScope.launch {
-            runCatching { repository.createManualTrip(state.name.trim(), state.destination.trim(), start, end, state.budget.trim(), state.notes.trim()) }
+            runSuspendCatching { repository.createManualTrip(state.name.trim(), state.destination.trim(), start, end, state.budget.trim(), state.notes.trim()) }
+                .onSuccess { update(uiState.value.copy(isSaving = false, saveSucceeded = true)) }
+                .onFailure { failure -> update(uiState.value.copy(isSaving = false, operationError = failure.message ?: "The trip could not be saved.")) }
         }
         return true
     }
+
+    fun consumeSaveSuccess() = update(uiState.value.copy(saveSucceeded = false))
 }

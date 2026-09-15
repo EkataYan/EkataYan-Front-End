@@ -9,12 +9,14 @@ import com.ekatayan.app.data.repository.TripsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 enum class PlannerPhase { EDITING, GENERATING, PREVIEW, SAVING, SAVED, ERROR }
+enum class PlannerFailedAction { GENERATE, MODIFY_DAY, SAVE }
 
 data class PlannerGenerationState(
     val phase: PlannerPhase = PlannerPhase.EDITING,
@@ -22,6 +24,8 @@ data class PlannerGenerationState(
     val input: ItineraryPlanInput? = null,
     val status: String = "Finding the best route",
     val error: String? = null,
+    val failedAction: PlannerFailedAction? = null,
+    val failedDayIndex: Int? = null,
 )
 
 @HiltViewModel
@@ -32,8 +36,10 @@ class PlannerGenerationViewModel @Inject constructor(
     private val mutableState = MutableStateFlow(PlannerGenerationState())
     val state = mutableState.asStateFlow()
     private var statusJob: Job? = null
+    private var operationJob: Job? = null
 
     fun generate(planner: PlannerUiState) {
+        if (operationJob?.isActive == true) return
         val start = planner.startDate ?: return
         val end = planner.endDate ?: return
         val travelers = planner.partySize ?: return
@@ -52,26 +58,38 @@ class PlannerGenerationViewModel @Inject constructor(
             letAiChooseDestinations = planner.letAiChooseDestinations,
             suggestAdditionalPlaces = planner.suggestAdditionalPlaces,
         )
-        mutableState.value = PlannerGenerationState(PlannerPhase.GENERATING, input = input)
-        rotateStatuses()
-        viewModelScope.launch {
-            runCatching { itineraryRepository.preview(input) }
-                .onSuccess { mutableState.value = PlannerGenerationState(PlannerPhase.PREVIEW, it, input) }
-                .onFailure { mutableState.value = PlannerGenerationState(PlannerPhase.ERROR, input = input, error = it.message ?: "We couldn't finish your itinerary.") }
-            statusJob?.cancel()
+        generate(input)
+    }
+
+    fun retry() {
+        if (operationJob?.isActive == true) return
+        when (state.value.failedAction) {
+            PlannerFailedAction.SAVE -> save()
+            PlannerFailedAction.MODIFY_DAY -> state.value.failedDayIndex?.let(::makeDayRelaxed)
+            PlannerFailedAction.GENERATE, null -> state.value.input?.let(::generate)
         }
     }
 
-    fun retry() { state.value.input?.let(::generate) }
-
     private fun generate(input: ItineraryPlanInput) {
+        if (operationJob?.isActive == true) return
         mutableState.value = PlannerGenerationState(PlannerPhase.GENERATING, input = input)
         rotateStatuses()
-        viewModelScope.launch {
-            runCatching { itineraryRepository.preview(input) }
-                .onSuccess { mutableState.value = PlannerGenerationState(PlannerPhase.PREVIEW, it, input) }
-                .onFailure { mutableState.value = PlannerGenerationState(PlannerPhase.ERROR, input = input, error = it.message ?: "We couldn't finish your itinerary.") }
-            statusJob?.cancel()
+        operationJob = viewModelScope.launch {
+            try {
+                val itinerary = itineraryRepository.preview(input)
+                mutableState.value = PlannerGenerationState(PlannerPhase.PREVIEW, itinerary, input)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                mutableState.value = PlannerGenerationState(
+                    phase = PlannerPhase.ERROR,
+                    input = input,
+                    error = e.message ?: "We couldn't finish your itinerary.",
+                    failedAction = PlannerFailedAction.GENERATE,
+                )
+            } finally {
+                statusJob?.cancel()
+            }
         }
     }
 
@@ -79,7 +97,9 @@ class PlannerGenerationViewModel @Inject constructor(
 
     fun removeActivity(dayIndex: Int, activityIndex: Int) = updateItinerary { itinerary ->
         itinerary.copy(days = itinerary.days.mapIndexed { index, day ->
-            if (index == dayIndex) day.copy(activities = day.activities.filterIndexed { position, _ -> position != activityIndex }) else day
+            if (index == dayIndex && day.activities.size > 1) {
+                day.copy(activities = day.activities.filterIndexed { position, _ -> position != activityIndex })
+            } else day
         })
     }
 
@@ -95,27 +115,51 @@ class PlannerGenerationViewModel @Inject constructor(
     }
 
     fun makeDayRelaxed(dayIndex: Int) {
+        if (operationJob?.isActive == true) return
         val input = state.value.input ?: return
         val itinerary = state.value.itinerary ?: return
         mutableState.value = state.value.copy(phase = PlannerPhase.GENERATING, status = "Relaxing day ${dayIndex + 1}", error = null)
-        viewModelScope.launch {
-            runCatching { itineraryRepository.modify(input, itinerary, "Make day ${dayIndex + 1} more relaxed", dayIndex + 1) }
-                .onSuccess { mutableState.value = state.value.copy(phase = PlannerPhase.PREVIEW, itinerary = it) }
-                .onFailure { mutableState.value = state.value.copy(phase = PlannerPhase.ERROR, error = it.message ?: "We couldn't update this day.") }
+        operationJob = viewModelScope.launch {
+            try {
+                val updated = itineraryRepository.modify(input, itinerary, "Make day ${dayIndex + 1} more relaxed", dayIndex + 1)
+                mutableState.value = state.value.copy(
+                    phase = PlannerPhase.PREVIEW,
+                    itinerary = updated,
+                    failedAction = null,
+                    failedDayIndex = null,
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                mutableState.value = state.value.copy(
+                    phase = PlannerPhase.ERROR,
+                    error = e.message ?: "We couldn't update this day.",
+                    failedAction = PlannerFailedAction.MODIFY_DAY,
+                    failedDayIndex = dayIndex,
+                )
+            }
         }
     }
 
     fun save() {
+        if (operationJob?.isActive == true) return
         val input = state.value.input ?: return
         val itinerary = state.value.itinerary ?: return
         mutableState.value = state.value.copy(phase = PlannerPhase.SAVING, error = null)
-        viewModelScope.launch {
-            runCatching { itineraryRepository.save(input, itinerary) }
-                .onSuccess { saved ->
-                    tripsRepository.addAiTrip(saved)
-                    mutableState.value = state.value.copy(phase = PlannerPhase.SAVED)
-                }
-                .onFailure { mutableState.value = state.value.copy(phase = PlannerPhase.ERROR, error = it.message ?: "The trip could not be saved.") }
+        operationJob = viewModelScope.launch {
+            try {
+                val saved = itineraryRepository.save(input, itinerary)
+                tripsRepository.addAiTrip(saved)
+                mutableState.value = state.value.copy(phase = PlannerPhase.SAVED, failedAction = null)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                mutableState.value = state.value.copy(
+                    phase = PlannerPhase.ERROR,
+                    error = e.message ?: "The trip could not be saved.",
+                    failedAction = PlannerFailedAction.SAVE,
+                )
+            }
         }
     }
 

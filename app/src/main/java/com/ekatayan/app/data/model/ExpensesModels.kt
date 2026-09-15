@@ -8,5 +8,5 @@ data class ExpensesData(
     val tripId: String? = null, val tripName: String = "", val availableTrips: List<Trip> = emptyList(),
     val totalSpent: Long = 0, val categories: List<ExpenseCategoryTotal> = emptyList(),
     val recentExpenses: List<ExpenseDto> = emptyList(), val balances: List<ExpenseBalanceDto> = emptyList(),
-    val loading: Boolean = true, val error: String? = null,
+    val loading: Boolean = true, val error: String? = null, val balanceError: String? = null,
 )

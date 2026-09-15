@@ -22,6 +22,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.ekatayan.app.utils.runSuspendCatching
 
 @HiltViewModel
 class TripsViewModel @Inject constructor(private val repository: TripsRepository) : ViewModel() {
@@ -79,13 +80,21 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
     fun guideFor(destination: String) = repository.guideFor(destination)
 
     fun deleteTrip(tripId: Int) {
-        repository.deleteTrip(tripId)
+        if (tripId in _uiState.value.deletingTripIds) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(deletingTripIds = it.deletingTripIds + tripId, errorMessage = null) }
+            runSuspendCatching { repository.deleteTrip(tripId) }
+                .onFailure { failure ->
+                    _uiState.update { it.copy(errorMessage = failure.message ?: "The trip could not be deleted.") }
+                }
+            _uiState.update { it.copy(deletingTripIds = it.deletingTripIds - tripId) }
+        }
     }
 
     fun refreshTrips() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { repository.refreshTrips() }
+            runSuspendCatching { repository.refreshTrips() }
                 .onSuccess { _uiState.update { it.copy(isLoading = false, errorMessage = null) } }
                 .onFailure { error ->
                     _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Trips couldn't be loaded.") }
@@ -97,7 +106,7 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
         if (trip.source != "ai" || trip.remoteId == null) return
         _uiState.update { it.copy(detailsLoading = true, detailsError = null) }
         viewModelScope.launch {
-            runCatching { repository.loadAiTripDetails(trip) }
+            runSuspendCatching { repository.loadAiTripDetails(trip) }
                 .onSuccess { details -> _uiState.update { it.copy(detailsLoading = false, aiDetails = details, detailsFailure = null) } }
                 .onFailure { error -> _uiState.update { it.copy(detailsLoading = false, detailsError = error.message ?: "The trip couldn't be loaded.", detailsFailure = (error as? TripDetailsException)?.failure ?: TripDetailsFailure.SERVER) } }
         }
@@ -115,5 +124,6 @@ data class TripsUiState(
     val detailsError: String? = null,
     val detailsFailure: TripDetailsFailure? = null,
     val aiDetails: SavedAiTripDetails? = null,
+    val deletingTripIds: Set<Int> = emptySet(),
 )
 

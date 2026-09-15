@@ -211,7 +211,7 @@ private fun SharedPlacePreview(item: WishlistItem, modifier: Modifier = Modifier
 private fun ShareTab(label: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
         onClick = onClick,
-        modifier = modifier.height(42.dp),
+        modifier = modifier.heightIn(min = 48.dp),
         color = if (selected) EkataLightBlue else Color.White,
         contentColor = EkataTextPrimary,
         shape = RoundedCornerShape(12.dp),
