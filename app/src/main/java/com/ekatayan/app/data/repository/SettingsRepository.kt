@@ -25,7 +25,11 @@ class SettingsRepository private constructor(private val context: Context?, test
     constructor() : this(null, true)
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val mutableState = MutableStateFlow(SettingsPreferences())
+    private val mutableState = MutableStateFlow(
+        SettingsPreferences(
+            selectedLanguage = AppLocaleManager.currentLanguage() ?: AppLocaleManager.ENGLISH,
+        ),
+    )
     val preferences = mutableState.asStateFlow()
 
     init {
@@ -38,7 +42,14 @@ class SettingsRepository private constructor(private val context: Context?, test
                     selectedLanguage = AppLocaleManager.sanitize(values[LANGUAGE] ?: AppLocaleManager.ENGLISH),
                     locationPermissionPromptShown = values[LOCATION_PROMPT_SHOWN] ?: false,
                 ) }
-                .catch { emit(SettingsPreferences()) }
+                .catch {
+                    emit(
+                        SettingsPreferences(
+                            loaded = true,
+                            selectedLanguage = AppLocaleManager.currentLanguage() ?: AppLocaleManager.ENGLISH,
+                        ),
+                    )
+                }
                 .collect { mutableState.value = it }
         }
     }
@@ -58,6 +69,7 @@ class SettingsRepository private constructor(private val context: Context?, test
         val safe = AppLocaleManager.sanitize(code)
         mutableState.value = mutableState.value.copy(selectedLanguage = safe)
         context?.let { scope.launch { it.frontendPreferencesDataStore.edit { values -> values[LANGUAGE] = safe } } }
+        AppLocaleManager.applyLanguage(safe)
     }
 
     fun markLocationPermissionPromptShown() {

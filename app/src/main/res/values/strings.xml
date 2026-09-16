@@ -19,7 +19,7 @@
     <string name="signup_action">Sign Up</string>
     <string name="signup_or">OR</string>
     <string name="signup_google">Continue with Google</string>
-    <string name="signup_existing">Already have an account? </string>
+    <string name="signup_existing">Already have an account?</string>
     <string name="signup_login">Log In</string>
     <string name="signup_error_required_fields">Enter your email and password to continue.</string>
     <string name="signup_error_invalid_email">Enter a valid email address.</string>
@@ -44,7 +44,7 @@
     <string name="login_error_network">Unable to reach Supabase. Check your connection and try again.</string>
     <string name="login_error_configuration">Authentication is not configured for this build.</string>
     <string name="login_error_generic">Unable to sign in. Please try again.</string>
-    <string name="login_new_account">Don’t have an account? </string>
+    <string name="login_new_account">Don’t have an account?</string>
     <string name="login_signup">Sign Up</string>
 
     <string name="create_trip_title">Create Trip</string>
@@ -74,6 +74,9 @@
     <string name="trips_delete_title">Delete Trip</string>
     <string name="trips_delete_message">Are you sure you want to delete this trip?</string>
     <string name="trips_delete_action">Delete</string>
+    <string name="trips_leave_title">Leave Trip</string>
+    <string name="trips_leave_message">Leave this trip? It will be removed from your Trips screen without deleting it for the other members.</string>
+    <string name="trips_leave_action">Leave</string>
 
     <string name="trips_title">Trips</string>
     <string name="trips_add">Add Trip</string>
@@ -426,6 +429,12 @@
     <string name="expenses_no_trips">No trips yet</string>
     <string name="expenses_no_trips_message">Create or join a trip before adding shared expenses.</string>
     <string name="expenses_select_trip">Select trip</string>
+    <string name="expenses_select_trip_title">Select a Trip</string>
+    <string name="expenses_select_trip_description">Choose a trip to view and manage its shared expenses.</string>
+    <string name="expenses_loading_trips">Loading your trips</string>
+    <string name="expenses_trips_load_error">Couldn\'t load trips</string>
+    <string name="expenses_go_to_trips">Go to Trips</string>
+    <string name="expenses_open_trip">Open trip expenses</string>
     <string name="percentage_value">  %1$d%%</string>
     <string name="expenses_empty">No expenses yet</string>
     <string name="expenses_empty_message">Add your first shared expense to start tracking trip spending.</string>
@@ -565,6 +574,7 @@
     <string name="itinerary_trip_summary">%1$s – %2$s • %3$d %4$s</string>
     <string name="style_and_pace">%1$s • %2$s pace</string>
     <string name="trip_error_delete">The trip could not be deleted.</string>
+    <string name="trip_error_leave">You could not leave this trip.</string>
     <string name="trips_error_load">Trips couldn\'t be loaded.</string>
     <string name="trip_error_load">The trip couldn\'t be loaded.</string>
     <string name="trip_error_save">The trip could not be saved.</string>
@@ -666,4 +676,64 @@
     <string name="booking_category_safaris">Safaris</string><string name="booking_category_activities">Activities</string><string name="booking_category_events">Events</string>
     <string name="planner_style_budget">Budget</string><string name="planner_style_comfort">Comfort</string><string name="planner_style_premium">Premium</string>
     <string name="planner_pace_relaxed">Relaxed</string><string name="planner_pace_balanced">Balanced</string><string name="planner_pace_packed">Packed</string>
+    <string name="expenses_selected_trip">Selected trip</string>
+    <string name="expenses_stage_two_message">This feature is planned for the next expense-management stage.</string>
+    <string name="expenses_not_set">Not set</string>
+    <string name="expenses_budget_not_set_message">No trip budget has been set.</string>
+    <string name="expenses_no_category_spending">No category spending yet</string>
+    <string name="expenses_chart_empty_message">Add an expense to see the category breakdown.</string>
+    <string name="expenses_percentage_compact">%1$d%%</string>
+    <string name="expenses_settle_up">Settle Up</string>
+    <string name="expenses_history">Expense History</string>
+    <string name="expenses_member_balances">Member balances</string>
+    <string name="expenses_no_balances">No balances yet</string>
+    <string name="expenses_no_balances_message">Balances will appear after a shared expense is added.</string>
+    <string name="expenses_your_balance">Your balance</string>
+    <string name="expenses_balance_unavailable_message">Your personal balance could not be identified.</string>
+    <string name="expenses_you_are_owed">You are owed</string>
+    <string name="expenses_you_owe">You owe</string>
+    <string name="expenses_you_are_settled">You’re settled up</string>
+    <string name="expenses_paid_owed_summary">Paid %1$s • Share %2$s</string>
+    <string name="expenses_participants">Participants and individual shares</string>
+    <string name="ui_category">Category</string>
+    <string name="ui_date">Date</string>
+    <string name="ui_notes">Notes</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="ui_all">All</string>
+    <string name="ui_amount">Amount</string>
+    <string name="expenses_starts_in_days">Starts in %1$d days</string>
+    <string name="expenses_starts_today">Trip starts today</string>
+    <string name="expenses_trip_ended">Trip ended</string>
+    <string name="expenses_last_day">Last day</string>
+    <string name="expenses_over_budget">Over Budget</string>
+    <string name="expenses_set_trip_budget">Set Trip Budget</string>
+    <string name="expenses_edit_trip_budget">Edit Trip Budget</string>
+    <string name="expenses_budget_amount">Budget Amount</string>
+    <string name="expenses_save_budget">Save Budget</string>
+    <string name="expenses_update_budget">Update Budget</string>
+    <string name="expenses_budget_save_error">The trip budget could not be saved.</string>
+    <string name="expenses_delete_error">The expense could not be deleted.</string>
+    <string name="expenses_settlement_save_error">The payment could not be recorded.</string>
+    <string name="expenses_all_settled_message">There are no outstanding payments for you.</string>
+    <string name="expenses_settlement_history">Settlement History</string>
+    <string name="expenses_no_settlements">No settlements recorded yet</string>
+    <string name="expenses_you_owe_person">You owe %1$s %2$s</string>
+    <string name="expenses_person_owes_you">%1$s owes you %2$s</string>
+    <string name="expenses_paid_person">%1$s paid %2$s</string>
+    <string name="expenses_record_payment">Record Payment</string>
+    <string name="expenses_paying">Paying</string>
+    <string name="expenses_paying_to">Paying to</string>
+    <string name="expenses_outstanding">Outstanding</string>
+    <string name="expenses_payment_method">Payment Method</string>
+    <string name="expenses_cash">Cash</string>
+    <string name="expenses_bank_transfer">Bank Transfer</string>
+    <string name="expenses_details">Expense Details</string>
+    <string name="expenses_details_unavailable">Expense unavailable</string>
+    <string name="expenses_details_unavailable_message">This expense no longer exists or could not be loaded.</string>
+    <string name="expenses_edit_expense">Edit Expense</string>
+    <string name="expenses_update_expense">Update Expense</string>
+    <string name="expenses_delete_expense">Delete Expense</string>
+    <string name="expenses_delete_question">Delete expense?</string>
+    <string name="expenses_delete_warning">This will remove this expense and update everyone’s balances.</string>
 </resources>

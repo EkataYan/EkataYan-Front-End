@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,11 +36,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AuthActionButton
 import com.ekatayan.app.core.designsystem.component.AuthBackdrop
 import com.ekatayan.app.core.designsystem.component.AuthContentWidth
 import com.ekatayan.app.core.designsystem.component.AuthHeader
+import com.ekatayan.app.core.designsystem.component.AuthLanguageSelector
 import com.ekatayan.app.core.designsystem.component.AuthLinkBlue
 import com.ekatayan.app.core.designsystem.component.AuthOrDivider
 import com.ekatayan.app.core.designsystem.component.AuthSocialButton
@@ -48,6 +51,8 @@ import com.ekatayan.app.core.designsystem.component.AuthTextField
 @Composable
 fun LoginScreen(
     uiState: LoginUiState,
+    selectedLanguage: String,
+    onLanguageSelected: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onPasswordVisibilityClick: () -> Unit,
@@ -97,6 +102,14 @@ fun LoginScreen(
             item(contentType = "signup_space") { Spacer(Modifier.height(12.dp)) }
             item(contentType = "signup") { SignUpPrompt(onSignUpClick = onSignUpClick) }
         }
+        AuthLanguageSelector(
+            selectedLanguage = selectedLanguage,
+            onLanguageSelected = onLanguageSelected,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 10.dp, end = 13.dp)
+                .zIndex(1f),
+        )
     }
 }
 
@@ -206,16 +219,22 @@ private fun LoginForm(
 
 @Composable
 private fun SignUpPrompt(onSignUpClick: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(
             text = stringResource(R.string.login_new_account),
             color = Color.Black,
-            fontSize = 12.sp,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
         )
+        Spacer(Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.login_signup),
             color = AuthLinkBlue,
-            fontSize = 12.sp,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable(onClick = onSignUpClick),
         )
     }

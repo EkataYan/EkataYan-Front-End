@@ -6,7 +6,6 @@ import com.ekatayan.app.data.repository.AuthRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ekatayan.app.data.local.AccountDataIsolation
-import com.ekatayan.app.core.localization.AppLocaleManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -22,11 +21,7 @@ class SettingsViewModel @Inject constructor(
     val uiState = repository.preferences
     fun setPushNotificationsEnabled(enabled: Boolean) = repository.setPushNotificationsEnabled(enabled)
     fun setThemeMode(mode: String) = repository.setThemeMode(mode)
-    fun setLanguage(code: String) {
-        val safeCode = AppLocaleManager.sanitize(code)
-        repository.setLanguage(safeCode)
-        AppLocaleManager.applyLanguage(safeCode)
-    }
+    fun setLanguage(code: String) = repository.setLanguage(code)
     fun markLocationPermissionPromptShown() = repository.markLocationPermissionPromptShown()
     fun logout(onComplete: () -> Unit) {
         viewModelScope.launch {

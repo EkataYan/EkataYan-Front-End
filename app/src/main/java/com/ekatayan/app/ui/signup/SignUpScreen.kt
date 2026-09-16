@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -40,11 +41,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.ekatayan.app.R
 import com.ekatayan.app.core.designsystem.component.AuthActionButton
 import com.ekatayan.app.core.designsystem.component.AuthBackdrop
 import com.ekatayan.app.core.designsystem.component.AuthContentWidth
 import com.ekatayan.app.core.designsystem.component.AuthHeader
+import com.ekatayan.app.core.designsystem.component.AuthLanguageSelector
 import com.ekatayan.app.core.designsystem.component.AuthOrDivider
 import com.ekatayan.app.core.designsystem.component.AuthSocialButton
 import com.ekatayan.app.core.designsystem.component.AuthTextField
@@ -56,6 +59,8 @@ private val FieldBorder = Color.Black.copy(alpha = 0.4f)
 @Composable
 fun SignUpScreen(
     uiState: SignUpUiState,
+    selectedLanguage: String,
+    onLanguageSelected: (String) -> Unit,
     onNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPhoneNumberChange: (String) -> Unit,
@@ -113,6 +118,14 @@ fun SignUpScreen(
             item(contentType = "login_space") { Spacer(Modifier.height(12.dp)) }
             item(contentType = "login") { LoginPrompt(onLoginClick = onLoginClick) }
         }
+        AuthLanguageSelector(
+            selectedLanguage = selectedLanguage,
+            onLanguageSelected = onLanguageSelected,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 10.dp, end = 13.dp)
+                .zIndex(1f),
+        )
     }
 }
 
@@ -301,16 +314,22 @@ private fun termsText(): AnnotatedString = buildAnnotatedString {
 
 @Composable
 private fun LoginPrompt(onLoginClick: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(
             text = stringResource(R.string.signup_existing),
             color = Color.Black,
-            fontSize = 12.sp,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
         )
+        Spacer(Modifier.width(8.dp))
         Text(
             text = stringResource(R.string.signup_login),
             color = LinkBlue,
-            fontSize = 12.sp,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable(onClick = onLoginClick),
         )
     }

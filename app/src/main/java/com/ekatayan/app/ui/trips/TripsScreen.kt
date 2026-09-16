@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Card
@@ -155,9 +156,9 @@ fun TripsScreen(
     pendingDeleteTrip?.let { trip ->
         AlertDialog(
             onDismissRequest = { pendingDeleteTrip = null },
-            title = { Text(stringResource(R.string.trips_delete_title)) },
-            text = { Text(stringResource(R.string.trips_delete_message)) },
-            confirmButton = { TextButton(onClick = { onDeleteTrip(trip.id); pendingDeleteTrip = null }) { Text(stringResource(R.string.trips_delete_action)) } },
+            title = { Text(stringResource(if (trip.canDelete) R.string.trips_delete_title else R.string.trips_leave_title)) },
+            text = { Text(stringResource(if (trip.canDelete) R.string.trips_delete_message else R.string.trips_leave_message)) },
+            confirmButton = { TextButton(onClick = { onDeleteTrip(trip.id); pendingDeleteTrip = null }) { Text(stringResource(if (trip.canDelete) R.string.trips_delete_action else R.string.trips_leave_action)) } },
             dismissButton = { TextButton(onClick = { pendingDeleteTrip = null }) { Text(stringResource(R.string.create_trip_cancel)) } },
         )
     }
@@ -423,7 +424,12 @@ fun TripTimelineCard(trip: Trip, onClick: () -> Unit, today: LocalDate = LocalDa
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowForwardIos, stringResource(R.string.trips_open_trip), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(15.dp))
                 IconButton(onClick = onDeleteClick, modifier = Modifier.size(48.dp)) {
-                    Icon(Icons.Default.Delete, stringResource(R.string.trips_delete_action), tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                    Icon(
+                        if (trip.canDelete) Icons.Default.Delete else Icons.AutoMirrored.Filled.Logout,
+                        stringResource(if (trip.canDelete) R.string.trips_delete_action else R.string.trips_leave_action),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
             }
         }

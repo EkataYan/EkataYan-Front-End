@@ -210,7 +210,8 @@ class DefaultNotificationsRepository @Inject constructor(
 
     private fun NotificationDto.toDomain(): NotificationItem {
         val category = when {
-            type.contains("expense", ignoreCase = true) -> NotificationCategory.EXPENSES
+            type.contains("expense", ignoreCase = true) || type.contains("budget", ignoreCase = true) ||
+                type.contains("settlement", ignoreCase = true) -> NotificationCategory.EXPENSES
             type.contains("trip", ignoreCase = true) || type.contains("itinerary", ignoreCase = true) -> NotificationCategory.TRIPS
             else -> NotificationCategory.UPDATES
         }

@@ -52,6 +52,7 @@ data class TripEntity(
     val travellerCount: Int? = null,
     val travelStyle: String? = null,
     val travelPace: String? = null,
+    val canDelete: Boolean = false,
 )
 
 @Entity(tableName = "chat_users", primaryKeys = ["id"])

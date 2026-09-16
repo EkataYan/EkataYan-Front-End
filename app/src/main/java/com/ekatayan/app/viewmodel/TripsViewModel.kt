@@ -85,11 +85,12 @@ class TripsViewModel @Inject constructor(
 
     fun deleteTrip(tripId: Int) {
         if (tripId in _uiState.value.deletingTripIds) return
+        val canDelete = _uiState.value.trips.firstOrNull { it.id == tripId }?.canDelete == true
         viewModelScope.launch {
             _uiState.update { it.copy(deletingTripIds = it.deletingTripIds + tripId, errorMessage = null) }
             runSuspendCatching { repository.deleteTrip(tripId) }
                 .onFailure { failure ->
-                    _uiState.update { it.copy(errorMessage = strings[R.string.trip_error_delete]) }
+                    _uiState.update { it.copy(errorMessage = strings[if (canDelete) R.string.trip_error_delete else R.string.trip_error_leave]) }
                 }
             _uiState.update { it.copy(deletingTripIds = it.deletingTripIds - tripId) }
         }
