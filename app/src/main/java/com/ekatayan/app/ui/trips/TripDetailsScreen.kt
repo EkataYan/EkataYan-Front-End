@@ -75,7 +75,7 @@ import java.util.Locale
     Spacer(Modifier.height(14.dp)); Image(painterResource(trip.imageRes), null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().height(190.dp).clip(RoundedCornerShape(22.dp)))
     Spacer(Modifier.height(18.dp)); Text(name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold); if (route.isNotBlank()) Text(route, color = EkataTextSecondary, style = MaterialTheme.typography.titleMedium)
     Spacer(Modifier.height(12.dp)); TripStatus(trip.statusFor(today))
-    if (trip.source == "ai") { Spacer(Modifier.height(8.dp)); Text("${dateRange(trip)} • ${trip.startDate.until(trip.endDate).days + 1} days • ${listOfNotNull(trip.travellerType, trip.travellerCount?.let { "$it travellers" }).joinToString(" • ")}", color = EkataTextSecondary); Text(listOfNotNull(trip.travelStyle, trip.travelPace?.let { "$it pace" }).joinToString(" • "), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold) }
+    if (trip.source == "ai") { val days=trip.startDate.until(trip.endDate).days+1;val travellers=trip.travellerCount?:1;Spacer(Modifier.height(8.dp));Text(stringResource(R.string.trip_details_summary,dateRange(trip),pluralStringResource(R.plurals.days_count,days,days),trip.travellerType.orEmpty(),pluralStringResource(R.plurals.travellers_count,travellers,travellers)),color=EkataTextSecondary);Text(listOfNotNull(trip.travelStyle,trip.travelPace?.let{stringResource(R.string.pace_value,it)}).joinToString(" • "),color=MaterialTheme.colorScheme.primary,fontWeight=FontWeight.SemiBold) }
 }
 
 @Composable private fun AiContent(trip: Trip, details: SavedAiTripDetails) {

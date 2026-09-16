@@ -54,6 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -411,7 +412,9 @@ fun TripTimelineCard(trip: Trip, onClick: () -> Unit, today: LocalDate = LocalDa
                 }
                 Spacer(Modifier.height(7.dp))
                 if (trip.source == "ai") {
-                    Text("${trip.startDate.until(trip.endDate).days + 1} days • ${trip.travellerCount ?: 1} travellers", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    val dayCount = trip.startDate.until(trip.endDate).days + 1
+                    val travellerCount = trip.travellerCount ?: 1
+                    Text(stringResource(R.string.trip_days_travellers,pluralStringResource(R.plurals.days_count,dayCount,dayCount),pluralStringResource(R.plurals.travellers_count,travellerCount,travellerCount)), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     Text(listOfNotNull(trip.travelStyle, trip.travelPace).joinToString(" • "), color = EkataBlue, style = MaterialTheme.typography.bodySmall, maxLines = 1)
                     Spacer(Modifier.height(4.dp))
                 }

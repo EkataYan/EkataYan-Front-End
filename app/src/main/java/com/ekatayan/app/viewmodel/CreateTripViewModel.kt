@@ -22,7 +22,7 @@ data class CreateTripUiState(
     val name: String = "", val destination: String = "",
     val startText: String = "", val endText: String = "",
     val budget: String = "", val notes: String = "", val errorRes: Int? = null,
-    val operationError: String? = null, val isSaving: Boolean = false, val saveSucceeded: Boolean = false,
+    val operationErrorRes: Int? = null, val isSaving: Boolean = false, val saveSucceeded: Boolean = false,
 ) {
     val startDate: LocalDate? get() = parseTripDate(startText)
     val endDate: LocalDate? get() = parseTripDate(endText)
@@ -39,7 +39,7 @@ class CreateTripViewModel @Inject constructor(
         startText = savedState["draftStart"] ?: savedState["start"] ?: "",
         endText = savedState["draftEnd"] ?: savedState["end"] ?: "",
         budget = savedState["draftBudget"] ?: savedState["budget"] ?: "",
-        notes = savedState["draftNotes"] ?: savedState.get<String>("preferences")?.let { "AI preferences: $it" } ?: "",
+        notes = savedState["draftNotes"] ?: savedState.get<String>("preferences").orEmpty(),
         errorRes = savedState["draftError"],
     ))
     val uiState = mutableState.asStateFlow()
@@ -56,7 +56,7 @@ class CreateTripViewModel @Inject constructor(
     }
 
     fun updateField(field: CreateTripField, value: String) {
-        val state = uiState.value.copy(errorRes = null, operationError = null)
+        val state = uiState.value.copy(errorRes = null, operationErrorRes = null)
         update(when (field) {
             CreateTripField.NAME -> state.copy(name = value)
             CreateTripField.DESTINATION -> state.copy(destination = value)
@@ -94,11 +94,11 @@ class CreateTripViewModel @Inject constructor(
         }
         update(state.copy(errorRes = error))
         if (error != null || start == null || end == null) return false
-        update(state.copy(errorRes = null, operationError = null, isSaving = true))
+        update(state.copy(errorRes = null, operationErrorRes = null, isSaving = true))
         viewModelScope.launch {
             runSuspendCatching { repository.createManualTrip(state.name.trim(), state.destination.trim(), start, end, state.budget.trim(), state.notes.trim()) }
                 .onSuccess { update(uiState.value.copy(isSaving = false, saveSucceeded = true)) }
-                .onFailure { failure -> update(uiState.value.copy(isSaving = false, operationError = failure.message ?: "The trip could not be saved.")) }
+                .onFailure { update(uiState.value.copy(isSaving = false, operationErrorRes = R.string.trip_error_save)) }
         }
         return true
     }

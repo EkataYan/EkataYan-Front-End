@@ -1,5 +1,6 @@
 ﻿<resources>
     <string name="bp_partnership">Partnership</string>
+    <string name="bp_time_value">%1$s %2$s</string>
     <string name="bp_brand">EkataYan</string>
     <string name="bp_entry_title">How would you like to continue?</string>
     <string name="bp_entry_subtitle">Choose the option that best describes you.</string>

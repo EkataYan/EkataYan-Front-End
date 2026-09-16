@@ -100,7 +100,7 @@ class HomeViewModel @Inject constructor(
                         name = trip.customName
                             ?: trip.nameRes.takeIf { it != 0 }?.let(context::getString)
                             ?: trip.customLocation.orEmpty(),
-                        date = trip.startDate.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)),
+                        date = trip.startDate.format(DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault())),
                         duration = strings[R.string.duration_days, ChronoUnit.DAYS.between(trip.startDate, trip.endDate) + 1],
                         imageRes = trip.imageRes,
                     )

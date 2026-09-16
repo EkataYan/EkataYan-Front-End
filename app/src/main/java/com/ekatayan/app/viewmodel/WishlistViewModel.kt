@@ -6,6 +6,8 @@ import com.ekatayan.app.data.model.WishlistGroup
 import com.ekatayan.app.data.model.WishlistItem
 
 import com.ekatayan.app.data.repository.WishlistRepository
+import com.ekatayan.app.R
+import com.ekatayan.app.core.localization.StringResourceProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModel
@@ -18,7 +20,10 @@ import kotlinx.coroutines.flow.update
 import com.ekatayan.app.utils.runSuspendCatching
 
 @HiltViewModel
-class WishlistViewModel @Inject constructor(private val repository: WishlistRepository) : ViewModel() {
+class WishlistViewModel @Inject constructor(
+    private val repository: WishlistRepository,
+    private val strings: StringResourceProvider,
+) : ViewModel() {
     private val _uiState = MutableStateFlow(repository.state.value.toUiState())
     val uiState: StateFlow<WishlistUiState> = _uiState.asStateFlow()
 
@@ -35,7 +40,7 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         runSuspendCatching { repository.refresh() }
             .onSuccess { _uiState.update { it.copy(isLoading = false) } }
-            .onFailure { error -> _uiState.update { it.copy(isLoading = false, errorMessage = error.message) } }
+            .onFailure { _ -> _uiState.update { it.copy(isLoading = false, errorMessage = strings[R.string.wishlist_error_load]) } }
     }
 
     private fun WishlistData.toUiState() = WishlistUiState(groups, availableDestinations)
@@ -68,7 +73,7 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
     }
 
     fun updateGroupCoverFromDevice(groupId: Int, imageUri: String) {
-        _uiState.update { it.copy(errorMessage = "Device photos cannot be synced as wishlist covers yet. Choose a saved place instead.") }
+        _uiState.update { it.copy(errorMessage = strings[R.string.wishlist_device_cover_unsupported]) }
     }
 
     fun updateGroupCoverFromPlace(groupId: Int, placeId: Int): Boolean {
@@ -120,7 +125,7 @@ class WishlistViewModel @Inject constructor(private val repository: WishlistRepo
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             runSuspendCatching { request() }
                 .onSuccess { _uiState.update { it.copy(isLoading = false) } }
-                .onFailure { error -> _uiState.update { it.copy(isLoading = false, errorMessage = error.message) } }
+                .onFailure { _ -> _uiState.update { it.copy(isLoading = false, errorMessage = strings[R.string.wishlist_error_update]) } }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.ekatayan.app.viewmodel
 
+import com.ekatayan.app.core.localization.StringResourceProvider
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -8,9 +9,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PlannerViewModelTest {
+    private fun createViewModel() = PlannerViewModel(StringResourceProvider { id, _ -> id.toString() })
+
     @Test
     fun additionalDestinationsCanBeAddedUpdatedAndRemoved() {
-        val viewModel = PlannerViewModel()
+        val viewModel = createViewModel()
 
         viewModel.addDestination()
         viewModel.addDestination()
@@ -23,7 +26,7 @@ class PlannerViewModelTest {
 
     @Test
     fun validationRequiresPrimaryDestinationAndRemovesBlankAdditionalDestinations() {
-        val viewModel = PlannerViewModel()
+        val viewModel = createViewModel()
         viewModel.addDestination()
         viewModel.updateAdditionalDestination(0, "Kandy")
         viewModel.addDestination()
@@ -34,7 +37,7 @@ class PlannerViewModelTest {
 
     @Test
     fun fixedTravellerTypesSetDefaultEditableTravellerCount() {
-        val viewModel = PlannerViewModel()
+        val viewModel = createViewModel()
         viewModel.updateTravellerType(TravellerType.FRIENDS)
         viewModel.updateCustomPeopleCount("6")
 
@@ -52,7 +55,7 @@ class PlannerViewModelTest {
 
     @Test
     fun familyAndFriendsRequirePositiveNumericCustomCount() {
-        val viewModel = PlannerViewModel()
+        val viewModel = createViewModel()
         viewModel.updateDestination("Ella")
         viewModel.updateTravellerType(TravellerType.FAMILY)
         viewModel.updateCustomPeopleCount("-0 guests")
@@ -71,7 +74,7 @@ class PlannerViewModelTest {
 
     @Test
     fun invalidEndDateIsRejectedAndCompleteSoloFormValidates() {
-        val viewModel = PlannerViewModel()
+        val viewModel = createViewModel()
         val start = LocalDate.of(2026, 10, 10)
         viewModel.updateDestination("Kandy")
         viewModel.updateTravellerType(TravellerType.SOLO)

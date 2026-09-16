@@ -1,5 +1,6 @@
 package com.ekatayan.app.ui.planner
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -72,6 +73,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -94,14 +96,13 @@ import com.ekatayan.app.viewmodel.TravelPace
 import com.ekatayan.app.viewmodel.PlannerGenerationState
 import com.ekatayan.app.viewmodel.PlannerPhase
 import com.ekatayan.app.viewmodel.PlannerFailedAction
-import com.ekatayan.app.viewmodel.displayLabel
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private val plannerDateFormat = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
+private val plannerDateFormat = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.getDefault())
 private val PlannerFieldBorder = Color(0xFFD9E0EA)
 private val PlannerPopupBorder = Color(0xFFAEDCFA)
 private val PlannerDatePickerBackground = Color(0xFFF2F8FC)
@@ -247,13 +248,13 @@ fun PlannerScreen(
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(6.dp))
                         Text(
-                            text = "+ Add another destination",
+                            text = stringResource(R.string.planner_add_destination),
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        PlannerToggleAction("✨ Suggest places", uiState.suggestAdditionalPlaces, onToggleSuggestedPlaces, Modifier.weight(1f))
-                        PlannerToggleAction("✨ Let AI choose", uiState.letAiChooseDestinations, onToggleAiDestinations, Modifier.weight(1f))
+                        PlannerToggleAction(stringResource(R.string.planner_suggest_places), uiState.suggestAdditionalPlaces, onToggleSuggestedPlaces, Modifier.weight(1f))
+                        PlannerToggleAction(stringResource(R.string.planner_let_ai_choose), uiState.letAiChooseDestinations, onToggleAiDestinations, Modifier.weight(1f))
                     }
                 }
 
@@ -311,7 +312,7 @@ fun PlannerScreen(
                 if (uiState.requiresCustomPeopleCount) {
                     Column {
                         Text(
-                            text = "Number of travellers",
+                            text = stringResource(R.string.planner_number_of_travellers),
                             color = EkataTextPrimary,
                             style = MaterialTheme.typography.titleSmall,
                         )
@@ -378,7 +379,7 @@ fun PlannerScreen(
                     )
                     if (uiState.startDate != null && uiState.endDate != null) {
                         val days = java.time.temporal.ChronoUnit.DAYS.between(uiState.startDate, uiState.endDate) + 1
-                        Text("$days days • ${uiState.startDate.format(plannerDateFormat)} – ${uiState.endDate.format(plannerDateFormat)}", style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary, modifier = Modifier.padding(top = 8.dp))
+                        Text(stringResource(R.string.trip_duration_dates,pluralStringResource(R.plurals.days_count,days.toInt(),days),uiState.startDate.format(plannerDateFormat),uiState.endDate.format(plannerDateFormat)), style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary, modifier = Modifier.padding(top = 8.dp))
                     }
                 }
 
@@ -450,13 +451,14 @@ fun PlannerScreen(
         )
     }
 
+    val endBeforeStartMessage = stringResource(R.string.planner_end_before_start)
     if (showDatePicker) {
         PlannerDatePickerDialog(
             initialDate = if (pickerForStart) uiState.startDate else uiState.endDate,
             onDismiss = { showDatePicker = false },
             onDateSelected = { selectedDate ->
                 if (!pickerForStart && uiState.startDate?.let(selectedDate::isBefore) == true) {
-                    onDateValidationError("End date cannot be before the start date.")
+                    onDateValidationError(endBeforeStartMessage)
                 } else {
                     if (pickerForStart) onStartDateSelected(selectedDate) else onEndDateSelected(selectedDate)
                     showDatePicker = false
@@ -499,14 +501,14 @@ private fun PersonalizationSection(
                 IconButton(onClick = onToggleExpanded) { Icon(if (state.personalizationExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, stringResource(R.string.expand_preferences)) }
             }
             if (state.personalizationExpanded) {
-                PreferenceGroup("Transport", listOf("Train", "Bus", "Car", "Tuk-tuk", "Taxi / Ride-hailing", "Rental vehicle", "Own vehicle", "Let AI decide"), state.transportPreferences, onToggleTransport)
-                PreferenceGroup("Stay", listOf("Hotel", "Guesthouse", "Hostel", "Resort", "Homestay", "No accommodation needed", "Let AI decide"), setOf(state.accommodationPreference), onAccommodationSelected)
+                PreferenceGroup(R.string.transport, listOf("Train", "Bus", "Car", "Tuk-tuk", "Taxi / Ride-hailing", "Rental vehicle", "Own vehicle", "Let AI decide"), state.transportPreferences, onToggleTransport)
+                PreferenceGroup(R.string.stay, listOf("Hotel", "Guesthouse", "Hostel", "Resort", "Homestay", "No accommodation needed", "Let AI decide"), setOf(state.accommodationPreference), onAccommodationSelected)
                 Text(stringResource(R.string.ui_what_s_your_travel_style), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp, bottom = 6.dp))
-                PlannerTravelStyle.entries.chunked(2).forEach { row -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { row.forEach { option -> PlannerToggleAction(option.displayLabel, state.travelStyle == option, { onTravelStyleSelected(option) }, Modifier.weight(1f)) } } }
+                PlannerTravelStyle.entries.chunked(2).forEach { row -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { row.forEach { option -> PlannerToggleAction(option.localizedLabel(), state.travelStyle == option, { onTravelStyleSelected(option) }, Modifier.weight(1f)) } } }
                 Text(stringResource(R.string.ui_budget_affordable_stays_local_food_and_public_transpor), style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
-                PreferenceGroup("Interests", listOf("Nature", "Beaches", "Adventure", "Culture", "Food", "Wildlife", "Photography", "Relaxation", "Shopping", "History", "Hiking", "Scenic routes"), state.interests, onToggleInterest)
+                PreferenceGroup(R.string.interests, listOf("Nature", "Beaches", "Adventure", "Culture", "Food", "Wildlife", "Photography", "Relaxation", "Shopping", "History", "Hiking", "Scenic routes"), state.interests, onToggleInterest)
                 Text(stringResource(R.string.ui_how_do_you_like_to_travel), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp, bottom = 6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { TravelPace.entries.forEach { option -> PlannerToggleAction(option.displayLabel, state.pace == option, { onPaceSelected(option) }, Modifier.weight(1f)) } }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { TravelPace.entries.forEach { option -> PlannerToggleAction(option.localizedLabel(), state.pace == option, { onPaceSelected(option) }, Modifier.weight(1f)) } }
                 Text(stringResource(R.string.ui_relaxed_more_free_time_balanced_activities_and_rest_pa), style = MaterialTheme.typography.bodySmall, color = EkataTextSecondary)
                 OutlinedTextField(
                     value = state.specialRequests,
@@ -524,11 +526,11 @@ private fun PersonalizationSection(
 }
 
 @Composable
-private fun PreferenceGroup(title: String, options: List<String>, selected: Set<String>, onSelect: (String) -> Unit) {
-    Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp, bottom = 6.dp))
+private fun PreferenceGroup(@StringRes title: Int, options: List<String>, selected: Set<String>, onSelect: (String) -> Unit) {
+    Text(stringResource(title), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp, bottom = 6.dp))
     options.chunked(2).forEach { row ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            row.forEach { option -> PlannerToggleAction(option, option in selected, { onSelect(option) }, Modifier.weight(1f)) }
+            row.forEach { option -> PlannerToggleAction(preferenceLabel(option), option in selected, { onSelect(option) }, Modifier.weight(1f)) }
             if (row.size == 1) Spacer(Modifier.weight(1f))
         }
     }
@@ -557,9 +559,9 @@ private fun PlannerGenerationContent(
             PlannerPhase.ERROR -> Column(Modifier.align(Alignment.Center).padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     when (generationState.failedAction) {
-                        PlannerFailedAction.SAVE -> "We couldn't save your trip."
-                        PlannerFailedAction.MODIFY_DAY -> "We couldn't update this day."
-                        else -> "We couldn't finish your itinerary."
+                        PlannerFailedAction.SAVE -> stringResource(R.string.trip_error_save)
+                        PlannerFailedAction.MODIFY_DAY -> stringResource(R.string.planner_error_update_day)
+                        else -> stringResource(R.string.planner_error_generate)
                     },
                     style = MaterialTheme.typography.titleLarge,
                 )
@@ -766,8 +768,38 @@ private fun TravellerType.displayName(): String = when (this) {
     TravellerType.COUPLE -> stringResource(R.string.planner_couple)
     TravellerType.FAMILY -> stringResource(R.string.planner_family)
     TravellerType.FRIENDS -> stringResource(R.string.planner_friends)
-    TravellerType.GROUP -> "Group"
+    TravellerType.GROUP -> stringResource(R.string.planner_group)
 }
+
+@Composable
+private fun PlannerTravelStyle.localizedLabel(): String = stringResource(when (this) {
+    PlannerTravelStyle.BUDGET -> R.string.planner_style_budget
+    PlannerTravelStyle.COMFORT -> R.string.planner_style_comfort
+    PlannerTravelStyle.PREMIUM -> R.string.planner_style_premium
+    PlannerTravelStyle.AI_DECIDES -> R.string.preference_ai_decide
+})
+
+@Composable
+private fun TravelPace.localizedLabel(): String = stringResource(when (this) {
+    TravelPace.RELAXED -> R.string.planner_pace_relaxed
+    TravelPace.BALANCED -> R.string.planner_pace_balanced
+    TravelPace.PACKED -> R.string.planner_pace_packed
+})
+
+@Composable
+private fun preferenceLabel(value: String): String = stringResource(when (value) {
+    "Train" -> R.string.preference_train; "Bus" -> R.string.preference_bus; "Car" -> R.string.preference_car
+    "Tuk-tuk" -> R.string.preference_tuk_tuk; "Taxi / Ride-hailing" -> R.string.preference_taxi
+    "Rental vehicle" -> R.string.preference_rental_vehicle; "Own vehicle" -> R.string.preference_own_vehicle
+    "Hotel" -> R.string.preference_hotel; "Guesthouse" -> R.string.preference_guesthouse; "Hostel" -> R.string.preference_hostel
+    "Resort" -> R.string.preference_resort; "Homestay" -> R.string.preference_homestay
+    "No accommodation needed" -> R.string.preference_no_accommodation; "Nature" -> R.string.preference_nature
+    "Beaches" -> R.string.preference_beaches; "Adventure" -> R.string.preference_adventure; "Culture" -> R.string.preference_culture
+    "Food" -> R.string.preference_food; "Wildlife" -> R.string.preference_wildlife; "Photography" -> R.string.preference_photography
+    "Relaxation" -> R.string.preference_relaxation; "Shopping" -> R.string.preference_shopping; "History" -> R.string.preference_history
+    "Hiking" -> R.string.preference_hiking; "Scenic routes" -> R.string.preference_scenic_routes
+    else -> R.string.preference_ai_decide
+})
 
 private fun LocalDate.toPickerMillis(): Long =
     atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()

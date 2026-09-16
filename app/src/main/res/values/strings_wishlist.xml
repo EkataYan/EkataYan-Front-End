@@ -10,6 +10,10 @@
     <string name="wishlist_save_to">Save to Wishlist</string>
     <string name="wishlist_create_new">Create New Wishlist</string>
     <string name="wishlist_create_action">Create</string>
+    <string name="wishlist_rename">Rename Wishlist</string>
+    <string name="wishlist_already_saved">Already in this wishlist</string>
+    <string name="wishlist_no_new_destinations">No new destinations available for this wishlist</string>
+    <string name="save">Save</string>
     <string name="wishlist_empty_selector_title">No wishlists yet</string>
     <string name="wishlist_empty_selector_message">Create a wishlist to save this place.</string>
     <string name="wishlist_close">Close</string>

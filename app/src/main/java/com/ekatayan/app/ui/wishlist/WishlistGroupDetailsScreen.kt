@@ -139,7 +139,7 @@ fun WishlistGroupDetailsScreen(
         }
     }
     if (renameVisible && group != null) {
-        WishlistNameDialog("Rename Wishlist", "Save", group.name, { renameVisible = false }) {
+        WishlistNameDialog(stringResource(R.string.wishlist_rename), stringResource(R.string.save), group.name, { renameVisible = false }) {
             onRenameGroup(it).also { renamed -> if (renamed) renameVisible = false }
         }
     }
@@ -301,7 +301,7 @@ private fun AddPlaceDialog(
                 if (results.isEmpty()) {
                     item {
                         Text(
-                            text = if (hasDestinationMatch(query)) "No new destinations available for this wishlist" else "No destinations found",
+                            text = stringResource(if (hasDestinationMatch(query)) R.string.wishlist_no_new_destinations else R.string.no_destinations_found),
                             color = Color.Gray,
                             modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
                         )

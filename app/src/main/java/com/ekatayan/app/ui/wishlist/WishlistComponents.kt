@@ -138,7 +138,7 @@ fun WishlistGroupCard(
             }
             Box(Modifier.align(Alignment.TopEnd)) {
                 IconButton(onClick = { menuExpanded = true }) {
-                    Icon(Icons.Default.MoreVert, "Wishlist options", tint = if (hasCover) Color.White else EkataTextPrimary)
+                    Icon(Icons.Default.MoreVert, stringResource(R.string.wishlist_options), tint = if (hasCover) Color.White else EkataTextPrimary)
                 }
                 DropdownMenu(
                     expanded = menuExpanded,

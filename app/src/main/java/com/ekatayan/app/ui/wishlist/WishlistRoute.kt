@@ -11,6 +11,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.res.stringResource
+import com.ekatayan.app.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ekatayan.app.viewmodel.NotificationsUiState
 import kotlinx.coroutines.flow.StateFlow
@@ -70,6 +72,7 @@ fun WishlistGroupDetailsRoute(
     val group = uiState.groups.find { it.id == groupId }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val alreadySavedMessage = stringResource(R.string.wishlist_already_saved)
     LaunchedEffect(uiState.errorMessage) {
         uiState.errorMessage?.let { snackbarHostState.showSnackbar(it) }
     }
@@ -84,7 +87,7 @@ fun WishlistGroupDetailsRoute(
         hasDestinationMatch = viewModel::hasDestinationMatch,
         onAddPlace = { item ->
             val added = viewModel.addPlaceToGroup(groupId, item)
-            if (!added) scope.launch { snackbarHostState.showSnackbar("Already in this wishlist") }
+            if (!added) scope.launch { snackbarHostState.showSnackbar(alreadySavedMessage) }
             added
         },
         onRemovePlace = { item ->

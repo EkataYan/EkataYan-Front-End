@@ -564,4 +564,106 @@
     <string name="estimated_total_range">Estimated total • %1$s %2$s–%3$s</string>
     <string name="itinerary_trip_summary">%1$s – %2$s • %3$d %4$s</string>
     <string name="style_and_pace">%1$s • %2$s pace</string>
+    <string name="trip_error_delete">The trip could not be deleted.</string>
+    <string name="trips_error_load">Trips couldn\'t be loaded.</string>
+    <string name="trip_error_load">The trip couldn\'t be loaded.</string>
+    <string name="trip_error_save">The trip could not be saved.</string>
+    <string name="wishlist_error_load">Wishlists could not be loaded.</string>
+    <string name="wishlist_error_update">The wishlist could not be updated.</string>
+    <string name="wishlist_device_cover_unsupported">Device photos cannot be synced as wishlist covers yet. Choose a saved place instead.</string>
+    <string name="planner_status_route">Finding the best route</string>
+    <string name="planner_status_destinations">Organizing your destinations</string>
+    <string name="planner_status_travel_times">Checking realistic travel times</string>
+    <string name="planner_status_balancing">Balancing activities</string>
+    <string name="planner_status_preferences">Matching your travel preferences</string>
+    <string name="planner_status_building">Building your itinerary</string>
+    <string name="planner_status_relaxing_day">Relaxing day %1$d</string>
+    <string name="planner_error_generate">We couldn\'t finish your itinerary.</string>
+    <string name="planner_error_update_day">We couldn\'t update this day.</string>
+    <string name="trip_members_search_error">Travellers could not be searched.</string>
+    <string name="trip_members_invite_error">The invitation could not be sent.</string>
+    <string name="trip_members_remove_error">The member could not be removed.</string>
+    <string name="notifications_error_update">The notification could not be updated.</string>
+    <string name="notifications_error_invitations">Invitations could not be loaded.</string>
+    <string name="notifications_error_invitation_response">The invitation response could not be saved.</string>
+    <string name="expenses_error_balances">Trip balances could not be calculated.</string>
+    <string name="expenses_error_load">Trip expenses could not be loaded.</string>
+    <string name="expenses_error_save">The expense could not be saved.</string>
+    <string name="notifications_empty_title">No notifications yet</string>
+    <string name="notifications_empty_message">Updates about your trips and groups will appear here.</string>
+    <string name="invitation_from_user">%1$s invited you to join</string>
+    <string name="declining">Declining…</string>
+    <string name="decline">Decline</string>
+    <string name="joining">Joining…</string>
+    <string name="join_trip">Join trip</string>
+    <string name="wishlist_options">Wishlist options</string>
+    <plurals name="travellers_count"><item quantity="one">%1$d traveller</item><item quantity="other">%1$d travellers</item></plurals>
+    <string name="trip_days_travellers">%1$s • %2$s</string>
+    <string name="trip_details_summary">%1$s • %2$s • %3$s • %4$s</string>
+    <string name="pace_value">%1$s pace</string>
+    <string name="theme_default_blue">Default blue</string>
+    <string name="theme_sky">Sky</string>
+    <string name="theme_mint">Mint</string>
+    <string name="theme_lavender">Lavender</string>
+    <string name="theme_warm">Warm</string>
+    <string name="admin">Admin</string>
+    <string name="groups_none_found">No groups found</string>
+    <string name="groups_empty">No groups yet\nCreate a trip or join your friends.</string>
+    <string name="group_name_required">Group name *</string>
+    <string name="description_optional">Description (optional)</string>
+    <string name="edit_group_name">Edit group name</string>
+    <string name="edit_description">Edit description</string>
+    <string name="remove_from_favourites">Remove from favourites</string>
+    <string name="favourite_group">Favourite group</string>
+    <string name="change_theme">Change theme</string>
+    <string name="choose_chat_background">Choose chat background</string>
+    <string name="delete_group">Delete group</string>
+    <string name="group_name">Group name</string>
+    <string name="delete_group_question">Delete group?</string>
+    <string name="delete_group_confirmation">This will remove this group from the current device.</string>
+    <string name="preview_photo">Photo</string>
+    <string name="preview_file">File</string>
+    <string name="preview_shared_place">Shared a place</string>
+    <string name="preview_voice_note">Voice note</string>
+    <string name="preview_sender_message">%1$s: %2$s</string>
+    <string name="you">You</string>
+    <string name="planner_end_date_cleared">The end date was cleared because it was before the new start date.</string>
+    <string name="planner_end_before_start">End date cannot be before the start date.</string>
+    <string name="planner_validation_destination">Add a destination or let AI choose one.</string>
+    <string name="planner_validation_traveller">Choose who will be travelling.</string>
+    <string name="planner_validation_party_size">Enter at least %1$d travellers.</string>
+    <string name="planner_validation_start_date">Choose a start date.</string>
+    <string name="planner_validation_end_date">Choose an end date.</string>
+    <string name="planner_add_destination">+ Add another destination</string>
+    <string name="planner_suggest_places">✨ Suggest places</string>
+    <string name="planner_let_ai_choose">✨ Let AI choose</string>
+    <string name="planner_number_of_travellers">Number of travellers</string>
+    <string name="planner_group">Group</string>
+    <string name="preference_train">Train</string><string name="preference_bus">Bus</string><string name="preference_car">Car</string><string name="preference_tuk_tuk">Tuk-tuk</string>
+    <string name="preference_taxi">Taxi / Ride-hailing</string><string name="preference_rental_vehicle">Rental vehicle</string><string name="preference_own_vehicle">Own vehicle</string><string name="preference_ai_decide">Let AI decide</string>
+    <string name="preference_hotel">Hotel</string><string name="preference_guesthouse">Guesthouse</string><string name="preference_hostel">Hostel</string><string name="preference_resort">Resort</string><string name="preference_homestay">Homestay</string><string name="preference_no_accommodation">No accommodation needed</string>
+    <string name="preference_nature">Nature</string><string name="preference_beaches">Beaches</string><string name="preference_adventure">Adventure</string><string name="preference_culture">Culture</string><string name="preference_food">Food</string><string name="preference_wildlife">Wildlife</string><string name="preference_photography">Photography</string><string name="preference_relaxation">Relaxation</string><string name="preference_shopping">Shopping</string><string name="preference_history">History</string><string name="preference_hiking">Hiking</string><string name="preference_scenic_routes">Scenic routes</string>
+    <string name="booking_most_popular">Most Popular</string>
+    <string name="booking_no_popular_matches">No popular places match the current filters.</string>
+    <string name="booking_no_recommended_matches">No recommended places match the current filters.</string>
+    <string name="booking_where_to_go">Where to go?</string>
+    <string name="booking_search_hint">Places, Hotels, Activities and more</string>
+    <string name="booking_no_places_found">No places found</string>
+    <string name="booking_try_different_filters">Try a different search, destination, or category.</string>
+    <string name="booking_reset_all">Reset all</string>
+    <string name="booking_clear_search">Clear search</string>
+    <string name="booking_clear_destination">Clear destination</string>
+    <string name="booking_choose_destination">Choose destination</string>
+    <string name="booking_selected_destination">Selected: %1$s</string>
+    <string name="booking_all_destinations">All destinations</string>
+    <string name="booking_recommended">Recommended</string>
+    <string name="booking_clear">Clear</string>
+    <string name="booking_filters">Filters</string>
+    <string name="booking_destination_filter">Destination: %1$s</string>
+    <string name="booking_category_filter">Category: %1$s</string>
+    <string name="booking_category_hotels">Hotels</string><string name="booking_category_restaurants">Restaurants</string>
+    <string name="booking_category_vacation_rentals">Vacation Rentals</string><string name="booking_category_transportation">Transportation</string>
+    <string name="booking_category_safaris">Safaris</string><string name="booking_category_activities">Activities</string><string name="booking_category_events">Events</string>
+    <string name="planner_style_budget">Budget</string><string name="planner_style_comfort">Comfort</string><string name="planner_style_premium">Premium</string>
+    <string name="planner_pace_relaxed">Relaxed</string><string name="planner_pace_balanced">Balanced</string><string name="planner_pace_packed">Packed</string>
 </resources>

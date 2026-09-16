@@ -35,7 +35,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
@@ -54,6 +53,8 @@ import com.ekatayan.app.core.designsystem.component.HeaderActions
 import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.*
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 
 private val PopupBorder = Color(0xFFAEDCFA)
 
@@ -82,8 +83,7 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
             LazyColumn(contentPadding = PaddingValues(top = 12.dp, bottom = 106.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (groups.isEmpty()) item {
                     EmptyState(
-                        if (query.isNotBlank()) "No groups found"
-                        else "No groups yet\nCreate a trip or join your friends.",
+                        stringResource(if (query.isNotBlank()) R.string.groups_none_found else R.string.groups_empty),
                     )
                 }
                 items(groups, key = ChatGroup::id) { group -> GroupRow(group, state, onGroupClick) }
@@ -105,17 +105,29 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
                 Text(messagePreview(last, state), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Column(horizontalAlignment = Alignment.End) {
-                last?.let { Text(it.timestamp.format(DateTimeFormatter.ofPattern("h:mm a")), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
+                last?.let { Text(it.timestamp.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.getDefault())), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
                 if (group.unreadCount > 0) Box(Modifier.padding(top = 7.dp).size(22.dp).background(EkataBlue, CircleShape), contentAlignment = Alignment.Center) { Text(group.unreadCount.toString(), color = Color.White, fontSize = 11.sp) }
             }
         }
     }
 }
 
+@Composable
 private fun messagePreview(message: ChatMessage?, state: GroupHubUiState): String {
-    if (message == null) return "No messages yet"
-    val body = when (message.type) { MessageType.Text -> message.text.orEmpty(); MessageType.Image -> "📷 Photo"; MessageType.File -> "📎 ${message.attachmentName ?: "File"}"; MessageType.Place, MessageType.SharedPlace -> "📍 Shared a place"; MessageType.Voice -> "🎤 Voice note"; MessageType.System -> message.text.orEmpty() }
-    return if (message.senderId == CURRENT_USER_ID) "You: $body" else "${state.users.find { it.id == message.senderId }?.name ?: "Member"}: $body"
+    if (message == null) return stringResource(R.string.no_messages_yet)
+    val body = when (message.type) {
+        MessageType.Text, MessageType.System -> message.text.orEmpty()
+        MessageType.Image -> stringResource(R.string.preview_photo)
+        MessageType.File -> message.attachmentName ?: stringResource(R.string.preview_file)
+        MessageType.Place, MessageType.SharedPlace -> stringResource(R.string.preview_shared_place)
+        MessageType.Voice -> stringResource(R.string.preview_voice_note)
+    }
+    val sender = if (message.senderId == CURRENT_USER_ID) {
+        stringResource(R.string.you)
+    } else {
+        state.users.find { it.id == message.senderId }?.name ?: stringResource(R.string.member)
+    }
+    return stringResource(R.string.preview_sender_message, sender, body)
 }
 
 @Composable internal fun SearchField(value: String, onValueChange: (String) -> Unit, placeholder: String) {
@@ -148,7 +160,7 @@ private fun messagePreview(message: ChatMessage?, state: GroupHubUiState): Strin
     }
     StyledDialog(onDismiss) {
         Text(stringResource(R.string.ui_create_group), fontSize = 21.sp, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(12.dp)); DialogInput(name, { name = it }, "Group name *"); Spacer(Modifier.height(8.dp)); DialogInput(description, { description = it }, "Description (optional)")
+        Spacer(Modifier.height(12.dp)); DialogInput(name, { name = it }, stringResource(R.string.group_name_required)); Spacer(Modifier.height(8.dp)); DialogInput(description, { description = it }, stringResource(R.string.description_optional))
         TextButton(onClick = { picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) { Icon(Icons.Default.AddPhotoAlternate, null); Text(stringResource(if (imageUri == null) R.string.add_group_photo else R.string.photo_selected)) }
         SearchField(search, { search = it }, stringResource(R.string.search_members))
         Column(Modifier.heightIn(max = 190.dp)) { users.filter { it.name.contains(search, true) }.forEach { user -> Row(Modifier.fillMaxWidth().clickable { selected = if (user.id in selected) selected - user.id else selected + user.id }.padding(vertical = 7.dp), verticalAlignment = Alignment.CenterVertically) { Checkbox(user.id in selected, { checked -> selected = if (checked) selected + user.id else selected - user.id }); Text(user.name) } }; if (users.none { it.name.contains(search, true) }) Text(stringResource(R.string.ui_no_users_found), color = EkataTextSecondary, modifier = Modifier.padding(12.dp)) }

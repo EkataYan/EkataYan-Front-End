@@ -38,7 +38,7 @@ class CreateTripViewModelTest {
         assertTrue(viewModel.save())
         assertEquals(initialCount, repository.trips.value.size)
         assertFalse(viewModel.uiState.value.saveSucceeded)
-        assertNotNull(viewModel.uiState.value.operationError)
+        assertNotNull(viewModel.uiState.value.operationErrorRes)
     }
 
     @Test
@@ -59,7 +59,7 @@ class CreateTripViewModelTest {
         val repository = TripsRepository()
         val first = CreateTripViewModel(repository, handle)
         assertEquals("Ella", first.uiState.value.destination)
-        assertEquals("AI preferences: Nature", first.uiState.value.notes)
+        assertEquals("Nature", first.uiState.value.notes)
         first.updateField(CreateTripField.DESTINATION, "Galle")
         first.updateField(CreateTripField.NOTES, "")
         val recreated = CreateTripViewModel(repository, handle)

@@ -78,6 +78,18 @@ import com.ekatayan.app.core.designsystem.theme.EkataTextPrimary
 import com.ekatayan.app.core.designsystem.theme.EkataTextSecondary
 
 private val BookingPopupBorder = Color(0xFFAEDCFA)
+
+@Composable
+private fun BookingCategory.localizedLabel(): String = stringResource(when (this) {
+    BookingCategory.ALL -> R.string.filter_all
+    BookingCategory.HOTELS -> R.string.booking_category_hotels
+    BookingCategory.RESTAURANTS -> R.string.booking_category_restaurants
+    BookingCategory.VACATION_RENTALS -> R.string.booking_category_vacation_rentals
+    BookingCategory.TRANSPORTATION -> R.string.booking_category_transportation
+    BookingCategory.SAFARIS -> R.string.booking_category_safaris
+    BookingCategory.ACTIVITIES -> R.string.booking_category_activities
+    BookingCategory.EVENTS -> R.string.booking_category_events
+})
 private val BookingPopupShape = RoundedCornerShape(22.dp)
 
 @Composable
@@ -116,7 +128,7 @@ fun BookingScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = "Booking",
+                text = stringResource(R.string.home_booking),
                         fontSize = 28.sp,
                         lineHeight = 32.sp,
                         fontWeight = FontWeight.Medium,
@@ -160,7 +172,7 @@ fun BookingScreen(
             }
             item {
                 Text(
-                    text = "Most Popular",
+                    text = stringResource(R.string.booking_most_popular),
                     fontSize = 21.sp,
                     lineHeight = 26.sp,
                     fontWeight = FontWeight.Medium,
@@ -169,7 +181,7 @@ fun BookingScreen(
             if (uiState.hasResults) {
                 item {
                     if (uiState.popularPlaces.isEmpty()) {
-                        SectionEmptyState("No popular places match the current filters.")
+                        SectionEmptyState(stringResource(R.string.booking_no_popular_matches))
                     } else {
                         LazyRow(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -183,14 +195,14 @@ fun BookingScreen(
                 }
                 item {
                     Text(
-                        text = "Recommended",
+                    text = stringResource(R.string.booking_recommended),
                         fontSize = 21.sp,
                         lineHeight = 26.sp,
                         fontWeight = FontWeight.Medium,
                     )
                 }
                 if (uiState.recommendedPlaces.isEmpty()) {
-                    item { SectionEmptyState("No recommended places match the current filters.") }
+                    item { SectionEmptyState(stringResource(R.string.booking_no_recommended_matches)) }
                 } else {
                     items(uiState.recommendedPlaces.chunked(2), key = { row -> row.first().id }) { row ->
                         Row(
@@ -299,7 +311,7 @@ private fun DestinationField(
             )
         }
         Text(
-            text = destination ?: "Where to go?",
+            text = destination ?: stringResource(R.string.booking_where_to_go),
             color = if (destination == null) EkataTextSecondary else EkataTextPrimary,
             fontSize = 14.sp,
             maxLines = 1,
@@ -366,7 +378,7 @@ private fun SearchRow(
                     Box {
                         if (query.isBlank()) {
                             Text(
-                                text = "Places, Hotels, Activities and more",
+                                text = stringResource(R.string.booking_search_hint),
                                 color = EkataTextSecondary,
                                 fontSize = 14.sp,
                                 maxLines = 1,
@@ -415,7 +427,7 @@ private fun CategoryChips(
                 shadowElevation = if (selected) 4.dp else 1.dp,
             ) {
                 Text(
-                    text = category.chipLabel,
+                    text = category.localizedLabel(),
                     color = EkataTextPrimary,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
@@ -546,20 +558,20 @@ private fun EmptyBookingState(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text = "No places found",
+            text = stringResource(R.string.booking_no_places_found),
             fontSize = 18.sp,
             fontWeight = FontWeight.Medium,
             color = EkataTextPrimary,
         )
         Text(
-            text = "Try a different search, destination, or category.",
+            text = stringResource(R.string.booking_try_different_filters),
             color = EkataTextSecondary,
             fontSize = 13.sp,
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            SmallActionButton(text = "Reset all", onClick = onResetFilters)
-            SmallActionButton(text = "Clear search", onClick = onClearSearch)
-            SmallActionButton(text = "Clear destination", onClick = onClearDestination)
+            SmallActionButton(text = stringResource(R.string.booking_reset_all), onClick = onResetFilters)
+            SmallActionButton(text = stringResource(R.string.booking_clear_search), onClick = onClearSearch)
+            SmallActionButton(text = stringResource(R.string.booking_clear_destination), onClick = onClearDestination)
         }
     }
 }
@@ -604,7 +616,7 @@ private fun DestinationPickerDialog(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = "Choose destination",
+                text = stringResource(R.string.booking_choose_destination),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 color = EkataTextPrimary,
@@ -624,16 +636,16 @@ private fun DestinationPickerDialog(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = selectedDestination?.let { "Selected: $it" } ?: "All destinations",
+                    text = selectedDestination?.let { stringResource(R.string.booking_selected_destination, it) } ?: stringResource(R.string.booking_all_destinations),
                     color = EkataTextPrimary,
                     fontSize = 13.sp,
                 )
-                TextButtonLike(text = "Clear", onClick = onClearDestination)
+                    TextButtonLike(text = stringResource(R.string.booking_clear), onClick = onClearDestination)
             }
             Divider(color = BookingPopupBorder)
             if (filteredDestinations.isEmpty()) {
                 Text(
-                    text = "No destinations found",
+                    text = stringResource(R.string.no_destinations_found),
                     color = EkataTextSecondary,
                     fontSize = 13.sp,
                     modifier = Modifier.padding(vertical = 14.dp),
@@ -691,28 +703,28 @@ private fun BookingFilterDialog(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                text = "Filters",
+                text = stringResource(R.string.booking_filters),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Medium,
                 color = EkataTextPrimary,
             )
             Text(
-                text = "Destination: ${selectedDestination ?: "All"}",
+                text = stringResource(R.string.booking_destination_filter, selectedDestination ?: stringResource(R.string.filter_all)),
                 color = EkataTextPrimary,
                 fontSize = 13.sp,
             )
             Text(
-                text = "Category: ${selectedCategory.chipLabel}",
+                text = stringResource(R.string.booking_category_filter, selectedCategory.localizedLabel()),
                 color = EkataTextPrimary,
                 fontSize = 13.sp,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SmallActionButton(text = "Clear search", onClick = onClearSearch)
-                SmallActionButton(text = "Clear destination", onClick = onClearDestination)
+                SmallActionButton(text = stringResource(R.string.booking_clear_search), onClick = onClearSearch)
+                SmallActionButton(text = stringResource(R.string.booking_clear_destination), onClick = onClearDestination)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SmallActionButton(text = "Reset all", onClick = onResetFilters)
-                TextButtonLike(text = "Close", onClick = onDismiss)
+                SmallActionButton(text = stringResource(R.string.booking_reset_all), onClick = onResetFilters)
+            TextButtonLike(text = stringResource(R.string.booking_close), onClick = onDismiss)
             }
         }
     }

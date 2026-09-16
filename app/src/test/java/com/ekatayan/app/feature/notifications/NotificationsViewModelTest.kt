@@ -25,6 +25,7 @@ import com.ekatayan.app.data.model.NotificationFilter
 import androidx.lifecycle.ViewModelStore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import com.ekatayan.app.core.localization.StringResourceProvider
 
 private class FakeNotificationsRepository(initial: List<NotificationItem>) : NotificationsRepository {
     private val items = MutableStateFlow(initial)
@@ -48,13 +49,14 @@ private class FakeNotificationsRepository(initial: List<NotificationItem>) : Not
 @OptIn(ExperimentalCoroutinesApi::class)
 class NotificationsViewModelTest {
     private val store = ViewModelStore()
+    private val strings = StringResourceProvider { id, _ -> id.toString() }
     @Before fun setUp() { Dispatchers.setMain(UnconfinedTestDispatcher()) }
     @After fun tearDown() { store.clear(); Dispatchers.resetMain() }
 
 
     private fun createViewModel(): NotificationsViewModel {
         val repository = FakeNotificationsRepository(notificationFixtures())
-        return NotificationsViewModel(repository).also { store.put("notifications", it) }
+        return NotificationsViewModel(repository, strings).also { store.put("notifications", it) }
     }
 
     private fun notificationFixtures() = listOf(
@@ -101,8 +103,8 @@ class NotificationsViewModelTest {
     @Test
     fun repositoryUpdatesReachEveryViewModelWithoutResettingFilter() = runTest {
         val repository = FakeNotificationsRepository(notificationFixtures())
-        val first = NotificationsViewModel(repository).also { store.put("first", it) }
-        val second = NotificationsViewModel(repository).also { store.put("second", it) }
+        val first = NotificationsViewModel(repository, strings).also { store.put("first", it) }
+        val second = NotificationsViewModel(repository, strings).also { store.put("second", it) }
         second.onFilterSelected(NotificationFilter.TRIPS)
         first.markAsRead("1")
         assertFalse(second.uiState.value.notifications.single { it.id == "1" }.isUnread)
@@ -116,7 +118,7 @@ class NotificationsViewModelTest {
     @Test
     fun realtimeInsertUpdatesSharedUnreadStateImmediately() {
         val repository = FakeNotificationsRepository(emptyList())
-        val viewModel = NotificationsViewModel(repository).also { store.put("realtime", it) }
+        val viewModel = NotificationsViewModel(repository, strings).also { store.put("realtime", it) }
 
         repository.insert(notification("4", NotificationCategory.TRIPS))
 

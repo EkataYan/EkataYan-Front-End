@@ -37,8 +37,8 @@ import com.ekatayan.app.core.localization.StringResourceProvider
                 ExpenseCategoryTotal(name,amount.toLong(),if(total.signum()==0)0 else amount.multiply(BigDecimal(100)).divide(total,0,RoundingMode.HALF_UP).toInt())
             }
             ExpensesData(id,selected.customName?:strings[R.string.trip_fallback_name],available,total.toLong(),categories,rows,
-                balanceResult.getOrDefault(emptyList()),false,balanceError=balanceResult.exceptionOrNull()?.message)
-        }.onSuccess{mutable.value=it}.onFailure{mutable.value=mutable.value.copy(loading=false,error=it.message)}
+                balanceResult.getOrDefault(emptyList()),false,balanceError=balanceResult.exceptionOrNull()?.let { strings[R.string.expenses_error_balances] })
+        }.onSuccess{mutable.value=it}.onFailure{mutable.value=mutable.value.copy(loading=false,error=strings[R.string.expenses_error_load])}
     }
     fun selectTrip(id:String){mutable.value=mutable.value.copy(tripId=id);refresh()}
 }
@@ -47,7 +47,7 @@ data class AddExpenseUiState(val members:List<PublicTripMemberDto> = emptyList()
 
 @HiltViewModel class AddExpenseViewModel @Inject constructor(private val expenses:ExpensesRepository,private val members:TripMembersRepository,savedState:SavedStateHandle,private val strings:StringResourceProvider):ViewModel(){
     val tripId:String=savedState["tripId"]?:"";private val mutable=MutableStateFlow(AddExpenseUiState());val state=mutable.asStateFlow()
-    init{viewModelScope.launch{runSuspendCatching{members.members(tripId)}.onSuccess{rows->mutable.value=mutable.value.copy(members=rows,paidBy=rows.firstOrNull{it.isCurrentUser}?.userId?:rows.firstOrNull()?.userId,participantIds=rows.map{it.userId}.toSet(),loading=false)}.onFailure{mutable.value=mutable.value.copy(loading=false,error=it.message)}}}
+    init{viewModelScope.launch{runSuspendCatching{members.members(tripId)}.onSuccess{rows->mutable.value=mutable.value.copy(members=rows,paidBy=rows.firstOrNull{it.isCurrentUser}?.userId?:rows.firstOrNull()?.userId,participantIds=rows.map{it.userId}.toSet(),loading=false)}.onFailure{mutable.value=mutable.value.copy(loading=false,error=strings[R.string.trip_members_load_error])}}}
     fun title(v:String){mutable.value=mutable.value.copy(title=v)};fun amount(v:String){mutable.value=mutable.value.copy(amount=v.filter{it.isDigit()||it=='.'})};fun category(v:String){mutable.value=mutable.value.copy(category=v)};fun payer(v:String){mutable.value=mutable.value.copy(paidBy=v)}
     fun participant(id:String){val ids=mutable.value.participantIds;mutable.value=mutable.value.copy(participantIds=if(id in ids)ids-id else ids+id)};fun selectAll(){mutable.value=mutable.value.copy(participantIds=mutable.value.members.map{it.userId}.toSet())};fun date(v:String){mutable.value=mutable.value.copy(date=v)};fun notes(v:String){mutable.value=mutable.value.copy(notes=v)}
     fun save()=viewModelScope.launch{
@@ -68,7 +68,7 @@ data class AddExpenseUiState(val members:List<PublicTripMemberDto> = emptyList()
                 mutable.value=s.copy(saving=true,error=null)
                 runSuspendCatching{expenses.create(tripId,ExpenseRequest(s.title.trim(),value.setScale(2,RoundingMode.HALF_UP).toPlainString(),s.category,s.paidBy,s.participantIds.toList(),validDate.toString(),s.notes.trim().takeIf{it.isNotEmpty()}))}
                     .onSuccess{mutable.value=mutable.value.copy(saving=false,saved=true)}
-                    .onFailure{mutable.value=mutable.value.copy(saving=false,error=it.message)}
+                    .onFailure{mutable.value=mutable.value.copy(saving=false,error=strings[R.string.expenses_error_save])}
             }
         }
     }
