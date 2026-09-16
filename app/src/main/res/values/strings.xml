@@ -225,6 +225,11 @@
     <string name="home_search_action">Search destinations</string>
     <string name="home_search_hint">Search your destination</string>
     <string name="home_maps">Maps</string>
+    <string name="maps_preview_title">Explore Map</string>
+    <string name="maps_interactive_heading">Interactive Maps</string>
+    <string name="maps_preview_badge">Coming Soon</string>
+    <string name="maps_preview_description">Explore destinations, nearby attractions and routes across Sri Lanka.</string>
+    <string name="maps_development_message">Map integration is currently under development.</string>
     <string name="home_wishlist">Wishlist</string>
     <string name="home_booking">Booking</string>
     <string name="home_group_hub">Group Hub</string>

@@ -40,6 +40,8 @@ import com.ekatayan.app.ui.grouphub.groupHubScreens
 import com.ekatayan.app.ui.grouphub.groupInfoRoute
 import com.ekatayan.app.ui.login.LOGIN_ROUTE
 import com.ekatayan.app.ui.login.loginScreen
+import com.ekatayan.app.ui.maps.MAPS_PREVIEW_ROUTE
+import com.ekatayan.app.ui.maps.mapsPreviewScreen
 import com.ekatayan.app.core.designsystem.component.AppBottomNavItem
 import com.ekatayan.app.viewmodel.NotificationsViewModel
 import com.ekatayan.app.ui.notifications.NOTIFICATIONS_ROUTE
@@ -148,6 +150,7 @@ fun EkataYanNavHost(
             onPartnershipClick = { navController.navigate(PARTNER_ENTRY_ROUTE) { launchSingleTop = true } },
             onGroupHubClick = { navController.navigate(GROUP_HUB_ROUTE) },
             onWishlistClick = { navController.navigate(WISHLIST_ROUTE) },
+            onMapsClick = { navController.navigate(MAPS_PREVIEW_ROUTE) { launchSingleTop = true } },
             onBookingClick = { navController.navigate(BOOKING_ROUTE) },
             onPlannerClick = { navController.navigateToTopLevel(AppBottomNavItem.PLANNER) },
             onTripsClick = { navController.navigateToTopLevel(AppBottomNavItem.TRIPS) },
@@ -163,6 +166,7 @@ fun EkataYanNavHost(
             onBackClick = navController::navigateUp,
             onPlaceClick = { placeId -> navController.navigate(placeDetailsRoute(placeId)) },
         )
+        mapsPreviewScreen(onBackClick = navController::navigateUp)
         bookingScreen(
             onHomeClick = { navController.navigateToTopLevel(AppBottomNavItem.HOME) },
             onTripsClick = { navController.navigateToTopLevel(AppBottomNavItem.TRIPS) },

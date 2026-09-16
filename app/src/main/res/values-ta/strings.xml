@@ -322,6 +322,11 @@
     <string name="home_search_action">இலக்குகளைத் தேடுங்கள்</string>
     <string name="home_search_hint">உங்கள் இலக்கைத் தேடுங்கள்</string>
     <string name="home_maps">வரைபடங்கள்</string>
+    <string name="maps_preview_title">வரைபடத்தை ஆராயுங்கள்</string>
+    <string name="maps_interactive_heading">ஊடாடும் வரைபடங்கள்</string>
+    <string name="maps_preview_badge">விரைவில்</string>
+    <string name="maps_preview_description">இலங்கை முழுவதும் உள்ள இடங்கள், அருகிலுள்ள ஈர்ப்புகள் மற்றும் வழித்தடங்களை ஆராயுங்கள்.</string>
+    <string name="maps_development_message">வரைபட ஒருங்கிணைப்பு தற்போது உருவாக்கத்தில் உள்ளது.</string>
     <string name="home_wishlist">விருப்பப்பட்டியல்</string>
     <string name="home_booking">முன்பதிவு</string>
     <string name="home_group_hub">குழு மையம்</string>

@@ -322,6 +322,11 @@
     <string name="home_search_action">ගමනාන්ත සොයන්න</string>
     <string name="home_search_hint">ඔබගේ ගමනාන්තය සොයන්න</string>
     <string name="home_maps">සිතියම්</string>
+    <string name="maps_preview_title">සිතියම ගවේෂණය කරන්න</string>
+    <string name="maps_interactive_heading">අන්තර්ක්‍රියාකාරී සිතියම්</string>
+    <string name="maps_preview_badge">ළඟදීම</string>
+    <string name="maps_preview_description">ශ්‍රී ලංකාව පුරා ගමනාන්ත, ආසන්න ආකර්ෂණ ස්ථාන සහ මාර්ග ගවේෂණය කරන්න.</string>
+    <string name="maps_development_message">සිතියම් ඒකාබද්ධ කිරීම දැනට සංවර්ධනය වෙමින් පවතී.</string>
     <string name="home_wishlist">පැතුම් ලැයිස්තුව</string>
     <string name="home_booking">වෙන්කරවා ගැනීම</string>
     <string name="home_group_hub">සමූහ කේන්ද්‍රය</string>
