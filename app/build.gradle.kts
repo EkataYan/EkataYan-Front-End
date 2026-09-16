@@ -82,6 +82,9 @@ android {
         compose = true
         buildConfig = true
     }
+    androidResources {
+        generateLocaleConfig = true
+    }
     sourceSets["main"].assets.srcDir("../docs")
 }
 
@@ -98,6 +101,7 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.compose.material3)
 //    implementation(libs.androidx.compose.material.icons.extended)
     implementation("androidx.compose.material:material-icons-extended")

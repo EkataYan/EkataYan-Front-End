@@ -49,11 +49,16 @@ object LocalPersistenceModule {
             db.execSQL("ALTER TABLE wishlist_group_items ADD COLUMN savedPlaceId TEXT")
         }
     }
+    private val migration4To5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE trips ADD COLUMN canDelete INTEGER NOT NULL DEFAULT 0")
+        }
+    }
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): EkataYanDatabase =
         Room.databaseBuilder(context, EkataYanDatabase::class.java, "ekatayan-local.db")
-            .addMigrations(migration1To2, migration2To3, migration3To4)
+            .addMigrations(migration1To2, migration2To3, migration3To4, migration4To5)
             .build()
 
     @Provides fun provideWishlistDao(database: EkataYanDatabase): WishlistDao = database.wishlistDao()

@@ -58,7 +58,7 @@ class TripsRepository private constructor(private val dao: TripsDao?, private va
     fun guideFor(destination: String): DestinationGuide = destinationGuideFor(destination)
 
     suspend fun createManualTrip(name: String, destination: String, startDate: LocalDate, endDate: LocalDate, budget: String, notes: String) = mutationMutex.withLock {
-        val response = apiCall("The trip could not be saved.") { requireNotNull(api).createTrip(TripRequest(name, listOf(destination), startDate.toString(), endDate.toString(), budget.ifBlank { "0" }, additionalRequirements = notes)) }
+        val response = apiCall("The trip could not be saved.") { requireNotNull(api).createTrip(TripRequest(name, listOf(destination), startDate.toString(), endDate.toString(), budget.takeIf(String::isNotBlank), additionalRequirements = notes)) }
         val trip = response.data.takeIf { response.success }
             ?: throw IllegalStateException(response.error?.message ?: "The trip could not be saved.")
         storeRemoteTrip(trip)
@@ -81,7 +81,7 @@ class TripsRepository private constructor(private val dao: TripsDao?, private va
         val trip = Trip(stableRemoteId(remote.id), 0, 0, R.string.trip_status_upcoming, LocalDate.parse(remote.startDate), LocalDate.parse(remote.endDate),
             destinationImage(primaryDestination), remote.name, itinerary.trip.route.joinToString(" → "), null, null, null,
             remote.id, "ai", itinerary.trip.summary, itinerary.trip.route, itinerary.trip.travellerType,
-            itinerary.trip.travellerCount, itinerary.trip.travelStyle, itinerary.trip.travelPace)
+            itinerary.trip.travellerCount, itinerary.trip.travelStyle, itinerary.trip.travelPace, canDelete = true)
         val updated = synchronized(this) { (mutableTrips.value.filterNot { it.remoteId == remote.id } + trip).also { mutableTrips.value = it } }
         replaceTrips(updated)
     }
@@ -136,18 +136,24 @@ class TripsRepository private constructor(private val dao: TripsDao?, private va
     private fun remoteTrip(value: TripDto): Trip {
         val route = value.destinations
         return Trip(stableRemoteId(value.id), 0, 0, R.string.trip_status_upcoming, LocalDate.parse(value.startDate), LocalDate.parse(value.endDate),
-            destinationImage(route.firstOrNull().orEmpty()), value.name, route.joinToString(" → "), value.budget.takeUnless { it == "0" },
+            destinationImage(route.firstOrNull().orEmpty()), value.name, route.joinToString(" → "), value.budget?.takeUnless { it == "0" },
             value.additionalRequirements.takeIf(String::isNotBlank), null, value.id, value.source,
-            route = route, travellerCount = value.travelers, travelStyle = value.travelStyle)
+            route = route, travellerCount = value.travelers, travelStyle = value.travelStyle, canDelete = value.canDelete)
     }
 
     suspend fun deleteTrip(tripId: Int) = mutationMutex.withLock {
         val trip = mutableTrips.value.firstOrNull { it.id == tripId }
             ?: throw IllegalStateException("Trip not found.")
         val remoteId = trip.remoteId ?: error("This trip is not synchronized. Refresh your trips and try again.")
-        val response = apiCall("The trip could not be deleted.") { requireNotNull(api).deleteTrip(remoteId) }
-        if (!response.success || response.data?.get("deleted") != true) {
-            throw IllegalStateException(response.error?.message ?: "The trip could not be deleted.")
+        val response = if (trip.canDelete) {
+            apiCall("The trip could not be deleted.") { requireNotNull(api).deleteTrip(remoteId) }
+        } else {
+            apiCall("You could not leave this trip.") { requireNotNull(api).leaveTrip(remoteId) }
+        }
+        val expectedResult = if (trip.canDelete) "deleted" else "left"
+        if (!response.success || response.data?.get(expectedResult) != true) {
+            val fallback = if (trip.canDelete) "The trip could not be deleted." else "You could not leave this trip."
+            throw IllegalStateException(response.error?.message ?: fallback)
         }
         replaceTrips(mutableTrips.value.filterNot { it.id == tripId })
     }

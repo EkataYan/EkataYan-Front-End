@@ -1,7 +1,7 @@
 package com.ekatayan.app
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,10 +16,10 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.LaunchedEffect
-import com.ekatayan.app.ui.settings.applyAppLanguage
+import com.ekatayan.app.core.localization.AppLocaleManager
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     @Inject lateinit var settingsRepository: SettingsRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
@@ -39,9 +39,10 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             val preferences by settingsRepository.preferences.collectAsStateWithLifecycle()
-            LaunchedEffect(preferences.selectedLanguage) {
-                val current = resources.configuration.locales[0]?.language
-                if (current != preferences.selectedLanguage) applyAppLanguage(this@MainActivity, preferences.selectedLanguage)
+            LaunchedEffect(preferences.loaded, preferences.selectedLanguage) {
+                if (preferences.loaded && AppLocaleManager.currentLanguage() != preferences.selectedLanguage) {
+                    AppLocaleManager.applyLanguage(preferences.selectedLanguage)
+                }
             }
             val dark = when (preferences.themeMode) {
                 "dark" -> true

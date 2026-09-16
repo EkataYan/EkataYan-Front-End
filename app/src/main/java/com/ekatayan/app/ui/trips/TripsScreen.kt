@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.Card
@@ -54,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -154,9 +156,9 @@ fun TripsScreen(
     pendingDeleteTrip?.let { trip ->
         AlertDialog(
             onDismissRequest = { pendingDeleteTrip = null },
-            title = { Text(stringResource(R.string.trips_delete_title)) },
-            text = { Text(stringResource(R.string.trips_delete_message)) },
-            confirmButton = { TextButton(onClick = { onDeleteTrip(trip.id); pendingDeleteTrip = null }) { Text(stringResource(R.string.trips_delete_action)) } },
+            title = { Text(stringResource(if (trip.canDelete) R.string.trips_delete_title else R.string.trips_leave_title)) },
+            text = { Text(stringResource(if (trip.canDelete) R.string.trips_delete_message else R.string.trips_leave_message)) },
+            confirmButton = { TextButton(onClick = { onDeleteTrip(trip.id); pendingDeleteTrip = null }) { Text(stringResource(if (trip.canDelete) R.string.trips_delete_action else R.string.trips_leave_action)) } },
             dismissButton = { TextButton(onClick = { pendingDeleteTrip = null }) { Text(stringResource(R.string.create_trip_cancel)) } },
         )
     }
@@ -411,7 +413,9 @@ fun TripTimelineCard(trip: Trip, onClick: () -> Unit, today: LocalDate = LocalDa
                 }
                 Spacer(Modifier.height(7.dp))
                 if (trip.source == "ai") {
-                    Text("${trip.startDate.until(trip.endDate).days + 1} days • ${trip.travellerCount ?: 1} travellers", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                    val dayCount = trip.startDate.until(trip.endDate).days + 1
+                    val travellerCount = trip.travellerCount ?: 1
+                    Text(stringResource(R.string.trip_days_travellers,pluralStringResource(R.plurals.days_count,dayCount,dayCount),pluralStringResource(R.plurals.travellers_count,travellerCount,travellerCount)), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     Text(listOfNotNull(trip.travelStyle, trip.travelPace).joinToString(" • "), color = EkataBlue, style = MaterialTheme.typography.bodySmall, maxLines = 1)
                     Spacer(Modifier.height(4.dp))
                 }
@@ -420,7 +424,12 @@ fun TripTimelineCard(trip: Trip, onClick: () -> Unit, today: LocalDate = LocalDa
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowForwardIos, stringResource(R.string.trips_open_trip), tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(15.dp))
                 IconButton(onClick = onDeleteClick, modifier = Modifier.size(48.dp)) {
-                    Icon(Icons.Default.Delete, stringResource(R.string.trips_delete_action), tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
+                    Icon(
+                        if (trip.canDelete) Icons.Default.Delete else Icons.AutoMirrored.Filled.Logout,
+                        stringResource(if (trip.canDelete) R.string.trips_delete_action else R.string.trips_leave_action),
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
             }
         }

@@ -8,13 +8,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
@@ -57,8 +54,6 @@ fun AppBottomNavigation(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val imeBottom = WindowInsets.ime.getBottom(LocalDensity.current).toFloat()
-
     val callbacks = listOf(onHomeClick, onTripsClick, onPlannerClick, onExpensesClick, onProfileClick)
     // Keep the parameter while callers migrate, but use one geometry everywhere.
     val outerPadding = EkataSpacing.sm
@@ -68,10 +63,6 @@ fun AppBottomNavigation(
     val itemSize = EkataComponentSize.bottomNavigationCompactIconContainer
     Row(
         modifier = modifier
-            // adjustResize shortens the Compose window while the keyboard is open.
-            // Offset by that lost height so the bar stays at the physical bottom
-            // of the screen, underneath the IME, instead of jumping above it.
-            .graphicsLayer { translationY = imeBottom }
             .padding(start = outerPadding, end = outerPadding, bottom = outerPadding)
             .fillMaxWidth()
             .height(barHeight)

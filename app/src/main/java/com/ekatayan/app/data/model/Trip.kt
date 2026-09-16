@@ -23,5 +23,6 @@ data class Trip(
     val travellerCount: Int? = null,
     val travelStyle: String? = null,
     val travelPace: String? = null,
+    val canDelete: Boolean = false,
 )
 

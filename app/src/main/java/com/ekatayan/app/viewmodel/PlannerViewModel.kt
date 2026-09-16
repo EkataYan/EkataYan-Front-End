@@ -3,6 +3,8 @@ package com.ekatayan.app.viewmodel
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.ekatayan.app.R
+import com.ekatayan.app.core.localization.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
 import javax.inject.Inject
@@ -59,7 +61,7 @@ data class PlannerUiState(
 }
 
 @HiltViewModel
-class PlannerViewModel @Inject constructor() : ViewModel() {
+class PlannerViewModel @Inject constructor(private val strings: StringResourceProvider) : ViewModel() {
     private val mutableUiState = mutableStateOf(PlannerUiState())
     val uiState: State<PlannerUiState> = mutableUiState
 
@@ -131,7 +133,7 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
             startDate = value,
             endDate = previousEnd?.takeUnless { it.isBefore(value) },
             error = if (previousEnd != null && previousEnd.isBefore(value)) {
-                "The end date was cleared because it was before the new start date."
+                strings[R.string.planner_end_date_cleared]
             } else {
                 null
             },
@@ -140,7 +142,7 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
 
     fun updateEndDate(value: LocalDate) {
         if (uiState.value.startDate?.let(value::isBefore) == true) {
-            setError("End date cannot be before the start date.")
+            setError(strings[R.string.planner_end_before_start])
             return
         }
         mutableUiState.value = uiState.value.copy(endDate = value, error = null)
@@ -164,13 +166,13 @@ class PlannerViewModel @Inject constructor() : ViewModel() {
         val state = uiState.value
         val validAdditionalDestinations = state.additionalDestinations.filterNot(String::isBlank)
         val error = when {
-            state.destinations.isEmpty() && !state.letAiChooseDestinations -> "Add a destination or let AI choose one."
-            state.travellerType == null -> "Choose who will be travelling."
+            state.destinations.isEmpty() && !state.letAiChooseDestinations -> strings[R.string.planner_validation_destination]
+            state.travellerType == null -> strings[R.string.planner_validation_traveller]
             state.requiresCustomPeopleCount && state.partySize == null ->
-                "Enter at least ${state.minimumPartySize} travellers for ${state.travellerType?.displayLabel}."
-            state.startDate == null -> "Choose a start date."
-            state.endDate == null -> "Choose an end date."
-            state.endDate.isBefore(state.startDate) -> "End date cannot be before the start date."
+                strings[R.string.planner_validation_party_size, state.minimumPartySize]
+            state.startDate == null -> strings[R.string.planner_validation_start_date]
+            state.endDate == null -> strings[R.string.planner_validation_end_date]
+            state.endDate.isBefore(state.startDate) -> strings[R.string.planner_end_before_start]
             else -> null
         }
         mutableUiState.value = state.copy(

@@ -91,7 +91,7 @@ class GroupHubViewModel @Inject constructor(private val repository: GroupHubRepo
                         ChatGroup(
                             id = id,
                             name = person.name,
-                            description = "Direct chat",
+                            description = "",
                             memberIds = listOf(CURRENT_USER_ID, person.id),
                         ),
                     ) + groups

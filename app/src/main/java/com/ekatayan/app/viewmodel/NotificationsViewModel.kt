@@ -8,6 +8,8 @@ import com.ekatayan.app.data.model.NotificationFilter
 import com.ekatayan.app.data.model.NotificationItem
 import com.ekatayan.app.data.model.TripInvitation
 import com.ekatayan.app.data.repository.NotificationsRepository
+import com.ekatayan.app.R
+import com.ekatayan.app.core.localization.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,6 +54,7 @@ data class NotificationsUiState(
 @HiltViewModel
 class NotificationsViewModel @Inject constructor(
     private val repository: NotificationsRepository,
+    private val strings: StringResourceProvider,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(
@@ -81,13 +84,13 @@ class NotificationsViewModel @Inject constructor(
 
     fun markAsRead(notificationId: String) = viewModelScope.launch {
         runSuspendCatching { repository.markAsRead(notificationId) }
-            .onFailure { error -> _uiState.update { it.copy(invitationError = error.message) } }
+            .onFailure { _ -> _uiState.update { it.copy(invitationError = strings[R.string.notifications_error_update]) } }
     }
     fun onAppForeground() = repository.onAppForeground()
     fun onNotificationsOpened() {
         repository.onAppForeground()
     }
-    fun refreshInvitations()=viewModelScope.launch { _uiState.update{it.copy(loadingInvitations=true,invitationError=null)}; runSuspendCatching{repository.refreshInvitations()}.onSuccess{_uiState.update{it.copy(loadingInvitations=false,invitations=repository.invitations.value)}}.onFailure{e->_uiState.update{it.copy(loadingInvitations=false,invitationError=e.message)}} }
+    fun refreshInvitations()=viewModelScope.launch { _uiState.update{it.copy(loadingInvitations=true,invitationError=null)}; runSuspendCatching{repository.refreshInvitations()}.onSuccess{_uiState.update{it.copy(loadingInvitations=false,invitations=repository.invitations.value)}}.onFailure{_->_uiState.update{it.copy(loadingInvitations=false,invitationError=strings[R.string.notifications_error_invitations])}} }
     fun acceptInvitation(id: String) = respondToInvitation(id, "joining") { repository.acceptInvitation(id) }
     fun declineInvitation(id: String) = respondToInvitation(id, "declining") { repository.declineInvitation(id) }
 
@@ -102,7 +105,7 @@ class NotificationsViewModel @Inject constructor(
             }
             .onFailure { error ->
                 _uiState.update {
-                    it.copy(respondingInvites = it.respondingInvites - id, invitationError = error.message)
+                    it.copy(respondingInvites = it.respondingInvites - id, invitationError = strings[R.string.notifications_error_invitation_response])
                 }
             }
     }

@@ -1,5 +1,9 @@
 package com.ekatayan.app.core.designsystem.component
 
+import com.ekatayan.app.R
+
+import androidx.compose.ui.res.stringResource
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
@@ -33,7 +37,7 @@ fun HeaderActions(
             Box(modifier = Modifier.size(26.dp), contentAlignment = Alignment.Center) {
             Icon(
                 imageVector = Icons.Default.NotificationsNone,
-                contentDescription = "Notifications",
+                contentDescription = stringResource(R.string.bp_notifications),
                 tint = EkataTextPrimary,
                 modifier = Modifier.size(21.dp),
             )
@@ -50,7 +54,7 @@ fun HeaderActions(
         IconButton(onClick = onSettingsClick, modifier = Modifier.size(EkataComponentSize.pageHeaderAction)) {
             Icon(
                 imageVector = Icons.Default.Settings,
-                contentDescription = "Settings",
+                contentDescription = stringResource(R.string.settings_title),
                 tint = EkataTextPrimary,
                 modifier = Modifier.size(21.dp),
             )

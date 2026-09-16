@@ -2,6 +2,8 @@ package com.ekatayan.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ekatayan.app.R
+import com.ekatayan.app.core.localization.StringResourceProvider
 import com.ekatayan.app.data.model.Itinerary
 import com.ekatayan.app.data.repository.ItineraryPlanInput
 import com.ekatayan.app.data.repository.ItineraryRepository
@@ -22,7 +24,7 @@ data class PlannerGenerationState(
     val phase: PlannerPhase = PlannerPhase.EDITING,
     val itinerary: Itinerary? = null,
     val input: ItineraryPlanInput? = null,
-    val status: String = "Finding the best route",
+    val status: String = "",
     val error: String? = null,
     val failedAction: PlannerFailedAction? = null,
     val failedDayIndex: Int? = null,
@@ -32,6 +34,7 @@ data class PlannerGenerationState(
 class PlannerGenerationViewModel @Inject constructor(
     private val itineraryRepository: ItineraryRepository,
     private val tripsRepository: TripsRepository,
+    private val strings: StringResourceProvider,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(PlannerGenerationState())
     val state = mutableState.asStateFlow()
@@ -72,7 +75,7 @@ class PlannerGenerationViewModel @Inject constructor(
 
     private fun generate(input: ItineraryPlanInput) {
         if (operationJob?.isActive == true) return
-        mutableState.value = PlannerGenerationState(PlannerPhase.GENERATING, input = input)
+        mutableState.value = PlannerGenerationState(PlannerPhase.GENERATING, input = input, status = strings[R.string.planner_status_route])
         rotateStatuses()
         operationJob = viewModelScope.launch {
             try {
@@ -84,7 +87,7 @@ class PlannerGenerationViewModel @Inject constructor(
                 mutableState.value = PlannerGenerationState(
                     phase = PlannerPhase.ERROR,
                     input = input,
-                    error = e.message ?: "We couldn't finish your itinerary.",
+                    error = strings[R.string.planner_error_generate],
                     failedAction = PlannerFailedAction.GENERATE,
                 )
             } finally {
@@ -118,7 +121,7 @@ class PlannerGenerationViewModel @Inject constructor(
         if (operationJob?.isActive == true) return
         val input = state.value.input ?: return
         val itinerary = state.value.itinerary ?: return
-        mutableState.value = state.value.copy(phase = PlannerPhase.GENERATING, status = "Relaxing day ${dayIndex + 1}", error = null)
+        mutableState.value = state.value.copy(phase = PlannerPhase.GENERATING, status = strings.get(R.string.planner_status_relaxing_day, dayIndex + 1), error = null)
         operationJob = viewModelScope.launch {
             try {
                 val updated = itineraryRepository.modify(input, itinerary, "Make day ${dayIndex + 1} more relaxed", dayIndex + 1)
@@ -133,7 +136,7 @@ class PlannerGenerationViewModel @Inject constructor(
             } catch (e: Exception) {
                 mutableState.value = state.value.copy(
                     phase = PlannerPhase.ERROR,
-                    error = e.message ?: "We couldn't update this day.",
+                    error = strings[R.string.planner_error_update_day],
                     failedAction = PlannerFailedAction.MODIFY_DAY,
                     failedDayIndex = dayIndex,
                 )
@@ -156,7 +159,7 @@ class PlannerGenerationViewModel @Inject constructor(
             } catch (e: Exception) {
                 mutableState.value = state.value.copy(
                     phase = PlannerPhase.ERROR,
-                    error = e.message ?: "The trip could not be saved.",
+                    error = strings[R.string.trip_error_save],
                     failedAction = PlannerFailedAction.SAVE,
                 )
             }
@@ -170,10 +173,17 @@ class PlannerGenerationViewModel @Inject constructor(
     private fun rotateStatuses() {
         statusJob?.cancel()
         statusJob = viewModelScope.launch {
-            val statuses = listOf("Finding the best route", "Organizing your destinations", "Checking realistic travel times", "Balancing activities", "Matching your travel preferences", "Building your itinerary")
+            val statuses = listOf(
+                R.string.planner_status_route,
+                R.string.planner_status_destinations,
+                R.string.planner_status_travel_times,
+                R.string.planner_status_balancing,
+                R.string.planner_status_preferences,
+                R.string.planner_status_building,
+            )
             var index = 0
             while (true) {
-                mutableState.value = mutableState.value.copy(status = statuses[index % statuses.size])
+                mutableState.value = mutableState.value.copy(status = strings[statuses[index % statuses.size]])
                 index++
                 delay(1400)
             }

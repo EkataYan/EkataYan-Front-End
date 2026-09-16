@@ -100,7 +100,7 @@ fun NotificationsScreen(
             item { NotificationFilters(uiState.selectedFilter, onFilterSelected) }
             if(uiState.selectedFilter in setOf(NotificationFilter.ALL,NotificationFilter.TRIPS)) {
                 if(uiState.loadingInvitations) item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
-                if(uiState.invitationError!=null) item { TextButton(onClick=onRetryInvites){Text("Couldn't load invitations. Retry")} }
+                if(uiState.invitationError!=null) item { TextButton(onClick=onRetryInvites){Text(stringResource(R.string.ui_couldn_t_load_invitations_retry))} }
                 items(uiState.invitations,key={"invite-${it.id}"}) { invite ->
                     InvitationCard(invite, uiState.respondingInvites[invite.id], onAcceptInvite, onDeclineInvite)
                 }
@@ -113,8 +113,8 @@ fun NotificationsScreen(
             ) {
                 item {
                     EkataEmptyState(
-                        title = "No notifications yet",
-                        message = "Updates about your trips and groups will appear here.",
+                        title = stringResource(R.string.notifications_empty_title),
+                        message = stringResource(R.string.notifications_empty_message),
                     )
                 }
             }
@@ -131,17 +131,17 @@ private fun InvitationCard(invite: TripInvitation, action: String?, accept: (Str
         border = androidx.compose.foundation.BorderStroke(EkataStroke.thin, MaterialTheme.colorScheme.outline),
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text("TRIP INVITATION", style = MaterialTheme.typography.labelMedium,
+            Text(stringResource(R.string.ui_trip_invitation), style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-            Text("${invite.inviterName} invited you to join", modifier = Modifier.padding(top = 8.dp))
+            Text(stringResource(R.string.invitation_from_user,invite.inviterName), modifier = Modifier.padding(top = 8.dp))
             Text(invite.tripName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Text("${invite.startDate} - ${invite.endDate}", color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(onClick = { decline(invite.id) }, modifier = Modifier.weight(1f), enabled = action == null) {
-                    Text(if (action == "declining") "Declining..." else "Decline")
+                    Text(stringResource(if (action == "declining") R.string.declining else R.string.decline))
                 }
                 Button(onClick = { accept(invite.id) }, modifier = Modifier.weight(1f), enabled = action == null) {
-                    Text(if (action == "joining") "Joining..." else "Join Trip")
+                    Text(stringResource(if (action == "joining") R.string.joining else R.string.join_trip))
                 }
             }
         }

@@ -238,8 +238,8 @@ private fun BusinessHoursDialog(hours: List<BusinessHours>, onChange: (List<Busi
                 Switch(day.open, { value -> onChange(hours.map { if (it.day == day.day) it.copy(open = value) else it }) })
             }
             if (day.open) Row {
-                TextButton({ selectedDay = day.day; opening = true }) { Text(stringResource(R.string.bp_opening) + " " + clockLabel(day.openingMinutes), color = Color.Black) }
-                TextButton({ selectedDay = day.day; opening = false }) { Text(stringResource(R.string.bp_closing) + " " + clockLabel(day.closingMinutes), color = Color.Black) }
+                TextButton({ selectedDay = day.day; opening = true }) { Text(stringResource(R.string.bp_time_value, stringResource(R.string.bp_opening), clockLabel(day.openingMinutes)), color = Color.Black) }
+                TextButton({ selectedDay = day.day; opening = false }) { Text(stringResource(R.string.bp_time_value, stringResource(R.string.bp_closing), clockLabel(day.closingMinutes)), color = Color.Black) }
             }
         }
         Text(stringResource(R.string.bp_overnight), style = MaterialTheme.typography.bodySmall)

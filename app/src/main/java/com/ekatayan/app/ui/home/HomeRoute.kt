@@ -1,5 +1,9 @@
 package com.ekatayan.app.ui.home
 
+import com.ekatayan.app.R
+
+import androidx.compose.ui.res.stringResource
+
 import com.ekatayan.app.viewmodel.HomeViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,6 +43,7 @@ fun HomeRoute(
     onDestinationClick: (Int) -> Unit,
     onUpcomingTripClick: (String) -> Unit,
     onWishlistClick: () -> Unit,
+    onMapsClick: () -> Unit,
     onGroupHubClick: () -> Unit,
     onPartnershipClick: () -> Unit,
     onPlannerClick: () -> Unit,
@@ -100,6 +105,7 @@ fun HomeRoute(
         onSearchQueryChange = viewModel::onSearchQueryChange,
         onSearchSubmit = viewModel::onSearchSubmit,
         onWishlistClick = onWishlistClick,
+        onMapsClick = onMapsClick,
         onGroupHubClick = onGroupHubClick,
         onPartnershipClick = onPartnershipClick,
         onBookingClick = onBookingClick,
@@ -121,29 +127,29 @@ fun HomeRoute(
     if (settingsState.loaded && !settingsState.locationPermissionPromptShown && !hasLocationPermission()) {
         AlertDialog(
             onDismissRequest = settingsViewModel::markLocationPermissionPromptShown,
-            title = { Text("Use your location?") },
-            text = { Text("EkataYan uses your location to show local weather and improve nearby travel recommendations.") },
+            title = { Text(stringResource(R.string.ui_use_your_location)) },
+            text = { Text(stringResource(R.string.ui_ekatayan_uses_your_location_to_show_local_weather_and)) },
             confirmButton = {
                 TextButton(onClick = {
                     settingsViewModel.markLocationPermissionPromptShown()
                     locationLauncher.launch(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION))
-                }) { Text("Allow location") }
+                }) { Text(stringResource(R.string.ui_allow_location)) }
             },
-            dismissButton = { TextButton(onClick = settingsViewModel::markLocationPermissionPromptShown) { Text("Not now") } },
+            dismissButton = { TextButton(onClick = settingsViewModel::markLocationPermissionPromptShown) { Text(stringResource(R.string.ui_not_now)) } },
         )
     }
     if (uiState.weatherErrorKind == WeatherErrorKind.LOCATION_DISABLED && !locationDisabledDialogDismissed) {
         AlertDialog(
             onDismissRequest = { locationDisabledDialogDismissed = true },
-            title = { Text("Please enable Location") },
-            text = { Text("Turn on Android Location to show weather for your current area.") },
+            title = { Text(stringResource(R.string.ui_please_enable_location)) },
+            text = { Text(stringResource(R.string.ui_turn_on_android_location_to_show_weather_for_your_curr)) },
             confirmButton = {
                 TextButton(onClick = {
                     context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-                }) { Text("Enable location") }
+                }) { Text(stringResource(R.string.ui_enable_location)) }
             },
             dismissButton = {
-                TextButton(onClick = { locationDisabledDialogDismissed = true }) { Text("Not now") }
+                TextButton(onClick = { locationDisabledDialogDismissed = true }) { Text(stringResource(R.string.ui_not_now)) }
             },
         )
     }

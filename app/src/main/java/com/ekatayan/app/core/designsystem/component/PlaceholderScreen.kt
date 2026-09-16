@@ -1,5 +1,9 @@
 package com.ekatayan.app.core.designsystem.component
 
+import com.ekatayan.app.R
+
+import androidx.compose.ui.res.stringResource
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,7 +42,7 @@ fun PlaceholderScreen(
                 Button(onClick = action.onClick) { Text(action.label) }
             }
             if (onBackClick != null) {
-                TextButton(onClick = onBackClick) { Text("Back") }
+                TextButton(onClick = onBackClick) { Text(stringResource(R.string.wishlist_back)) }
             }
         }
     }

@@ -23,9 +23,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -45,6 +50,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ekatayan.app.R
+import com.ekatayan.app.core.localization.AppLocaleManager
 
 val AuthActionBlue = Color(0xFF2398EB)
 val AuthLinkBlue = Color(0xFF006FCF)
@@ -57,21 +63,14 @@ private val AuthSocialBorder = Color(0xFFF5E8E8)
 
 @Composable
 fun AuthBackdrop() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Image(
-            painter = painterResource(R.drawable.signup_background),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            // This layer is measured only from the stable auth root. IME handling belongs
-            // exclusively to the sibling form container in LoginScreen/SignUpScreen.
-            modifier = Modifier.matchParentSize(),
-        )
-        AuthLanguageSelector(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 10.dp, end = 13.dp),
-        )
-    }
+    Image(
+        painter = painterResource(R.drawable.signup_background),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        // This layer is measured only from the stable auth root. IME handling belongs
+        // exclusively to the sibling form container in LoginScreen/SignUpScreen.
+        modifier = Modifier.fillMaxSize(),
+    )
 }
 
 @Composable
@@ -274,39 +273,70 @@ fun AuthSocialButton(text: String, @DrawableRes icon: Int, onClick: () -> Unit) 
 }
 
 @Composable
-private fun AuthLanguageSelector(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .shadow(4.dp, RoundedCornerShape(50.dp), ambientColor = Color.Black.copy(alpha = 0.25f))
-            .clip(RoundedCornerShape(50.dp))
-            .background(Color.White)
-            .clickable { }
-            .padding(horizontal = 5.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Image(
-            painter = painterResource(R.drawable.signup_globe),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-        )
-        Text(
-            text = stringResource(R.string.signup_language),
-            color = Color.Black,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(start = 4.dp),
-        )
-        Image(
-            painter = painterResource(R.drawable.signup_chevron),
-            contentDescription = null,
+fun AuthLanguageSelector(
+    selectedLanguage: String,
+    onLanguageSelected: ((String) -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf(
+        AppLocaleManager.ENGLISH to R.string.language_english,
+        AppLocaleManager.SINHALA to R.string.language_sinhala,
+        AppLocaleManager.TAMIL to R.string.language_tamil,
+    )
+    val selectedLabel = options.firstOrNull { it.first == selectedLanguage }?.second
+        ?: R.string.language_english
+
+    Box(modifier = modifier) {
+        Row(
             modifier = Modifier
-                .padding(start = 7.dp, end = 1.dp)
-                .size(width = 16.dp, height = 7.dp),
-        )
+                .shadow(4.dp, RoundedCornerShape(50.dp), ambientColor = Color.Black.copy(alpha = 0.25f))
+                .clip(RoundedCornerShape(50.dp))
+                .background(Color.White)
+                .clickable(enabled = onLanguageSelected != null) { expanded = true }
+                .padding(horizontal = 5.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Image(
+                painter = painterResource(R.drawable.signup_globe),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+            )
+            Text(
+                text = stringResource(selectedLabel),
+                color = Color.Black,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(start = 4.dp),
+            )
+            Image(
+                painter = painterResource(R.drawable.signup_chevron),
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(start = 7.dp, end = 1.dp)
+                    .size(width = 16.dp, height = 7.dp),
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            containerColor = Color.White,
+        ) {
+            options.forEach { (languageCode, label) ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(label), color = Color.Black) },
+                    onClick = {
+                        expanded = false
+                        if (languageCode != selectedLanguage) onLanguageSelected?.invoke(languageCode)
+                    },
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun AuthBrandLockup() {
+    val localizedTagline = stringResource(R.string.signup_tagline)
     Text(
         text = buildAnnotatedString {
             append("Ekata")
@@ -320,8 +350,8 @@ fun AuthBrandLockup() {
     )
     Text(
         text = buildAnnotatedString {
-            withStyle(SpanStyle(color = BrandBlue)) { append("AI") }
-            append(" Powered Travel Planning")
+            withStyle(SpanStyle(color = BrandBlue)) { append(localizedTagline.take(2)) }
+            append(localizedTagline.drop(2))
         },
         color = Color.Black,
         fontFamily = FontFamily.Serif,

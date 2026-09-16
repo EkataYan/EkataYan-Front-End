@@ -111,8 +111,8 @@ fun WishlistGroupDetailsScreen(
     ) { scaffoldPadding ->
         if (group == null) {
             Column(Modifier.fillMaxSize().padding(scaffoldPadding).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Wishlist not found", fontSize = 22.sp)
-                TextButton(onClick = onBackClick) { Text("Back to Wish List") }
+                Text(stringResource(R.string.ui_wishlist_not_found), fontSize = 22.sp)
+                TextButton(onClick = onBackClick) { Text(stringResource(R.string.ui_back_to_wish_list)) }
             }
         } else {
             LazyColumn(
@@ -139,7 +139,7 @@ fun WishlistGroupDetailsScreen(
         }
     }
     if (renameVisible && group != null) {
-        WishlistNameDialog("Rename Wishlist", "Save", group.name, { renameVisible = false }) {
+        WishlistNameDialog(stringResource(R.string.wishlist_rename), stringResource(R.string.save), group.name, { renameVisible = false }) {
             onRenameGroup(it).also { renamed -> if (renamed) renameVisible = false }
         }
     }
@@ -270,9 +270,9 @@ fun WishlistPlaceCard(item: WishlistItem, onHeartClick: () -> Unit, modifier: Mo
 @Composable
 private fun EmptyGroupState(onAddPlaceClick: () -> Unit) {
     Column(Modifier.fillMaxWidth().padding(vertical = 70.dp, horizontal = 20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("No places saved yet", fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
-        Text("Add destinations to start building this wishlist.", color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp, bottom = 18.dp))
-        Button(onClick = onAddPlaceClick, colors = ButtonDefaults.buttonColors(containerColor = EkataLightBlue, contentColor = EkataTextPrimary)) { Icon(Icons.Default.Add, null); Text("Add Place", Modifier.padding(start = 6.dp)) }
+        Text(stringResource(R.string.ui_no_places_saved_yet), fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.ui_add_destinations_to_start_building_this_wishlist), color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(top = 8.dp, bottom = 18.dp))
+        Button(onClick = onAddPlaceClick, colors = ButtonDefaults.buttonColors(containerColor = EkataLightBlue, contentColor = EkataTextPrimary)) { Icon(Icons.Default.Add, null); Text(stringResource(R.string.wishlist_add_place), Modifier.padding(start = 6.dp)) }
     }
 }
 
@@ -301,7 +301,7 @@ private fun AddPlaceDialog(
                 if (results.isEmpty()) {
                     item {
                         Text(
-                            text = if (hasDestinationMatch(query)) "No new destinations available for this wishlist" else "No destinations found",
+                            text = stringResource(if (hasDestinationMatch(query)) R.string.wishlist_no_new_destinations else R.string.no_destinations_found),
                             color = Color.Gray,
                             modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
                         )
@@ -318,12 +318,12 @@ private fun AddPlaceDialog(
                                 onClick = { onAdd(item) },
                                 colors = ButtonDefaults.buttonColors(containerColor = EkataLightBlue, contentColor = EkataTextPrimary),
                                 contentPadding = PaddingValues(horizontal = 12.dp),
-                            ) { Text("Add") }
+                            ) { Text(stringResource(R.string.bp_add)) }
                         }
                     }
                 }
             }
-            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text("Close", color = EkataTextPrimary) }
+            TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) { Text(stringResource(R.string.wishlist_close), color = EkataTextPrimary) }
         }
     }
 }

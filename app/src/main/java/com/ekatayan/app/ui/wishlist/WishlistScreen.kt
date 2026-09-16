@@ -123,8 +123,8 @@ fun WishlistScreen(
 
     if (createDialogVisible) {
         WishlistNameDialog(
-            title = "Create New Wishlist",
-            confirmLabel = "Create",
+            title = stringResource(R.string.wishlist_create_new),
+            confirmLabel = stringResource(R.string.wishlist_create_action),
             initialName = "",
             onDismiss = { createDialogVisible = false },
             onConfirm = { name -> onCreateGroup(name).also { if (it) createDialogVisible = false } },
@@ -132,8 +132,8 @@ fun WishlistScreen(
     }
     renameGroup?.let { group ->
         WishlistNameDialog(
-            title = "Rename Wishlist",
-            confirmLabel = "Save",
+            title = stringResource(R.string.wishlist_rename),
+            confirmLabel = stringResource(R.string.save),
             initialName = group.name,
             onDismiss = { renameGroup = null },
             onConfirm = { name -> onRenameGroup(group.id, name).also { if (it) renameGroup = null } },

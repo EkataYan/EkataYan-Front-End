@@ -68,6 +68,21 @@ class TripsRepositoryPersistenceTest {
         assertEquals(REMOTE_ID, repository.trips.value.single().remoteId)
     }
 
+    @Test fun leavingSharedTripRemovesItFromTheVisibleList() = runTest {
+        server.enqueue(jsonResponse(envelope("[${TRIP_JSON.replace("\"can_delete\":true", "\"can_delete\":false")}]")))
+        server.enqueue(jsonResponse(envelope("{\"left\":true}")))
+        repository.refreshTrips()
+        val localId = repository.trips.value.single().id
+
+        repository.deleteTrip(localId)
+
+        assertTrue(repository.trips.value.isEmpty())
+        server.takeRequest()
+        val leaveRequest = server.takeRequest()
+        assertEquals("POST", leaveRequest.method)
+        assertEquals("/api/trips/$REMOTE_ID/leave", leaveRequest.path)
+    }
+
     private fun MockWebServer.takeRequestAfterSkippingOne(): okhttp3.mockwebserver.RecordedRequest {
         takeRequest()
         return takeRequest()
@@ -82,6 +97,6 @@ class TripsRepositoryPersistenceTest {
 
     private companion object {
         const val REMOTE_ID = "11111111-1111-4111-8111-111111111111"
-        const val TRIP_JSON = """{"id":"$REMOTE_ID","name":"Weekend","destinations":["Kandy"],"start_date":"2026-09-25","end_date":"2026-09-26","budget":"1000.00","currency":"LKR","travelers":1,"interests":[],"preferred_activities":[],"travel_style":"balanced","accommodation_preference":"any","transportation_preference":"any","additional_requirements":"","created_by":"22222222-2222-4222-8222-222222222222","source":"manual"}"""
+        const val TRIP_JSON = """{"id":"$REMOTE_ID","name":"Weekend","destinations":["Kandy"],"start_date":"2026-09-25","end_date":"2026-09-26","budget":"1000.00","currency":"LKR","travelers":1,"interests":[],"preferred_activities":[],"travel_style":"balanced","accommodation_preference":"any","transportation_preference":"any","additional_requirements":"","created_by":"22222222-2222-4222-8222-222222222222","source":"manual","can_delete":true}"""
     }
 }

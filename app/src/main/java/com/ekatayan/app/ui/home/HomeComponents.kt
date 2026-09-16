@@ -371,7 +371,7 @@ fun WeatherCard(weather: WeatherInfo?, modifier: Modifier = Modifier, isLoading:
                     CircularProgressIndicator(color = EkataOnImage, modifier = Modifier.padding(top = EkataSpacing.lg).size(28.dp))
                 } else if (weather == null) {
                     Text(errorMessage ?: stringResource(R.string.home_weather_unavailable), style = MaterialTheme.typography.bodyMedium, color = EkataOnImage, modifier = Modifier.padding(top = EkataSpacing.lg))
-                    if (onAction != null) TextButton(onClick = onAction) { Text("Enable / Retry", color = EkataOnImage) }
+                    if (onAction != null) TextButton(onClick = onAction) { Text(stringResource(R.string.ui_enable_retry), color = EkataOnImage) }
                 } else {
                     Row(Modifier.padding(top = EkataSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.home_temperature, weather.temperature), style = MaterialTheme.typography.displaySmall, color = EkataOnImage)

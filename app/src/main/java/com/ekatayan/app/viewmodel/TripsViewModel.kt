@@ -9,6 +9,7 @@ import com.ekatayan.app.data.repository.TripDetailsFailure
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ekatayan.app.R
+import com.ekatayan.app.core.localization.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Duration
 import java.time.LocalDate
@@ -25,7 +26,10 @@ import javax.inject.Singleton
 import com.ekatayan.app.utils.runSuspendCatching
 
 @HiltViewModel
-class TripsViewModel @Inject constructor(private val repository: TripsRepository) : ViewModel() {
+class TripsViewModel @Inject constructor(
+    private val repository: TripsRepository,
+    private val strings: StringResourceProvider,
+) : ViewModel() {
     private val today = LocalDate.now()
     private val _uiState = MutableStateFlow(TripsUiState(YearMonth.from(today), today, repository.trips.value, isLoading = true))
     val uiState: StateFlow<TripsUiState> = _uiState.asStateFlow()
@@ -81,11 +85,12 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
 
     fun deleteTrip(tripId: Int) {
         if (tripId in _uiState.value.deletingTripIds) return
+        val canDelete = _uiState.value.trips.firstOrNull { it.id == tripId }?.canDelete == true
         viewModelScope.launch {
             _uiState.update { it.copy(deletingTripIds = it.deletingTripIds + tripId, errorMessage = null) }
             runSuspendCatching { repository.deleteTrip(tripId) }
                 .onFailure { failure ->
-                    _uiState.update { it.copy(errorMessage = failure.message ?: "The trip could not be deleted.") }
+                    _uiState.update { it.copy(errorMessage = strings[if (canDelete) R.string.trip_error_delete else R.string.trip_error_leave]) }
                 }
             _uiState.update { it.copy(deletingTripIds = it.deletingTripIds - tripId) }
         }
@@ -97,7 +102,7 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
             runSuspendCatching { repository.refreshTrips() }
                 .onSuccess { _uiState.update { it.copy(isLoading = false, errorMessage = null) } }
                 .onFailure { error ->
-                    _uiState.update { it.copy(isLoading = false, errorMessage = error.message ?: "Trips couldn't be loaded.") }
+                    _uiState.update { it.copy(isLoading = false, errorMessage = strings[R.string.trips_error_load]) }
                 }
         }
     }
@@ -108,7 +113,7 @@ class TripsViewModel @Inject constructor(private val repository: TripsRepository
         viewModelScope.launch {
             runSuspendCatching { repository.loadAiTripDetails(trip) }
                 .onSuccess { details -> _uiState.update { it.copy(detailsLoading = false, aiDetails = details, detailsFailure = null) } }
-                .onFailure { error -> _uiState.update { it.copy(detailsLoading = false, detailsError = error.message ?: "The trip couldn't be loaded.", detailsFailure = (error as? TripDetailsException)?.failure ?: TripDetailsFailure.SERVER) } }
+                .onFailure { error -> _uiState.update { it.copy(detailsLoading = false, detailsError = strings[R.string.trip_error_load], detailsFailure = (error as? TripDetailsException)?.failure ?: TripDetailsFailure.SERVER) } }
         }
     }
 }

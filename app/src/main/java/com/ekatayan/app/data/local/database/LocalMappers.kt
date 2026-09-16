@@ -45,10 +45,10 @@ fun wishlistData(groups: List<WishlistGroupEntity>, items: List<WishlistGroupIte
 
 fun Trip.toEntity() = TripEntity(id, nameRes, locationRes, statusRes, startDate.toString(), endDate.toString(), imageRes,
     customName, customLocation, budget, notes, imageUri, remoteId, source, summary, route.joinToString("\u001f"), travellerType,
-    travellerCount, travelStyle, travelPace)
+    travellerCount, travelStyle, travelPace, canDelete)
 fun TripEntity.toModel() = Trip(id, nameRes, locationRes, statusRes, LocalDate.parse(startDate), LocalDate.parse(endDate), imageRes,
     customName, customLocation, budget, notes, imageUri, remoteId, source, summary,
-    route?.split("\u001f")?.filter(String::isNotBlank).orEmpty(), travellerType, travellerCount, travelStyle, travelPace)
+    route?.split("\u001f")?.filter(String::isNotBlank).orEmpty(), travellerType, travellerCount, travelStyle, travelPace, canDelete)
 
 fun GroupHubData.toSnapshot(): GroupHubSnapshot {
     val groupEntities = groups.mapIndexed { index, group -> ChatGroupEntity(group.id, group.name, group.description, group.imageRes,

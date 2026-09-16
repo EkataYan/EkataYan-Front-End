@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.ekatayan.app.data.remote.api.PublicTripMemberDto
 import com.ekatayan.app.data.remote.api.PublicUserDto
 import com.ekatayan.app.data.repository.TripMembersRepository
+import com.ekatayan.app.R
+import com.ekatayan.app.core.localization.StringResourceProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.Job
@@ -24,13 +26,13 @@ data class TripMembersUiState(val members: List<PublicTripMemberDto> = emptyList
 }
 
 @HiltViewModel class TripMembersViewModel @Inject constructor(private val repository: TripMembersRepository,
-    savedState: SavedStateHandle) : ViewModel() {
+    savedState: SavedStateHandle, private val strings: StringResourceProvider) : ViewModel() {
     val tripId: String = savedState["tripId"] ?: ""
     private val mutable = MutableStateFlow(TripMembersUiState())
     val state = mutable.asStateFlow(); private var searchJob: Job? = null
     init { refresh() }
-    fun refresh() = viewModelScope.launch { mutable.value = mutable.value.copy(loading=true,error=null); runSuspendCatching { repository.members(tripId) }.onSuccess { mutable.value=mutable.value.copy(members=it,loading=false) }.onFailure { mutable.value=mutable.value.copy(loading=false,error=it.message) } }
-    fun search(query: String) { mutable.value=mutable.value.copy(query=query); searchJob?.cancel(); if(query.trim().isEmpty()){ mutable.value=mutable.value.copy(results=emptyList(),searching=false); return }; searchJob=viewModelScope.launch { delay(300); mutable.value=mutable.value.copy(searching=true,error=null); try { val results=repository.search(tripId,query.trim()); if (mutable.value.query == query) mutable.value=mutable.value.copy(results=results,searching=false) } catch (cancelled: CancellationException) { throw cancelled } catch (error: Throwable) { if (mutable.value.query == query) mutable.value=mutable.value.copy(searching=false,error=error.message) } } }
+    fun refresh() = viewModelScope.launch { mutable.value = mutable.value.copy(loading=true,error=null); runSuspendCatching { repository.members(tripId) }.onSuccess { mutable.value=mutable.value.copy(members=it,loading=false) }.onFailure { mutable.value=mutable.value.copy(loading=false,error=strings[R.string.trip_members_load_error]) } }
+    fun search(query: String) { mutable.value=mutable.value.copy(query=query); searchJob?.cancel(); if(query.trim().isEmpty()){ mutable.value=mutable.value.copy(results=emptyList(),searching=false); return }; searchJob=viewModelScope.launch { delay(300); mutable.value=mutable.value.copy(searching=true,error=null); try { val results=repository.search(tripId,query.trim()); if (mutable.value.query == query) mutable.value=mutable.value.copy(results=results,searching=false) } catch (cancelled: CancellationException) { throw cancelled } catch (_: Throwable) { if (mutable.value.query == query) mutable.value=mutable.value.copy(searching=false,error=strings[R.string.trip_members_search_error]) } } }
     fun invite(user: PublicUserDto) = viewModelScope.launch {
         if (user.relationship != "invite" || user.id in mutable.value.invitingUserIds) return@launch
         mutable.value = mutable.value.copy(
@@ -49,7 +51,7 @@ data class TripMembersUiState(val members: List<PublicTripMemberDto> = emptyList
             .onFailure {
                 mutable.value = mutable.value.copy(
                     invitingUserIds = mutable.value.invitingUserIds - user.id,
-                    error = it.message,
+                    error = strings[R.string.trip_members_invite_error],
                 )
             }
     }
@@ -63,6 +65,6 @@ data class TripMembersUiState(val members: List<PublicTripMemberDto> = emptyList
                     removingUserIds=mutable.value.removingUserIds-userId,
                 )
             }
-            .onFailure { mutable.value=mutable.value.copy(removingUserIds=mutable.value.removingUserIds-userId,error=it.message) }
+            .onFailure { mutable.value=mutable.value.copy(removingUserIds=mutable.value.removingUserIds-userId,error=strings[R.string.trip_members_remove_error]) }
     }
 }
