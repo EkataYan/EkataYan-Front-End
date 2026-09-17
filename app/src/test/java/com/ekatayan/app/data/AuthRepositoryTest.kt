@@ -17,6 +17,7 @@ import com.ekatayan.app.data.repository.SignUpResult
 import com.google.gson.Gson
 import com.google.gson.JsonParser
 import dagger.Lazy
+import java.io.IOException
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Test
@@ -162,6 +163,63 @@ class AuthRepositoryTest {
         assertNull(UserSessionProvider(store).refreshToken())
     }
 
+    @Test fun invalidRefreshTokenClearsPersistedSession() = runTest {
+        val session = expiredSession()
+        val repository = SupabaseAuthRepository(
+            Lazy { FakeSupabaseAuthApi(refreshFailure = authHttpError(400, "refresh_token_not_found")) },
+            session,
+        )
+
+        assertFalse(repository.refreshSession())
+        assertNull(session.refreshToken())
+    }
+
+    @Test fun expiredServerSessionClearsPersistedSession() = runTest {
+        val session = expiredSession()
+        val repository = SupabaseAuthRepository(
+            Lazy { FakeSupabaseAuthApi(refreshFailure = authHttpError(400, "session_not_found")) },
+            session,
+        )
+
+        assertFalse(repository.refreshSession())
+        assertNull(session.refreshToken())
+    }
+
+    @Test fun rateLimitedRefreshPreservesPersistedSession() = runTest {
+        val session = expiredSession()
+        val repository = SupabaseAuthRepository(
+            Lazy { FakeSupabaseAuthApi(refreshFailure = authHttpError(429, "over_request_rate_limit")) },
+            session,
+        )
+
+        assertFalse(repository.refreshSession())
+        assertEquals("refresh", session.refreshToken())
+    }
+
+    @Test fun serverRefreshFailuresPreservePersistedSession() = runTest {
+        for (status in listOf(500, 502, 503)) {
+            val session = expiredSession()
+            val repository = SupabaseAuthRepository(
+                Lazy { FakeSupabaseAuthApi(refreshFailure = authHttpError(status, "unexpected_failure")) },
+                session,
+            )
+
+            assertFalse("HTTP $status should be recoverable", repository.refreshSession())
+            assertEquals("HTTP $status must preserve the refresh token", "refresh", session.refreshToken())
+        }
+    }
+
+    @Test fun networkRefreshFailurePreservesPersistedSession() = runTest {
+        val session = expiredSession()
+        val repository = SupabaseAuthRepository(
+            Lazy { FakeSupabaseAuthApi(refreshFailure = IOException("offline")) },
+            session,
+        )
+
+        assertFalse(repository.refreshSession())
+        assertEquals("refresh", session.refreshToken())
+    }
+
     @Test fun restoreUsesPersistedAccessTokenWithoutNetworkRequest() = runTest {
         val store = AuthMemorySessionStore()
         UserSessionProvider(store).setSession("access", "refresh", Long.MAX_VALUE, "traveler@example.com", "Traveler")
@@ -228,6 +286,7 @@ private class FakeSupabaseAuthApi(
     private val signUpResponse: SupabaseSessionDto = session(),
     private val signInFailure: HttpException? = null,
     private val passwordRecoveryFailure: HttpException? = null,
+    private val refreshFailure: Throwable? = null,
 ) : SupabaseAuthApiService {
     var passwordRecoveryRequest: com.ekatayan.app.data.remote.api.PasswordRecoveryRequest? = null
     override suspend fun requestPasswordRecovery(request: com.ekatayan.app.data.remote.api.PasswordRecoveryRequest): Map<String, Any?> {
@@ -255,6 +314,7 @@ private class FakeSupabaseAuthApi(
     }
     override suspend fun refreshSession(grantType: String, request: RefreshTokenRequest): SupabaseSessionDto {
         refreshCalls++
+        refreshFailure?.let { throw it }
         return session()
     }
     private companion object {
@@ -275,3 +335,7 @@ private fun authHttpError(status: Int, errorCode: String): HttpException = HttpE
             .toResponseBody("application/json".toMediaType()),
     ),
 )
+
+private fun expiredSession(): UserSessionProvider = UserSessionProvider(AuthMemorySessionStore()).also {
+    it.setSession("expired-access", "refresh", 1, "traveler@example.com", "Traveler")
+}

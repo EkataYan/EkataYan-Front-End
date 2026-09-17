@@ -152,12 +152,13 @@ private fun BudgetOverview(state: ExpensesData, onSetBudget: () -> Unit) = Dashb
     Row(Modifier.fillMaxWidth()) {
         BudgetMetric(stringResource(R.string.expenses_total_budget), state.totalBudget?.let(::money), Icons.Default.AccountBalanceWallet, EkataBlue, Modifier.weight(1f))
         BudgetMetric(stringResource(R.string.expenses_total_spent), money(state.totalSpent), Icons.Default.Payments, EkataSuccess, Modifier.weight(1f))
-        val over=state.totalBudget?.let { state.totalSpent-it }?.takeIf { it>0 }
+        val over=state.totalBudget?.let { state.totalSpent-it }?.takeIf { it>BigDecimal.ZERO }
         BudgetMetric(if(over!=null) stringResource(R.string.expenses_over_budget) else stringResource(R.string.expenses_remaining), over?.let(::money)?:state.totalBudget?.let { money(it-state.totalSpent) }, Icons.Default.Savings, if(over!=null) MaterialTheme.colorScheme.error else ActivitiesColor, Modifier.weight(1f))
     }
     Spacer(Modifier.height(14.dp))
     if (state.totalBudget != null) {
-        val fraction = if (state.totalBudget == 0L) 0f else state.totalSpent.toFloat() / state.totalBudget.toFloat()
+        val fraction = if (state.totalBudget.signum() == 0) 0f else state.totalSpent.divide(state.totalBudget, 4, java.math.RoundingMode.HALF_UP).toFloat()
+        val percentage = if (state.totalBudget.signum() == 0) 0 else state.totalSpent.multiply(BigDecimal(100)).divide(state.totalBudget, 0, java.math.RoundingMode.HALF_UP).toInt()
         LinearProgressIndicator(
             progress = { fraction.coerceIn(0f, 1f) },
             modifier = Modifier.fillMaxWidth().height(9.dp).clip(CircleShape),
@@ -166,7 +167,7 @@ private fun BudgetOverview(state: ExpensesData, onSetBudget: () -> Unit) = Dashb
         )
         Spacer(Modifier.height(9.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(stringResource(R.string.expenses_budget_used, (fraction * 100).toInt()), style = MaterialTheme.typography.labelMedium, color = if (fraction > 1f) MaterialTheme.colorScheme.error else EkataSuccess)
+            Text(stringResource(R.string.expenses_budget_used, percentage), style = MaterialTheme.typography.labelMedium, color = if (fraction > 1f) MaterialTheme.colorScheme.error else EkataSuccess)
             Spacer(Modifier.weight(1f))
             state.tripStatusText?.let {
                 Icon(Icons.Default.CalendarMonth, null, tint = EkataBlue, modifier = Modifier.size(15.dp))
@@ -184,7 +185,7 @@ private fun BudgetOverview(state: ExpensesData, onSetBudget: () -> Unit) = Dashb
 
 @Composable
 private fun BudgetDialog(state:ExpensesData,onSave:(String)->Unit,onDismiss:()->Unit){
-    var amount by remember(state.totalBudget){mutableStateOf(state.totalBudget?.toString().orEmpty())}
+    var amount by remember(state.totalBudget){mutableStateOf(state.totalBudget?.toPlainString().orEmpty())}
     var submitted by remember{mutableStateOf(false)}
     LaunchedEffect(state.mutating,state.mutationError){if(submitted&&!state.mutating&&state.mutationError==null)onDismiss()}
     AlertDialog(
@@ -213,7 +214,7 @@ private fun BudgetMetric(label: String, value: String?, icon: ImageVector, tint:
 }
 
 @Composable
-private fun SpendingByCategory(categories: List<ExpenseCategoryTotal>, total: Long) = DashboardCard {
+private fun SpendingByCategory(categories: List<ExpenseCategoryTotal>, total: BigDecimal) = DashboardCard {
     SectionTitle(stringResource(R.string.expenses_spending_by_category))
     Spacer(Modifier.height(12.dp))
     if (categories.isEmpty()) {
@@ -244,7 +245,7 @@ private fun SpendingByCategory(categories: List<ExpenseCategoryTotal>, total: Lo
             }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                categories.filter { it.amount > 0 }.forEach { CategoryLegend(it) }
+                categories.filter { it.amount > BigDecimal.ZERO }.forEach { CategoryLegend(it) }
             }
         }
     }
@@ -253,7 +254,7 @@ private fun SpendingByCategory(categories: List<ExpenseCategoryTotal>, total: Lo
 @Composable
 private fun EmptyDonut() = Box(Modifier.size(104.dp), contentAlignment = Alignment.Center) {
     Canvas(Modifier.fillMaxSize()) { drawCircle(EkataOutline.copy(alpha = .65f), style = Stroke(16.dp.toPx())) }
-    Text(money(0), style = MaterialTheme.typography.labelMedium, color = EkataTextSecondary)
+    Text(money(BigDecimal.ZERO), style = MaterialTheme.typography.labelMedium, color = EkataTextSecondary)
 }
 
 @Composable
@@ -524,6 +525,9 @@ private fun categoryStyle(category: String) = when (category) {
     else -> CategoryStyle(OtherColor, Icons.Default.MoreHoriz)
 }
 
-private fun number(amount: Long) = NumberFormat.getIntegerInstance(Locale.getDefault()).format(amount)
-private fun money(amount: Long) = "LKR ${number(amount)}"
-private fun money(amount: BigDecimal) = "LKR ${NumberFormat.getNumberInstance(Locale.getDefault()).format(amount)}"
+private fun number(amount: BigDecimal) = NumberFormat.getNumberInstance(Locale.getDefault()).apply {
+    minimumFractionDigits = 0
+    maximumFractionDigits = 2
+    roundingMode = java.math.RoundingMode.HALF_UP
+}.format(amount)
+private fun money(amount: BigDecimal) = "LKR ${number(amount)}"

@@ -207,10 +207,15 @@ class SupabaseAuthRepository @Inject constructor(
         } catch (e: CancellationException) {
             throw e
         } catch (_: AuthenticationException) {
-            clearSession()
             false
-        } catch (_: HttpException) {
-            clearSession()
+        } catch (error: HttpException) {
+            val errorCode = error.authErrorCode()
+            if (errorCode in TERMINAL_REFRESH_ERROR_CODES) {
+                logger.info("Supabase refresh token is no longer valid; clearing the local session")
+                clearSession()
+            } else {
+                logger.warning("Supabase session refresh failed transiently status=${error.code()} code=${errorCode ?: "unknown"}")
+            }
             false
         } catch (_: IOException) {
             false
@@ -264,10 +269,7 @@ class SupabaseAuthRepository @Inject constructor(
         defaultClientFailure: AuthenticationFailure,
     ): AuthenticationFailure {
         if (code() == 429) return AuthenticationFailure.RATE_LIMITED
-        val errorCode = runCatching {
-            response()?.errorBody()?.string()?.let(JsonParser::parseString)?.asJsonObject
-                ?.get("error_code")?.asString
-        }.getOrNull()
+        val errorCode = authErrorCode()
         return when (errorCode) {
             "email_not_confirmed" -> AuthenticationFailure.EMAIL_NOT_CONFIRMED
             "over_request_rate_limit", "over_email_send_rate_limit", "email_rate_limit_exceeded" ->
@@ -276,5 +278,22 @@ class SupabaseAuthRepository @Inject constructor(
         }
     }
 
-    private companion object { val logger: Logger = Logger.getLogger("EkataYanAuth") }
+    private fun HttpException.authErrorCode(): String? = runCatching {
+        response()?.errorBody()?.string()?.let(JsonParser::parseString)?.asJsonObject?.let { body ->
+            body.get("error_code")?.takeUnless { it.isJsonNull }?.asString
+                ?: body.get("code")?.takeUnless { it.isJsonNull }?.asString
+        }
+    }.getOrNull()
+
+    private companion object {
+        val logger: Logger = Logger.getLogger("EkataYanAuth")
+        val TERMINAL_REFRESH_ERROR_CODES = setOf(
+            "refresh_token_not_found",
+            "refresh_token_already_used",
+            "invalid_refresh_token",
+            "invalid_grant",
+            "session_not_found",
+            "user_not_found",
+        )
+    }
 }

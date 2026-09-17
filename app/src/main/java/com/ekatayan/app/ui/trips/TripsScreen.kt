@@ -53,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.pluralStringResource
@@ -166,8 +167,9 @@ fun TripsScreen(
 
 @Composable
 private fun TimelineStatusHeader(@StringRes status: Int) {
+    val locale = LocalConfiguration.current.locales[0]
     Text(
-        stringResource(status).uppercase(Locale.getDefault()),
+        stringResource(status).uppercase(locale),
         style = MaterialTheme.typography.labelMedium,
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(start = EkataSpacing.md, top = EkataSpacing.sm, bottom = EkataSpacing.xxs),
@@ -214,6 +216,7 @@ private fun MonthCalendar(
     onDateClick: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val locale = LocalConfiguration.current.locales[0]
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
@@ -228,7 +231,7 @@ private fun MonthCalendar(
                 CalendarMonthButton(Icons.Default.ChevronLeft, R.string.trips_previous_month, onPreviousMonthClick)
                 Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        month.atDay(1).format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())),
+                        month.atDay(1).format(DateTimeFormatter.ofPattern("MMMM yyyy", locale)),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         textAlign = TextAlign.Center,
@@ -262,12 +265,13 @@ private fun CalendarMonthButton(
 
 @Composable
 private fun CalendarWeekdayRow() {
+    val locale = LocalConfiguration.current.locales[0]
     Row(
         Modifier.fillMaxWidth().background(EkataLightBlue.copy(alpha = 0.65f), RoundedCornerShape(EkataRadius.medium)).padding(vertical = 7.dp),
     ) {
         DayOfWeek.entries.forEach { day ->
             Text(
-                day.getDisplayName(TextStyle.SHORT, Locale.getDefault()).uppercase(Locale.getDefault()),
+                day.getDisplayName(TextStyle.SHORT, locale).uppercase(locale),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,

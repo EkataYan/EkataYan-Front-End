@@ -40,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +55,6 @@ import com.ekatayan.app.core.designsystem.component.HeaderActionsTopPadding
 import com.ekatayan.app.core.designsystem.theme.*
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Locale
 
 private val PopupBorder = Color(0xFFAEDCFA)
 
@@ -95,6 +95,7 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
 }
 
 @Composable private fun GroupRow(group: ChatGroup, state: GroupHubUiState, onClick: (String) -> Unit) {
+    val locale = LocalConfiguration.current.locales[0]
     val last = state.messagesByGroup[group.id].orEmpty().lastOrNull()
     Card(Modifier.fillMaxWidth().clickable { onClick(group.id) }, shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(EkataElevation.low)) {
         Row(Modifier.padding(13.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -105,7 +106,7 @@ fun GroupHubScreen(state: GroupHubUiState, onGroupClick: (String) -> Unit, onCre
                 Text(messagePreview(last, state), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Column(horizontalAlignment = Alignment.End) {
-                last?.let { Text(it.timestamp.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(Locale.getDefault())), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
+                last?.let { Text(it.timestamp.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale)), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.labelSmall) }
                 if (group.unreadCount > 0) Box(Modifier.padding(top = 7.dp).size(22.dp).background(EkataBlue, CircleShape), contentAlignment = Alignment.Center) { Text(group.unreadCount.toString(), color = Color.White, fontSize = 11.sp) }
             }
         }

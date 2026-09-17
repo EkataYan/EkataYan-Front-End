@@ -43,12 +43,12 @@ import com.ekatayan.app.core.localization.StringResourceProvider
             val settlementResult=runSuspendCatching { expenses.settlements(id) }
             val membership=runSuspendCatching { members.members(id) }.getOrDefault(emptyList())
             val currentMember=membership.firstOrNull { it.isCurrentUser }
-            val total=rows.sumOf{it.amount.toBigDecimalOrNull()?:BigDecimal.ZERO}
+            val total=sumMoneyAmounts(rows.map(ExpenseDto::amount))
             val categories=rows.groupBy{canonicalExpenseCategory(it.category)}.map{(name,items)->
-                val amount=items.sumOf{it.amount.toBigDecimalOrNull()?:BigDecimal.ZERO}
-                ExpenseCategoryTotal(name,amount.toLong(),if(total.signum()==0)0 else amount.multiply(BigDecimal(100)).divide(total,0,RoundingMode.HALF_UP).toInt())
+                val amount=sumMoneyAmounts(items.map(ExpenseDto::amount))
+                ExpenseCategoryTotal(name,amount,expensePercentage(amount,total))
             }.sortedBy { expenseCategoryOrder.indexOf(it.name) }
-            val budget=selected.budget?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }?.toLong()
+            val budget=selected.budget?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
             val today=LocalDate.now()
             val status=when {
                 today < selected.startDate -> strings[R.string.expenses_starts_in_days, ChronoUnit.DAYS.between(today,selected.startDate)]
@@ -60,7 +60,7 @@ import com.ekatayan.app.core.localization.StringResourceProvider
             val ledger=ledgerResult.getOrNull()
             ExpensesData(
                 tripId=id,tripName=selected.customName?:strings[R.string.trip_fallback_name],availableTrips=available,
-                totalSpent=total.toLong(),categories=categories,recentExpenses=rows.sortedWith(compareByDescending<ExpenseDto>{it.expenseDate}.thenByDescending{it.createdAt}),
+                totalSpent=total,categories=categories,recentExpenses=rows.sortedWith(compareByDescending<ExpenseDto>{it.expenseDate}.thenByDescending{it.createdAt}),
                 balances=ledger?.balances.orEmpty(),debts=ledger?.debts.orEmpty(),settlements=settlementResult.getOrDefault(emptyList()),loading=false,
                 balanceError=ledgerResult.exceptionOrNull()?.let { strings[R.string.expenses_error_balances] },totalBudget=budget,
                 tripStatusText=status,currentUserId=currentMember?.userId,currentUserRole=currentMember?.role,
@@ -123,6 +123,12 @@ data class AddExpenseUiState(val members:List<PublicTripMemberDto> = emptyList()
 }
 
 private val expenseCategoryOrder=listOf("Accommodation","Transport","Food & Drinks","Activities","Shopping","Other")
+internal fun sumMoneyAmounts(values: Iterable<String>): BigDecimal =
+    values.fold(BigDecimal.ZERO) { total, value -> total + (value.toBigDecimalOrNull() ?: BigDecimal.ZERO) }
+
+internal fun expensePercentage(amount: BigDecimal, total: BigDecimal): Int =
+    if (total.signum() == 0) 0 else amount.multiply(BigDecimal(100)).divide(total, 0, RoundingMode.HALF_UP).toInt()
+
 private fun canonicalExpenseCategory(value:String)=when(value.trim().lowercase()){
     "accommodation","lodging","hotel","hotels"->"Accommodation"
     "transport","transportation","travel"->"Transport"

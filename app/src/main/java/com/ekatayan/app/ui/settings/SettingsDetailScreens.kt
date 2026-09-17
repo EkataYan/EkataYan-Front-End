@@ -101,6 +101,9 @@ private fun formatBytes(v:Long)=when{v>=1024*1024->"%.1f MB".format(v/1048576.0)
         R.string.faq_location_question to R.string.faq_location_answer,
     )
     var subject by remember{mutableStateOf("")};var description by remember{mutableStateOf("")}
+    val report = stringResource(R.string.support_report_body, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, Build.VERSION.RELEASE, description)
+    val reportSubject = stringResource(R.string.support_report_subject, subject)
+    val shareChooserTitle = stringResource(R.string.support_share_chooser)
     DetailScaffold(stringResource(R.string.settings_help_support),onBack){LazyColumn(verticalArrangement=Arrangement.spacedBy(8.dp)){
         item{Text(stringResource(R.string.ui_frequently_asked_questions),style=MaterialTheme.typography.titleLarge)}
         items(faq.size){i->var open by remember{mutableStateOf(false)};Card(Modifier.fillMaxWidth().clickable{open=!open}){Column(Modifier.padding(16.dp)){Text(stringResource(faq[i].first),style=MaterialTheme.typography.titleSmall);if(open)Text(stringResource(faq[i].second),Modifier.padding(top=8.dp))}}}
@@ -110,12 +113,11 @@ private fun formatBytes(v:Long)=when{v>=1024*1024->"%.1f MB".format(v/1048576.0)
             OutlinedTextField(description,{description=it},Modifier.fillMaxWidth(),label={Text(stringResource(R.string.ui_description))},minLines=3)
             Button(
                 onClick={
-                    val report = context.getString(R.string.support_report_body, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE, Build.VERSION.RELEASE, description)
                     context.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
-                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.support_report_subject, subject))
+                        putExtra(Intent.EXTRA_SUBJECT, reportSubject)
                         putExtra(Intent.EXTRA_TEXT, report)
-                    }, context.getString(R.string.support_share_chooser)))
+                    }, shareChooserTitle))
                 },
                 enabled=subject.isNotBlank() && description.isNotBlank(),
             ){Text(stringResource(R.string.ui_share_report))}
